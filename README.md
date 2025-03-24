@@ -85,9 +85,9 @@
 - Use accessibility features such as keyboard navigation and screen reader compatibility.
 
 
-[My MoSCoW board can be found here](https://github.com/users/monkphin/projects/3/views/1)
+[My MoSCoW board can be found here](https://github.com/users/monkphin/projects/5/views/1)
 
-[My Kanban board can be found here](https://github.com/users/monkphin/projects/1)
+[My Kanban board can be found here](https://github.com/users/monkphin/projects/6/views/1)
 
 # User Stories
 | **Category**                | **User Story**                                                                                      |
