@@ -61,68 +61,122 @@
 
 ## Site Owner Goals
 
-- Provide a secure and scalable e-commerce platform to sell products or services.
-- Allow users to easily browse, purchase, and manage orders with minimal friction.
-- Offer subscription or one-off purchasing options (depending on the product model).
-- Maintain full control over product listings, order fulfillment, and customer data.
-- Ensure a professional, responsive, and accessible user interface across all devices.
-- Integrate a secure payment system (e.g. Stripe) that complies with best practices.
-- Maintain separation between regular users and admin-level features for security.
-- Provide clear documentation and error handling to reduce customer support needs.
-- Deploy and maintain the site using cloud-based infrastructure for high availability.
+ - Provide a secure and scalable platform to sell and manage subscription-based box offerings.
+ - Allow users to easily subscribe to recurring boxes or gift one-off boxes to others.
+ - Enable users to manage their own subscriptions (pause, cancel, change address).
+ - Maintain full control over box offerings, shipment schedules, and customer data.
+ - Ensure clear separation between admin and regular user functionality for operational security.
+ - Offer a professional, responsive, and accessible user interface across all devices.
+ - Integrate Stripe or a similar secure payment gateway to handle recurring billing and one-off payments.
+ - Track and manage recurring orders and payments tied to active subscriptions.
+ - Provide a reliable mechanism for scheduling box shipments based on renewal dates.
+ - Deploy the platform on scalable, cloud-based infrastructure with minimal downtime.
+ - Reduce support load through clear UI, meaningful feedback, and user-accessible history.
 
 ## Visitor Goals
 
-- Easily browse the product or service catalog by category, search, or filters.
-- View detailed product or service information before making a purchase.
-- Create an account to track orders, save preferences, and manage personal info.
-- Add items to a cart or subscription and complete secure checkout quickly.
-- Receive confirmation and updates on order/payment status via email.
-- View order history and track current orders from their account dashboard.
-- Interact with an reactive, mobile-friendly design that’s easy to navigate.
-- Trust that their data is secure, and payments are processed safely.
-- Receive support or help if issues arise with orders or payments.
-- Use accessibility features such as keyboard navigation and screen reader compatibility.
-
+ - Browse available subscription box options and view what types of products they typically include.
+ - View detailed info about each box: theme, contents summary, price, and shipping frequency.
+ - Easily subscribe to a box for themselves or send it as a gift to another address.
+ - Register and log in to manage subscriptions, update shipping details, and view upcoming shipments.
+ - Pause or cancel their subscription without needing to contact support.
+ - View order history, upcoming delivery dates, and previous payments in one place.
+ - Check payment method details and update card info securely if needed.
+ - Receive confirmation emails for each successful order and payment.
+ - Use a mobile-friendly, accessible site with support for keyboard navigation and screen readers.
+ - Feel confident that their personal and payment information is handled securely.
+ - Get help or support quickly if they run into issues with orders, addresses, or billing.
 
 [My MoSCoW board can be found here](https://github.com/users/monkphin/projects/5/views/1)
 
 [My Kanban board can be found here](https://github.com/users/monkphin/projects/6/views/1)
 
 # User Stories
+# User Stories
+
 | **Category**                | **User Story**                                                                                      |
 |----------------------------|------------------------------------------------------------------------------------------------------|
-| Authentication & Permissions | As a user, I want to register and log in securely so I can access my account and manage my purchases. |
-|                            | As a logged-in user, I want to access my profile and order history, but not see admin pages or other users' data. |
-|                            | As a logged-in user, I want to update my account information (e.g., address, email) so that I can ensure receipts and shipments are sent to me. |
-|                            | As an admin, I want to restrict critical actions (like product creation or order editing) to admin users only. |
-| Products and Browsing      | As a user, I want to browse all available products or services so that I can choose one that fits my needs. |
-|                            | As a user, I want to view details about a product or service (e.g., description, price, availability) so I can make informed decisions. |
-|                            | As an admin, I want to create, edit, and delete products/services in the catalog so I can manage the offering. |
-| Cart & Checkout            | As a user, I want to add one or more products to my cart so that I can review them before checkout. |
-|                            | As a user, I want to edit the quantity or remove items from my cart so that I can adjust my order before paying. |
-|                            | As a user, I want to securely check out and pay using an online payment system (e.g. Stripe) so that I can complete my purchase. |
-|                            | As a user, I want to see a clear message confirming whether my payment was successful or not. |
-| Orders & Post-Purchase Flow | As a user, I want to see my order history in my account so that I can track what I’ve bought or subscribed to. |
-|                            | As an admin, I want to see and manage all customer orders so I can fulfill them or troubleshoot issues. |
-|                            | As a user, I want to receive an email confirmation with my order summary so that I know it was processed. |
-| Testing and Reliability    | As a developer, I want to write tests for forms, models, and views so that I can confirm the application works correctly at all times. |
-|                            | As a developer, I want to follow a TDD approach so I can build out functionality reliably and document my process through git commits. |
-|                            | As a tester, I want to simulate common failure cases (e.g. payment failure, missing input) so I can confirm the app handles errors gracefully. |
-| UX and Accessibility       | As a user, I want to easily navigate the site using a clear, accessible layout so that I can find what I need without confusion. |
-|                            | As a user, I want the site to provide clear feedback after every interaction (e.g., forms, purchases) so that I know what happened. |
-|                            | As a user, I want all interactive elements to be accessible via keyboard and screen readers so that I can use the site regardless of ability. |
-| Admin & Configuration      | As an admin, I want to manage product data and orders via a dashboard so that I can keep the store up to date. |
-|                            | As a developer, I want to keep all configuration in environment variables so that I can deploy securely and easily switch between environments. |
-|                            | As a developer, I want to ensure no secret data is ever committed to Git so that the app stays secure. |
-| Documentation & Deployment | As a developer, I want to document all stages of the project in a well-structured README so that the development process is clear. |
-|                            | As a reviewer, I want to see a data schema and system architecture diagram so that I can understand the app’s structure quickly. |
-|                            | As a tester, I want to follow a documented deployment and testing process so that I can verify everything works as expected. |
+| Authentication & Permissions | As a user, I want to register and log in securely so I can access my account and manage my subscriptions. |
+|                            | As a logged-in user, I want to view and update my profile details (like shipping address or email). |
+|                            | As a logged-in user, I want to access only my own data, not see admin pages or other users' info. |
+|                            | As an admin, I want to restrict access to admin features like box creation and order management. |
+|----------------------------|------------------------------------------------------------------------------------------------------|
+| Boxes & Subscription Browsing | As a user, I want to browse available subscription boxes so I can choose one that suits me or someone else. |
+|                            | As a user, I want to view details about each box, including its contents, price, and shipping schedule. |
+|                            | As an admin, I want to create, edit, and remove box offerings to control what's available. |
+|----------------------------|------------------------------------------------------------------------------------------------------|
+| Subscription Management    | As a user, I want to subscribe to a box for myself or gift it to someone else. |
+|                            | As a user, I want to pause or cancel my subscription at any time. |
+|                            | As a user, I want to choose or update the shipping address for each subscription. |
+|                            | As a user, I want to see upcoming shipping dates for my subscription boxes. |
+|----------------------------|------------------------------------------------------------------------------------------------------|
+| Checkout & Payment         | As a user, I want to securely check out and save my payment details for recurring billing. |
+|                            | As a user, I want to see confirmation of successful or failed payments. |
+|                            | As a user, I want to update my payment method if my card changes. |
+|----------------------------|------------------------------------------------------------------------------------------------------|
+| Orders & Post-Purchase Flow | As a user, I want to see my order history so I can track previous deliveries. |
+|                            | As a user, I want to view payment details associated with past orders (e.g., card type, last 4 digits). |
+|                            | As a user, I want to receive confirmation emails for successful orders and renewals. |
+|                            | As an admin, I want to view all orders, linked subscriptions, and user details for support or fulfillment. |
+|----------------------------|------------------------------------------------------------------------------------------------------|
+| UX and Accessibility       | As a user, I want the site to be easy to navigate, even on mobile, so I can find what I need quickly. |
+|                            | As a user, I want clear feedback when I complete actions (e.g., subscribing, pausing, paying). |
+|                            | As a user, I want the site to support screen readers and keyboard navigation for accessibility. |
+|----------------------------|------------------------------------------------------------------------------------------------------|
+| Admin & Configuration      | As an admin, I want to manage boxes, subscriptions, and orders via a secure dashboard. |
+
+
 
 # Design Choices
 
 ## [Wireframes](#wireframes)
 ##  [Schema](#schema)
+  <img src="docs/erd.png">
+User
+Purpose: Stores basic account and login information for customers.
+Includes username, email, hashed password, and join date.
+Each user can have multiple subscriptions, orders, addresses, and payments.
+
+ShippingAddress
+Purpose: Holds one or more delivery addresses for each user.
+Used for both personal and gifted box deliveries.
+Linked to subscriptions and orders to track where boxes are shipped.
+
+BillingAddress (optional but defined)
+Purpose: Stores billing information separately from shipping.
+Mostly for future functionality like invoices or alternate payment records.
+Not required to render payment history.
+
+Box
+Purpose: Represents a fixed subscription product (e.g., Box A, Box B).
+Contains name, description, price, and a shipping schedule label like “Monthly.”
+Linked to subscriptions and orders so you can track who’s getting what.
+
+Subscription
+Purpose: Tracks a user's ongoing subscription to a specific box.
+Links to the user, chosen box, and delivery address.
+Includes fields for start date, renewal date, and status (active, paused, cancelled).
+Used to automatically trigger new orders/payments when due.
+
+Order
+Purpose: A record of a single box being sent.
+Generated from a subscription when it's time to ship.
+Includes the box, user, subscription, shipping address, and dates.
+Tracks the delivery status (pending, shipped, cancelled).
+
+Payment
+Purpose: Logs each payment attempt or success.
+Linked to a specific order and user.
+Stores amount, date, payment method, and status (paid, failed).
+Used to show transaction history and admin reporting.
+
+PaymentProfile
+Purpose: Safely stores non-sensitive Stripe metadata for future billing.
+One-to-one with each user.
+Includes Stripe customer ID, saved card brand, last 4 digits, and expiry.
+Used to show "Paid with Visa ••••4242" and power repeat payments.
+
+
 ##  [UX](#ux)
 ##  [Colour Palette](#colour-palette)
 ##  [Typography](#typography)
