@@ -166,7 +166,7 @@ Tracks the delivery status (pending, shipped, cancelled).
 
 Payment
 Purpose: Logs each payment attempt or success.
-Linked to a specific order and user.
+Linked to a specific order.
 Stores amount, date, payment method, and status (paid, failed).
 Used to show transaction history and admin reporting.
 
