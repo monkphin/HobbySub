@@ -130,6 +130,21 @@
 # Design Choices
 
 ## [Wireframes](#wireframes)
+Homepage
+  <img src="docs/wireframes/homepage.png">
+Subscription Page
+  <img src="docs/wireframes/subs_page.png">
+Basket
+  <img src="docs/wireframes/basket.png">
+Checkout
+  <img src="docs/wireframes/checkout.png">
+Past Boxes
+  <img src="docs/wireframes/past_boxes.png">
+Account Page
+  <img src="docs/wireframes/accounts.png">
+
+
+    <img src="docs/wireframes/homepage.png">
 ##  [Schema](#schema)
   <img src="docs/erd.png">
 ### User
