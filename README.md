@@ -76,7 +76,7 @@
 ## Visitor Goals
 
  - Browse available subscription box options and view what types of products they typically include.
- - View detailed info about each box: theme, contents summary, price, and shipping frequency.
+ - View detailed info about each months box: theme, contents summary, and shipping frequency options.
  - Easily subscribe to a box for themselves or send it as a gift to another address.
  - Register and log in to manage subscriptions, update shipping details, and view upcoming shipments.
  - Pause or cancel their subscription without needing to contact support.
@@ -102,7 +102,7 @@
 |                            | As an admin, I want to restrict access to admin features like box creation and order management. |
 |----------------------------|------------------------------------------------------------------------------------------------------|
 | Boxes & Subscription Browsing | As a user, I want to browse available subscription boxes so I can choose one that suits me or someone else. |
-|                            | As a user, I want to view details about each box, including its contents, price, and shipping schedule. |
+|                            | As a user, I want to have options for frequency of payment plans, including its price and shipping schedule. |
 |                            | As an admin, I want to create, edit, and remove box offerings to control what's available. |
 |----------------------------|------------------------------------------------------------------------------------------------------|
 | Subscription Management    | As a user, I want to subscribe to a box for myself or gift it to someone else. |
@@ -132,49 +132,91 @@
 ## [Wireframes](#wireframes)
 ##  [Schema](#schema)
   <img src="docs/erd.png">
-User
-Purpose: Stores basic account and login information for customers.
-Includes username, email, hashed password, and join date.
-Each user can have multiple subscriptions, orders, addresses, and payments.
+### User
+**Purpose:**  
+Stores user authentication and identity information.  
+Each user can have one or more subscriptions, shipping addresses, orders, payments, and a linked payment profile.
 
-ShippingAddress
-Purpose: Holds one or more delivery addresses for each user.
-Used for both personal and gifted box deliveries.
-Linked to subscriptions and orders to track where boxes are shipped.
+**Key Fields:**  
+- `username`, `email`, `password`  
+- `date_joined`
 
-BillingAddress (optional but defined)
-Purpose: Stores billing information separately from shipping.
-Mostly for future functionality like invoices or alternate payment records.
-Not required to render payment history.
+---
 
-Box
-Purpose: Represents a fixed subscription product (e.g., Box A, Box B).
-Contains name, description, price, and a shipping schedule label like “Monthly.”
-Linked to subscriptions and orders so you can track who’s getting what.
+### ShippingAddress
+**Purpose:**  
+Stores one or more delivery addresses per user.  
+Used for both personal subscriptions and gifting. Linked to subscriptions and orders so you know where each box is shipped.
 
-Subscription
-Purpose: Tracks a user's ongoing subscription to a specific box.
-Links to the user, chosen box, and delivery address.
-Includes fields for start date, renewal date, and status (active, paused, cancelled).
-Used to automatically trigger new orders/payments when due.
+**Key Fields:**  
+- `recipient_name`, `address_line_1`, `postcode`, `country`, etc.  
+- `is_default` flag for preferred address
 
-Order
-Purpose: A record of a single box being sent.
-Generated from a subscription when it's time to ship.
-Includes the box, user, subscription, shipping address, and dates.
-Tracks the delivery status (pending, shipped, cancelled).
+---
 
-Payment
-Purpose: Logs each payment attempt or success.
-Linked to a specific order.
-Stores amount, date, payment method, and status (paid, failed).
-Used to show transaction history and admin reporting.
+### SubscriptionPlan
+**Purpose:**  
+Defines the available subscription options.  
+Each plan specifies a duration (e.g. 1, 3, or 6 months) and a price.
 
-PaymentProfile
-Purpose: Safely stores non-sensitive Stripe metadata for future billing.
-One-to-one with each user.
-Includes Stripe customer ID, saved card brand, last 4 digits, and expiry.
-Used to show "Paid with Visa ••••4242" and power repeat payments.
+**Key Fields:**  
+- `name` (e.g., "Monthly", "3 Months")  
+- `duration_in_months`  
+- `price`  
+- `is_active` (used to hide deprecated plans)
+
+---
+
+### Subscription
+**Purpose:**  
+Represents a user’s active or historical subscription to the service.  
+Tracks their selected plan, status (e.g. active, paused), start and renewal dates, and delivery address.
+
+**Key Fields:**  
+- Foreign keys to `User`, `SubscriptionPlan`, and `ShippingAddress`  
+- `status` (active, paused, cancelled)  
+- `start_date`, `renewal_date`  
+- Optional `cancelled_at` and `paused_at` timestamps
+
+---
+
+### Order
+**Purpose:**  
+Represents a single scheduled or completed box delivery.  
+Generated from an active subscription based on the renewal date.
+
+**Key Fields:**  
+- Foreign keys to `Subscription`, `User`, and `ShippingAddress`  
+- `order_date` (when it was created)  
+- `scheduled_shipping_date`  
+- `status` (pending, shipped, cancelled)
+
+---
+
+### Payment
+**Purpose:**  
+Stores payment records for each order.  
+Tracks the charge status, amount, and payment method used.
+
+**Key Fields:**  
+- Foreign keys to `User` and `Order`  
+- `payment_date`, `amount`  
+- `status` (paid, failed)  
+- `payment_method` (e.g. Stripe)
+
+---
+
+### PaymentProfile
+**Purpose:**  
+Stores safe, reusable Stripe metadata for a user’s saved payment method.  
+Used to power recurring billing and display masked card info.
+
+**Key Fields:**  
+- Stripe IDs for customer and payment method  
+- `last4`, `brand`, `exp_month`, `exp_year`
+
+---
+
 
 
 ##  [UX](#ux)
