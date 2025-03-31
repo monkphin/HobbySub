@@ -1,9 +1,29 @@
+# Python
+__pycache__/
+*.py[cod]
+*.sqlite3
+*.log
+
+# VS Code
+.vscode/
+
+# Django stuff
+*.db
+db.sqlite3
+.env
+
+# Static and media (if you're building these locally)
+staticfiles/
+media/
+
+# Other stuff
 core.Microsoft*
 core.mongo*
 core.python*
 env.py
-__pycache__/
-*.py[cod]
+
 node_modules/
 .github/
 cloudinary_python.txt
+
+venv/
