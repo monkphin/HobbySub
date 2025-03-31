@@ -1,12 +1,8 @@
-<!-- home/templates/home/home.html -->
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Hobby Hub</title>
-</head>
-<body>
-    <h1>Welcome to Hobby Hub</h1>
-    <p>Your subscription box for hobbyists: miniatures, paints, tools, and more!</p>
-</body>
-</html>
+{% extends 'base.html' %}
+
+{% block title %}Welcome to Hobby Hub{% endblock %}
+
+{% block content %}
+<h1>Welcome to Hobby Hub</h1>
+<p>Your subscription box for hobbyists: miniatures, paints, tools, and more!</p>
+{% endblock %}
