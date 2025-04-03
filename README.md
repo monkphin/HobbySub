@@ -147,91 +147,15 @@ Account Page
     <img src="docs/wireframes/homepage.png">
 ##  [Schema](#schema)
   <img src="docs/erd.png">
-### User
-**Purpose:**  
-Stores user authentication and identity information.  
-Each user can have one or more subscriptions, shipping addresses, orders, payments, and a linked payment profile.
-
-**Key Fields:**  
-- `username`, `email`, `password`  
-- `date_joined`
-
----
-
-### ShippingAddress
-**Purpose:**  
-Stores one or more delivery addresses per user.  
-Used for both personal subscriptions and gifting. Linked to subscriptions and orders so you know where each box is shipped.
-
-**Key Fields:**  
-- `recipient_name`, `address_line_1`, `postcode`, `country`, etc.  
-- `is_default` flag for preferred address
-
----
-
-### SubscriptionPlan
-**Purpose:**  
-Defines the available subscription options.  
-Each plan specifies a duration (e.g. 1, 3, or 6 months) and a price.
-
-**Key Fields:**  
-- `name` (e.g., "Monthly", "3 Months")  
-- `duration_in_months`  
-- `price`  
-- `is_active` (used to hide deprecated plans)
-
----
-
-### Subscription
-**Purpose:**  
-Represents a user’s active or historical subscription to the service.  
-Tracks their selected plan, status (e.g. active, paused), start and renewal dates, and delivery address.
-
-**Key Fields:**  
-- Foreign keys to `User`, `SubscriptionPlan`, and `ShippingAddress`  
-- `status` (active, paused, cancelled)  
-- `start_date`, `renewal_date`  
-- Optional `cancelled_at` and `paused_at` timestamps
-
----
-
-### Order
-**Purpose:**  
-Represents a single scheduled or completed box delivery.  
-Generated from an active subscription based on the renewal date.
-
-**Key Fields:**  
-- Foreign keys to `Subscription`, `User`, and `ShippingAddress`  
-- `order_date` (when it was created)  
-- `scheduled_shipping_date`  
-- `status` (pending, shipped, cancelled)
-
----
-
-### Payment
-**Purpose:**  
-Stores payment records for each order.  
-Tracks the charge status, amount, and payment method used.
-
-**Key Fields:**  
-- Foreign keys to `User` and `Order`  
-- `payment_date`, `amount`  
-- `status` (paid, failed)  
-- `payment_method` (e.g. Stripe)
-
----
-
-### PaymentProfile
-**Purpose:**  
-Stores safe, reusable Stripe metadata for a user’s saved payment method.  
-Used to power recurring billing and display masked card info.
-
-**Key Fields:**  
-- Stripe IDs for customer and payment method  
-- `last4`, `brand`, `exp_month`, `exp_year`
-
----
-
+| Model                  | Purpose                                                                                                                                                                             | Key Fields                                                                                                                                                                                                                                       | Relationships                                                                                     |  |  |  |  |  |  |  |  |
+| ---------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------- |  |  |  |  |  |  |  |  |
+| User                   | Stores all user accounts, including regular users and admin accounts.                                                                                                               | ['\`user_id\` (PK)', '\`username\`, \`email\`, \`password\`', '\`is_admin\` (boolean)', '\`date_joined\`']                                                                                                                                       | One-to-many with ShippingAddress, StripeSubscriptionMeta, Order, Payment                          |  |  |
+| ShippingAddress        | Stores one or more delivery addresses per user. Used for personal or gifted boxes.                                                                                                  | ['\`shipping_id\` (PK)', '\`user_id\` (FK) â†’ User\`', '\`recipient_name\`, full address details', '\`is_default\` (boolean)']                                                                                                                  | Many-to-one with User; One-to-many with Order and StripeSubscriptionMeta                          |  |  |
+| StripeSubscriptionMeta | Links a Stripe-managed subscription to internal data. Captures shipping address and gift status.                                                                                    | ['\`id\` (PK)', '\`user_id\` (FK) â†’ User\`', '\`stripe_subscription_id\`', '\`stripe_price_id\`', '\`shipping_address_id\` (FK)\`', '\`is_gift\` (boolean)\`', '\`created_at\`, \`cancelled_at\`']                                             | Many-to-one with User and ShippingAddress; One-to-many with Order                                 |  |  |  |
+| Box                    | Admin-created box offerings. Archived boxes stay viewable in history.                                                                                                               | ['\`box_id\` (PK)', '\`name\`, \`slug\`, \`description\`, \`image_url\`', '\`shipping_date\` (nullable)\`', '\`is_active\`, \`is_archived\`, \`created_at\`']                                                                                    | One-to-many with Order                                                                            |  |  |  |  |  |  |  |
+| Order                  | Represents a single box shipment. Created via Stripe webhook after successful charge.                                                                                               | ['\`order_id\` (PK)', '\`user_id\` (FK) â†’ User\`', '\`shipping_address_id\` (FK) â†’ ShippingAddress\`', '\`box_id\` (FK) â†’ Box\`', '\`stripe_subscription_id\` (from Stripe)\`', '\`order_date\`, \`scheduled_shipping_date\`, \`status\`'] | Many-to-one with User, ShippingAddress, Box; One-to-one with BoxHistory; One-to-many with Payment |
+| BoxHistory             | Snapshot of the box at time of shipment. Used for historical accuracy.                                                                                                              | ['\`history_id\` (PK)', '\`order_id\` (FK) â†’ Order\`', '\`box_name\`, \`slug\`, \`image_url\`, \`description\`, \`created_at\`']                                                                                                               | One-to-one with Order                                                                             |  |  |  |  |  |  |  |
+| Payment                | Logs each payment attempt/success. Created by webhook when Stripe charge occurs. Card info is fetched live from Stripe or hydrated at webhook time (e.g. 'Visa â€¢â€¢â€¢â€¢ 4242'). | ['\`payment_id\` (PK)', '\`user_id\` (FK) â†’ User\`', '\`order_id\` (FK) â†’ Order\`', '\`payment_date\`, \`amount\`, \`status\`, \`payment_method\`']                                                                                          | Many-to-one with User and Order                                                                   |  |  |  |  |  |  |
 
 
 ##  [UX](#ux)
