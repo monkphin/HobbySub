@@ -39,16 +39,8 @@
 
   <hr>
 
-  <!-- Current Box Preview -->
-  {% if box %}
-  <section class="section center-align">
-    <h2>This Month’s Box</h2>
-    <img src="{{ box.image_url }}" alt="{{ box.name }}" class="responsive-img z-depth-2" style="max-height: 300px;" />
-    <h5>{{ box.name }}</h5>
-    <p class="grey-text text-darken-1">{{ box.description|truncatewords:25 }}</p>
-    <a href="{% url 'subscribe' %}" class="btn">Get This Box</a>
-  </section>
-  {% endif %}
+
+  
 
 </div>
 {% endblock %}
