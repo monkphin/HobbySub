@@ -3,6 +3,52 @@
 {% block title %}Welcome to Hobby Hub{% endblock %}
 
 {% block content %}
-<h1>Welcome to Hobby Hub</h1>
-<p>Your subscription box for hobbyists: miniatures, paints, tools, and more!</p>
+<div class="container">
+
+  <!-- Hero Section -->
+  <section class="section center-align">
+    <h1 class="flow-text">Unbox Hobby Joy Monthly</h1>
+    <p class="lead">Get curated miniatures, paints, and hobby gear delivered to your door.</p>
+    <a href="" class="btn btn-large">Subscribe Now</a>
+    <a href="" class="btn-flat">Gift a Box</a>
+  </section>
+
+  <hr>
+
+  <!-- How It Works -->
+  <section class="section">
+    <h2 class="center-align">How It Works</h2>
+    <div class="row center-align">
+      <div class="col s12 m4">
+        <img src="" alt="Choose" class="responsive-img" />
+        <h5>Pick Your Plan</h5>
+        <p>Choose how long you want to subscribe — or gift a one-off box.</p>
+      </div>
+      <div class="col s12 m4">
+        <img src="" alt="Ship" class="responsive-img" />
+        <h5>We Ship</h5>
+        <p>Boxes ship on the 1st of each month, loaded with surprise contents.</p>
+      </div>
+      <div class="col s12 m4">
+        <img src="" alt="Enjoy" class="responsive-img" />
+        <h5>You Enjoy</h5>
+        <p>Paint, build, and explore new gear — every month.</p>
+      </div>
+    </div>
+  </section>
+
+  <hr>
+
+  <!-- Current Box Preview -->
+  {% if box %}
+  <section class="section center-align">
+    <h2>This Month’s Box</h2>
+    <img src="{{ box.image_url }}" alt="{{ box.name }}" class="responsive-img z-depth-2" style="max-height: 300px;" />
+    <h5>{{ box.name }}</h5>
+    <p class="grey-text text-darken-1">{{ box.description|truncatewords:25 }}</p>
+    <a href="{% url 'subscribe' %}" class="btn">Get This Box</a>
+  </section>
+  {% endif %}
+
+</div>
 {% endblock %}
