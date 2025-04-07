@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Past Boxes{% endblock %}
+
+{% block content %}
+<div class="container">
+
+  <!-- Main Content -->
+  <h2>Past Boxes</h2>
+  <div class="row">
+    {% for box in past_boxes %}
+        <div class="col s12 m6 l4">
+            <div class="card">
+                <div class="card-image">
+                    <img src="{{ box.image_url }}" alt="{{ box.name }}">
+                    <a href="{% url 'box_detail' box.slug %}">
+                        <span class="card-title">{{ box.name }}</span>
+                    </a>
+                </div>
+                <div class="card-content">
+                    <p>{{ box.description|truncatewords:25 }}</p>
+                </div>
+            </div>
+        </div>
+    {% endfor %}
+  </div>
+</div>
+
+{% endblock %}

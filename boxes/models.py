@@ -15,15 +15,15 @@ class Box(models.Model):
     is_archived = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
 
-def save(self, *args, **kwargs):
-    """Auto-generate slug if not set."""
-    if not self.slug:
-        self.slug = slugify(self.name)
-    super().save(*args, **kwargs)
+    def save(self, *args, **kwargs):
+        """Auto-generate slug if not set."""
+        if not self.slug:
+            self.slug = slugify(self.name)
+        super().save(*args, **kwargs)
 
-    def __str__(self):
-        return self.name
-    
+        def __str__(self):
+            return self.name
+        
 
 class BoxProduct(models.Model):
     """
