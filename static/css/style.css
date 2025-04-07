@@ -2,3 +2,17 @@ body {
     background-color: #f4f4f4;
     font-family: sans-serif;
 }
+
+
+.carousel {
+    height: 200px !important;
+  }
+  .carousel .carousel-item {
+    height: 200px !important;
+    line-height: 200px !important;
+  }
+  .carousel .carousel-item img {
+    max-height: 200px !important;
+    width: 200px;
+  }
+  

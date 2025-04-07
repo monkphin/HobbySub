@@ -41,15 +41,7 @@
 
   <hr>
 
-  <!-- Current Box Preview -->
-  {% if box %}
-  <section class="section center-align">
-    <h2>This Month’s Box</h2>
-    <img src="" alt="" class="responsive-img z-depth-2" style="max-height: 300px;" />
-    <h5></h5>
-    <p class="grey-text text-darken-1"></p>
-    <a href="" class="btn">Get This Box</a>
-  </section>
+
    
   <!-- Current Box Preview -->
   {% if box %}
@@ -58,22 +50,24 @@
     <img src="{{ box.image_url }}" alt="{{ box.name }}" class="responsive-img z-depth-2" style="max-height: 300px;" />
     <h5>{{ box.name }}</h5>
     <p class="grey-text text-darken-1">{{ box.description|truncatewords:25 }}</p>
-    <a href="{% url 'subscribe' %}" class="btn">Get This Box</a>
+
   </section>
   
   <!-- Current Box Content Carousel -->
   <section class="section center-align">
-    <div class="carousel">
-        {% for item in box_contents %}
+    <div class="carousel style="height: 150px;">
+        {% for item in box.contents.all %}
         <a class="carousel-item" href="#{{ item.id }}">
             <img src="{{ item.image_url }}" alt="{{ item.name }}">
             <h6>{{ item.name }}</h6>
         </a>
         {% endfor %}
     </div>
+    <a href="" class="btn">Get This Box</a>
   </section>
+
   {% endif %}
-  {% endif %}
+
 
 
   
