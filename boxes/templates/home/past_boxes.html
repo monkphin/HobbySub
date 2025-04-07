@@ -15,7 +15,7 @@
                 <div class="card-image">
                     <img src="{{ box.image_url }}" alt="{{ box.name }}">
                     <a href="{% url 'box_detail' box.slug %}">
-                        <span class="card-title">{{ box.name }}</span>
+                        <span class="card-title">{{ box.name }} - {{ box.shipping_date|date:"m/Y" }}</span>
                     </a>
                 </div>
                 <div class="card-content">

@@ -21,6 +21,7 @@ core.Microsoft*
 core.mongo*
 core.python*
 env.py
+db_seed.py 
 
 node_modules/
 .github/
