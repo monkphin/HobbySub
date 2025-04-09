@@ -44,18 +44,15 @@
 
    
   <!-- Current Box Preview -->
-  {% if box %}
+{% if box %}
   <section class="section center-align">
     <h2>This Month’s Box</h2>
     <img src="{{ box.image_url }}" alt="{{ box.name }}" class="responsive-img z-depth-2" style="max-height: 300px;" />
     <h5>{{ box.name }}</h5>
     <p class="grey-text text-darken-1">{{ box.description|truncatewords:25 }}</p>
-
-  </section>
   
   <!-- Current Box Content Carousel -->
-  <section class="section center-align">
-    <div class="carousel style="height: 150px;">
+    <div class="carousel" style="height: 150px;">
         {% for item in box.contents.all %}
         <a class="carousel-item" href="#{{ item.id }}">
             <img src="{{ item.image_url }}" alt="{{ item.name }}">
@@ -63,11 +60,36 @@
         </a>
         {% endfor %}
     </div>
+    <br>
     <a href="" class="btn">Get This Box</a>
   </section>
 
-  {% endif %}
+{% endif %}
 
+
+  <hr>
+  <!-- Next Box Preview -->
+{% if next_box %}
+  <section class="section center-align">
+    <h2>Coming Next Month!</h2>
+    <h3>{{ next_box.name }}</h3>
+    <p class="grey-text">Ships {{ next_box.shipping_date|date:"d M Y" }}</p>
+    <p class="grey-text text-darken-1">{{ next_box.description|truncatewords:20 }}</p>
+  </section>
+
+{% endif %}
+
+<!-- Handle scenarios where no boxes are available -->
+{% if not box and not next_box %}
+  <section class="section center-align">
+    <h5>No active boxes at the moment — check back soon!</h5>
+    <p class="grey-text text-darken-1">
+      We're preparing something special. New boxes are added monthly, so keep your brushes ready!
+    </p>
+    <a class="btn disabled">Subscribe Now</a>
+    <a class="btn-flat" href="{% url 'contact' %}">Contact Us</a>
+  </section>
+{% endif %}
 
 
   
