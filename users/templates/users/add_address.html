@@ -1,0 +1,77 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Add Address{% endblock %}
+
+{% block content %}
+  <section class="section center-align">
+    <h2>Register</h2>
+    <div class="row">
+      <form class="col s12" method="post">
+        {% csrf_token %}
+        <div class="row">
+          <div class="input-field col s6">
+            {{ form.recipient_f_name.label_tag }}
+            {{ form.recipient_f_name }}
+          </div>
+          <div class="input-field col s6">
+            {{ form.recipient_l_name.label_tag }}
+            {{ form.recipient_l_name }}
+          </div>
+          <div class="col s12">
+            <span class="helper-text">First and last name are pre-filled from your account, please edit these if this is intended to be a gift</span>
+          </div>
+        </div>
+        <div class="row">
+          <div class="input-field col s6">
+            {{ form.address_line_1.label_tag }}
+            {{ form.address_line_1 }}
+          </div>
+          <div class="input-field col s6">
+            {{ form.address_line_2.label_tag }}
+            {{ form.address_line_2 }}
+          </div>
+        </div>
+        <div class="row">
+          <div class="input-field col s12">
+            {{ form.town_or_city.label_tag }}
+            {{ form.town_or_city }}
+          </div>
+        </div>
+        <div class="row">
+          <div class="input-field col s12">
+            {{ form.county.label_tag }}
+            {{ form.county }}
+          </div>
+        </div>
+        <div class="row">
+          <div class="input-field col s12">
+            {{ form.postcode.label_tag }}
+            {{ form.postcode }}
+          </div>
+        </div>
+        <div class="row">
+          <div class="input-field col s12">
+            {{ form.country.label_tag }}
+            {{ form.country }}
+          </div>
+        </div>
+        <div class="row">
+          <div class="input-field col s12">
+            {{ form.phone_number.label_tag }}
+            {{ form.phone_number }}
+          </div>
+        </div>
+        <div class="row">
+          <div class="input-field col s12">
+            <label>
+              {{ form.is_default }}
+              <span>{{ form.is_default.label }}</span>
+            </label>
+          </div>
+        </div>
+        <button type="submit" class="btn">Save</button>
+      </form>
+    </div>
+  </section>
+{% endblock %}
