@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Edit Account{% endblock %}
+
+{% block content %}
+  <section class="section center-align">
+    <h2>Edit Your Account</h2>
+    <div class="row">
+      <form class="col s12" method="post">
+        {% csrf_token %}
+        <div class="row">
+          <div class="input-field col s6">
+            {{ form.username.label_tag }}
+            {{ form.username }}
+          </div>
+          <div class="input-field col s6">
+            {{ form.email.label_tag }}
+            {{ form.email }}
+          </div>
+        </div>
+        <div class="row">
+          <div class="input-field col s6">
+            {{ form.first_name.label_tag }}
+            {{ form.first_name }}
+          </div>
+          <div class="input-field col s6">
+            {{ form.last_name.label_tag }}
+            {{ form.last_name }}
+          </div>
+        </div>
+        <button type="submit" class="btn">Confirm</button>
+      </form>
+    </div>
+  </section>
+{% endblock %}

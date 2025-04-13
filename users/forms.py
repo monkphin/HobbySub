@@ -1,6 +1,6 @@
 from django import forms
 from django.contrib.auth.models import User
-from django.contrib.auth.forms import UserCreationForm
+from django.contrib.auth.forms import UserCreationForm, SetPasswordForm
 
 from .models import ShippingAddress
 
@@ -12,6 +12,25 @@ class Register(UserCreationForm):
     class Meta:
         model = User
         fields = ('username', 'email', 'first_name', 'last_name', 'password1', 'password2')
+
+class ChangePassword(forms.Form):
+    password1 = forms.CharField(
+                                widget=forms.PasswordInput(attrs={'class': 'validate'}),
+                                help_text="Confirm Password."
+                                )
+    password2 = forms.CharField(
+                                widget=forms.PasswordInput(attrs={'class': 'validate'}),
+                                help_text="Re-enter your new password."
+                                )
+
+    def clean(self):
+        cleaned_data = super().clean()
+        pw1 = cleaned_data.get("password1")
+        pw2 = cleaned_data.get("password2")
+
+        if pw1 and pw2 and pw1 != pw2:
+            self.add_error('password2', "Passwords do not match.")
+        return cleaned_data
 
 class AddAddressForm(forms.ModelForm):
     class Meta:

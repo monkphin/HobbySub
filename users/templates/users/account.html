@@ -17,9 +17,9 @@
   <hr>
 
   <section class="section center-align">
-    <a href="{% url 'add_address' %}" class="btn">Add Address</a>
-    <a href="" class="btn">Edit Account</a>
-    <a href="" class="btn">Delete Account</a>
+    <a href="{% url 'change_password' %}" class="btn">Change Password</a>
+    <a href="{% url 'edit_account' %}" class="btn">Edit Account</a>
+    <a href="{% url 'delete_account' %}" class="btn">Delete Account</a>
   </section>
 
   <hr>
@@ -55,6 +55,7 @@
         </div>
       {% empty %}
         <p>No saved addresses yet.</p>
+        <a href="{% url 'add_address' %}" class="btn">Add Address</a>
       {% endfor %}
     </div>
   </section>
