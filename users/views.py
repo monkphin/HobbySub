@@ -54,3 +54,9 @@ def edit_address(request, address_id):
         form = AddAddressForm(instance=address)
 
     return render(request, 'users/add_address.html', {'form':form})
+
+@login_required
+def delete_address(request, address_id):
+    address = get_object_or_404(ShippingAddress, id=address_id, user=request.user)
+    address.delete()
+    return redirect('account')

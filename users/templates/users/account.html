@@ -13,7 +13,17 @@
       <p><strong>Joined:</strong> {{ request.user.date_joined|date:"d M Y" }}</p>
     </div>
   </section>
+  
   <hr>
+
+  <section class="section center-align">
+    <a href="{% url 'add_address' %}" class="btn">Add Address</a>
+    <a href="" class="btn">Edit Account</a>
+    <a href="" class="btn">Delete Account</a>
+  </section>
+
+  <hr>
+
   <section class="section center-align">
     <h3>Saved Addresses</h3>
     <div class="row">
@@ -39,6 +49,7 @@
             </div>
             <div class="card-action">
               <a href="{% url 'edit_address' address.id %}">Edit</a>
+              <a href="{% url 'delete_address' address.id %}" class="red-text">Delete</a>
             </div>
           </div>
         </div>
@@ -47,12 +58,5 @@
       {% endfor %}
     </div>
   </section>
-  
-  <hr>
 
-  <section class="section center-align">
-    <a href="{% url 'add_address' %}" class="btn">Add Address</a>
-    <a href="" class="btn">Edit Account</a>
-    <a href="" class="btn">Delete Account</a>
-  </section>
 {% endblock %}
