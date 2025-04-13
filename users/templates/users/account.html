@@ -1,48 +1,16 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}Register{% endblock %}
+{% block title %}My Account{% endblock %}
 
 {% block content %}
   <section class="section center-align">
-    <h2>Register</h2>
+    <h2>My Account</h2>
     <div class="row">
-      <form class="col s12" method="post">
-        {% csrf_token %}
-        <div class="row">
-          <div class="input-field col s6">
-            {{ form.username.label_tag }}
-            {{ form.username }}
-          </div>
-          <div class="input-field col s6">
-            {{ form.email.label_tag }}
-            {{ form.email }}
-          </div>
-        </div>
-        <div class="row">
-          <div class="input-field col s6">
-            {{ form.first_name.label_tag }}
-            {{ form.first_name }}
-          </div>
-          <div class="input-field col s6">
-            {{ form.last_name.label_tag }}
-            {{ form.last_name }}
-          </div>
-        </div>
-        <div class="row">
-          <div class="input-field col s12">
-            {{ form.password1.label_tag }}
-            {{ form.password1 }}
-          </div>
-        </div>
-        <div class="row">
-          <div class="input-field col s12">
-            {{ form.password2.label_tag }}
-            {{ form.password2 }}
-          </div>
-        </div>
-        <button type="submit" class="btn">Register</button>
-      </form>
+      <p><strong>Username:</strong> {{ request.user.username }}</p>
+      <p><strong>Email:</strong> {{ request.user.email }}</p>
+      <p><strong>Name:</strong> {{ request.user.first_name }} {{ request.user.last_name }} </p>
+      <p><strong>Joined:</strong> {{ request.user.date_joined|date:"d M Y" }}</p>
     </div>
   </section>
 {% endblock %}
