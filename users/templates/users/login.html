@@ -1,0 +1,16 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Login{% endblock %}
+
+{% block content %}
+  <section class="section center-align">
+    <section class="section center-align">
+      <h3>Login</h3>
+      <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit" class="btn">Log In</button>
+      </form>
+    </section>
+{% endblock %}
