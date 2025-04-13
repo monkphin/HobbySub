@@ -20,4 +20,5 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include('home.urls')),  # Routes root URL to the home app
     path('past_boxes/', include('boxes.urls')),  # Routes root URL to the boxes app
+    path('accounts/', include('users.urls')), # Routes to user based URLs in the users app
     ]
