@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Order Successful{% endblock %}
+
+{% block content %}
+<section class="section center-align">
+  <h2 class="green-text text-darken-2">🎉 Thank you for your order!</h2>
+  <p>Your payment has been successfully processed. You'll receive a confirmation email shortly.</p>
+  <br>
+  <a href="{% url 'account' %}" class="btn">Go to My Account</a>
+  <a href="{% url 'home' %}" class="btn-flat">Return Home</a>
+</section>
+{% endblock %}

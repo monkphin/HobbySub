@@ -1,0 +1,28 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Checkout{% endblock %}
+
+{% block content %}
+<section class="section center-align">
+  <h2>Pre-Checkout</h2>
+  <form method="post">
+    {% csrf_token %}
+    <div class="row">
+      <div class="input-field col s12">
+        {{ form.recipient_name.label_tag }}
+        {{ form.recipient_name }}
+      </div>
+      <div class="input-field col s12">
+        {{ form.sender_name.label_tag }}
+        {{ form.sender_name }}
+      </div>
+      <div class="input-field col s12">
+        {{ form.gift_message.label_tag }}
+        {{ form.gift_message }}
+      </div>
+    </div>
+    <button class="btn" type="submit">Proceed to Checkout</button>
+  </form>
+</section>
+{% endblock %}

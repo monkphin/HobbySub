@@ -1,0 +1,15 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Order Cancelled{% endblock %}
+
+{% block content %}
+<section class="section center-align">
+  <h2 class="red-text text-darken-2">Order Cancelled</h2>
+  <p>Your payment process was cancelled. No charges have been made.</p>
+  <p>If this was a mistake, you can try again below.</p>
+  <br>
+  <a href="{% url 'order_start' %}" class="btn">Try Again</a>
+  <a href="{% url 'home' %}" class="btn-flat">Return Home</a>
+</section>
+{% endblock %}
