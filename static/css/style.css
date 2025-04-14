@@ -16,3 +16,11 @@ body {
     width: 200px;
   }
   
+
+  .chip-container {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    margin-bottom: 1rem;
+    justify-content: center;
+  }

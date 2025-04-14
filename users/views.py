@@ -58,6 +58,7 @@ def delete_account(request):
     user.delete()
     return redirect('account')
 
+
 @login_required
 def add_address(request):
     if request.method == 'POST':
@@ -65,15 +66,22 @@ def add_address(request):
         if form.is_valid():
             address = form.save(commit=False)
             address.user = request.user
+
+            if address.is_default:
+                ShippingAddress.objects.filter(user=request.user, is_default=True).update(is_default=False)
+
+            if address.is_billing:
+                ShippingAddress.objects.filter(user=request.user, is_billing=True).update(is_billing=False)
+
             address.save()
             return redirect('account')
     else:
         form = AddAddressForm(initial={
-                            'recipient_f_name': request.user.first_name,
-                            'recipient_l_name': request.user.last_name,
-                            })
+            'recipient_f_name': request.user.first_name,
+            'recipient_l_name': request.user.last_name,
+        })
 
-    return render(request, 'users/add_address.html', {'form':form})
+    return render(request, 'users/add_address.html', {'form': form})
 
 
 @login_required
@@ -83,13 +91,45 @@ def edit_address(request, address_id):
     if request.method == 'POST':
         form = AddAddressForm(request.POST, instance=address)
         if form.is_valid():
-            form.save()
+            updated_address = form.save(commit=False)
+
+            if updated_address.is_default:
+                ShippingAddress.objects.filter(user=request.user, is_default=True).exclude(id=address.id).update(is_default=False)
+
+            if updated_address.is_billing:
+                ShippingAddress.objects.filter(user=request.user, is_billing=True).exclude(id=address.id).update(is_billing=False)
+
+            updated_address.save()
             return redirect('account')
-        
     else:
         form = AddAddressForm(instance=address)
 
-    return render(request, 'users/add_address.html', {'form':form})
+    return render(request, 'users/add_address.html', {'form': form})
+
+
+
+@login_required
+def set_default_address(request, address_id):
+    user = request.user
+    address = get_object_or_404(ShippingAddress, id=address_id, user=user)
+
+    # Unset existing default
+    ShippingAddress.objects.filter(user=user, is_default=True).update(is_default=False)
+
+    # Set the new default address
+    address.is_default=True
+    address.save()
+
+    return redirect('account')
+
+
+@login_required
+def set_billing_address(request, address_id):
+    user = request.user
+    ShippingAddress.objects.filter(user=user, is_billing=True).update(is_billing=False)
+    ShippingAddress.objects.filter(user=user, id=address_id).update(is_billing=True)
+    return redirect('account')
+
 
 @login_required
 def delete_address(request, address_id):

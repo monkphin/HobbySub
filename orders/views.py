@@ -45,11 +45,13 @@ def handle_checkout(request, price_id):
                     'price':price_id,
                     'quantity': 1,
                 }],
-                metadata={
-                    'recipient_name': recipient_name,
-                    'sender_name': sender_name, 
-                    'gift_message': gift_message,
-                    'user_id': str(request.user.id),
+                payment_intent_data={
+                    'metadata': {
+                        'recipient_name': recipient_name,
+                        'sender_name': sender_name, 
+                        'gift_message': gift_message,
+                        'user_id': str(request.user.id),
+                    }
                 },
                 customer_email=request.user.email,
                 success_url=request.build_absolute_uri('/orders/success/'),
