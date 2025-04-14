@@ -55,14 +55,6 @@
                   <span class="new badge blue" data-badge-caption="Default"></span>
                 {% endif %}
               
-                {% if not address.is_billing %}
-                  <form method="post" action="{% url 'set_billing_address' address.id %}">
-                    {% csrf_token %}
-                    <button class="btn-small">Set as Billing Address</button>
-                  </form>
-                {% else %}
-                  <span class="badge green">Billing</span>
-                {% endif %}
               </div>
 
             </div>

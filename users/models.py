@@ -38,7 +38,6 @@ class ShippingAddress(models.Model):
                                      )
     is_default = models.BooleanField(default=False,
                                      help_text="Check this box if this is your default delivery address")
-    is_billing = models.BooleanField(default=False)
     
     def __str__(self):
         return f"{self.recipient_f_name} {self.recipient_l_name} — {self.postcode}"

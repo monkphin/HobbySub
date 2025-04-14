@@ -33,25 +33,43 @@ def order_oneoff(request):
 def handle_checkout(request, price_id):
     if request.method == 'POST':
         form = PreCheckoutForm(request.POST)
+
         if form.is_valid():
             recipient_name = form.cleaned_data.get('recipient_name')
             sender_name = form.cleaned_data.get('sender_name')
             gift_message = form.cleaned_data.get('gift_message')
 
+            shipping_address = request.user.addresses.filter(is_default=True).first()
+
+            shipping_details = {}
+            if shipping_address:
+                shipping_details = {
+                    'name': f'{shipping_address.recipient_f_name} {shipping_address.recipient_l_name}',
+                    'address': {
+                        'line1': shipping_address.address_line_1,
+                        'line2': shipping_address.address_line_2 or '',
+                        'city': shipping_address.town_or_city,
+                        'state': shipping_address.county,
+                        'postal_code': shipping_address.postcode,
+                        'country': shipping_address.country,
+                    }
+                }
+
             session = stripe.checkout.Session.create(
                 payment_method_types=['card'],
                 mode='payment',
                 line_items=[{
-                    'price':price_id,
+                    'price': price_id,
                     'quantity': 1,
                 }],
                 payment_intent_data={
                     'metadata': {
                         'recipient_name': recipient_name,
-                        'sender_name': sender_name, 
+                        'sender_name': sender_name,
                         'gift_message': gift_message,
                         'user_id': str(request.user.id),
-                    }
+                    },
+                    'shipping': shipping_details
                 },
                 customer_email=request.user.email,
                 success_url=request.build_absolute_uri('/orders/success/'),
@@ -60,5 +78,5 @@ def handle_checkout(request, price_id):
             return redirect(session.url, code=303)
     else:
         form = PreCheckoutForm()
-    
-    return render(request, 'orders/pre_checkout.html',{'form':form})
+
+    return render(request, 'orders/pre_checkout.html', {'form': form})

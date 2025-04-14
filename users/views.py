@@ -70,9 +70,6 @@ def add_address(request):
             if address.is_default:
                 ShippingAddress.objects.filter(user=request.user, is_default=True).update(is_default=False)
 
-            if address.is_billing:
-                ShippingAddress.objects.filter(user=request.user, is_billing=True).update(is_billing=False)
-
             address.save()
             return redirect('account')
     else:
@@ -96,9 +93,6 @@ def edit_address(request, address_id):
             if updated_address.is_default:
                 ShippingAddress.objects.filter(user=request.user, is_default=True).exclude(id=address.id).update(is_default=False)
 
-            if updated_address.is_billing:
-                ShippingAddress.objects.filter(user=request.user, is_billing=True).exclude(id=address.id).update(is_billing=False)
-
             updated_address.save()
             return redirect('account')
     else:
@@ -120,14 +114,6 @@ def set_default_address(request, address_id):
     address.is_default=True
     address.save()
 
-    return redirect('account')
-
-
-@login_required
-def set_billing_address(request, address_id):
-    user = request.user
-    ShippingAddress.objects.filter(user=user, is_billing=True).update(is_billing=False)
-    ShippingAddress.objects.filter(user=user, id=address_id).update(is_billing=True)
     return redirect('account')
 
 

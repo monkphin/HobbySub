@@ -50,7 +50,6 @@ class AddAddressForm(forms.ModelForm):
                 'country',
                 'phone_number',
                 'is_default',
-                'is_billing'
                 ]
         labels = {
                 'recipient_f_name': 'First Name',
@@ -58,5 +57,4 @@ class AddAddressForm(forms.ModelForm):
                 'town_or_city': 'Town or City',
                 'phone_number': 'Phone Number',
                 'is_default': 'Set as my default shipping address',
-                'is_billing': 'Set as my default billing address'
                 }
