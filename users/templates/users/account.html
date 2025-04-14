@@ -13,7 +13,8 @@
       <p><strong>Joined:</strong> {{ request.user.date_joined|date:"d M Y" }}</p>
     </div>
   </section>
-  
+  <a href="{% url 'order_history' %}" class="btn">View Order History</a>
+
   <hr>
 
   <section class="section center-align">

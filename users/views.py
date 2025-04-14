@@ -1,9 +1,19 @@
+from django.contrib.auth import login, logout, update_session_auth_hash
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import UserChangeForm
-from django.contrib.auth import login, logout, update_session_auth_hash
+from django.views.decorators.csrf import csrf_exempt
+from django.http import HttpResponse, JsonResponse
+from django.contrib.auth.models import User
+from django.conf import settings
+
+import stripe
+import json
+
+import stripe.error
 
 from .models import ShippingAddress
+from orders.models import Order
 from .forms import Register, AddAddressForm, ChangePassword
 
 
@@ -22,6 +32,59 @@ def register_user(request):
 @login_required
 def account_view(request):
     return render(request, 'users/account.html')
+
+@csrf_exempt
+def stripe_webhook(request):
+    print("🚀 Stripe webhook received")
+    payload = request.body
+    sig_header = request.META.get('HTTP_STRIPE_SIGNATURE')
+    endpoint_secret = settings.STRIPE_WEBHOOK_SECRET
+
+    try: 
+        event = stripe.Webhook.construct_event(payload, sig_header, endpoint_secret)
+    except (ValueError, stripe.error.SignatureVerificationError):
+        return HttpResponse(status=400)
+
+    if event['type'] == 'checkout.session.completed':
+        session = event['data']['object']
+        print("🎯 Event type:", event['type'])
+
+        payment_intent_id = session.get('payment_intent')
+        if payment_intent_id:
+            payment_intent = stripe.PaymentIntent.retrieve(payment_intent_id)
+            metadata = payment_intent.metadata
+            shipping_info = payment_intent.shipping
+            user_id = metadata.get('user_id')
+
+            print("📦 Shipping info:", shipping_info)
+            print("🧠 Metadata:", metadata)
+
+            if user_id and shipping_info:
+                try:
+                    user = User.objects.get(pk=user_id)
+                    address = ShippingAddress.objects.filter(user=user, postcode=shipping_info['address']['postal_code']).first()
+
+                    print("🔍 Looking for ShippingAddress with postcode:", shipping_info['address']['postal_code'])
+                    print("👤 User:", user)
+                    print("📬 Found address:", address)
+
+                    Order.objects.create(
+                        user=user,
+                        shipping_address=address,
+                        box=None,
+                        stripe_subscription_id=session.get('subscription'),
+                        scheduled_shipping_date=None,
+                        status='processing'
+                    )
+                    print("✅ Order created successfully")
+
+                except User.DoesNotExist:
+                    print(f"❌ User ID {user_id} not found")
+                except Exception as e:
+                    print(f"❌ Error creating order: {e}")
+
+    return JsonResponse({'status': 'success'})
+
 
 
 @login_required

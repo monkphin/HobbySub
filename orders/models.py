@@ -7,9 +7,10 @@ from boxes.models import Box
 
 class StripeSubscriptionMeta(models.Model):
     """
-
+    Stores Stripe subscription details tied to a user.
     """
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='subscriptions')
+    stripe_subscription_id = models.CharField(max_length=100, blank=True, null=True)
     stripe_price_id = models.CharField(max_length=100)
     shipping_address = models.ForeignKey(ShippingAddress, on_delete=models.SET_NULL, null=True)
     is_gift = models.BooleanField(default=False)
@@ -17,7 +18,9 @@ class StripeSubscriptionMeta(models.Model):
     cancelled_at = models.DateTimeField(null=True, blank=True)
 
     def __str__(self):
-        return f"{self.user.username} - {self.stripe_subscription_id}"
+        return f"{self.user.username} - {self.stripe_subscription_id or 'No Sub ID'}"
+
+
 
 
 class Order(models.Model):
@@ -33,7 +36,7 @@ class Order(models.Model):
     box = models.ForeignKey(Box, on_delete=models.SET_NULL, null=True)
     stripe_subscription_id = models.CharField(max_length=100, blank=True, null=True)
     order_date = models.DateField(auto_now_add=True)
-    scheduled_shipping_date = models.DateField()
+    scheduled_shipping_date = models.DateField(null=True, blank=True)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
 
     def __str__(self):

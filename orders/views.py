@@ -4,6 +4,7 @@ from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 
 from .forms import PreCheckoutForm
+from .models import Order
 
 
 stripe.api_key = settings.STRIPE_SECRET_KEY
@@ -80,3 +81,8 @@ def handle_checkout(request, price_id):
         form = PreCheckoutForm()
 
     return render(request, 'orders/pre_checkout.html', {'form': form})
+
+@login_required
+def order_history(request):
+    orders = Order.objects.filter(user=request.user).order_by('-order_date')
+    return render(request, 'orders/order_history.html', {'orders': orders})

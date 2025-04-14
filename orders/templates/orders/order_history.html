@@ -1,0 +1,23 @@
+<!-- templates/orders/order_history.html -->
+{% extends "base.html" %}
+{% block title %}Order History{% endblock %}
+
+{% block content %}
+<section class="section">
+  <h3>Your Orders</h3>
+  {% if orders %}
+    <ul class="collection">
+      {% for order in orders %}
+        <li class="collection-item">
+          <strong>Order ID:</strong> {{ order.id }}<br>
+          <strong>Status:</strong> {{ order.status|title }}<br>
+          <strong>Date:</strong> {{ order.order_date }}<br>
+          <strong>Shipping To:</strong> {{ order.shipping_address }}<br>
+        </li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <p>You haven’t placed any orders yet.</p>
+  {% endif %}
+</section>
+{% endblock %}
