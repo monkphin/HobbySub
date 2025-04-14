@@ -13,8 +13,6 @@ urlpatterns = [
         path('address/add/', views.add_address, name='add_address'),
         path('address/<int:address_id>/edit/', views.edit_address, name='edit_address'),
         path('address/delete/<int:address_id>/', views.delete_address, name='delete_address'),
-        path('password/', auth_views.PasswordChangeView.as_view(
-                                                                template_name='users/change_password.html',
-                                                                success_url='/accounts/account/'
-                                                                ), name='change_password'),
+        path('change_password/', views.change_password, name='change_password'),
+
 ]

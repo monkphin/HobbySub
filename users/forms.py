@@ -31,6 +31,10 @@ class ChangePassword(forms.Form):
         if pw1 and pw2 and pw1 != pw2:
             self.add_error('password2', "Passwords do not match.")
         return cleaned_data
+    
+    def save(self, user):
+        user.set_password(self.cleaned_data["password1"])
+        user.save()
 
 class AddAddressForm(forms.ModelForm):
     class Meta:

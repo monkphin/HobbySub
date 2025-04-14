@@ -1,10 +1,10 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import UserChangeForm
-from django.contrib.auth import login, logout
+from django.contrib.auth import login, logout, update_session_auth_hash
 
 from .models import ShippingAddress
-from .forms import Register, AddAddressForm
+from .forms import Register, AddAddressForm, ChangePassword
 
 
 def register_user(request):
@@ -35,6 +35,20 @@ def edit_account(request):
         form = UserChangeForm(instance=request.user)
     
     return render(request, 'users/edit_account.html', {'form':form})
+
+
+@login_required
+def change_password(request):
+    if request.method == 'POST':
+        form = ChangePassword(request.POST)
+        if form.is_valid():
+            form.save(request.user)
+            update_session_auth_hash(request, request.user)
+            return redirect('account')
+    else:
+        form = ChangePassword()
+
+    return render(request, 'users/change_password.html', {'form': form})
 
 
 @login_required
