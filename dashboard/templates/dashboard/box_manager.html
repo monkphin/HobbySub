@@ -1,0 +1,29 @@
+{% extends 'base.html' %}
+{% block title %}Box Manager{% endblock %}
+
+{% block content %}
+<div class="container">
+  <h2 class="center-align">📦 Box Manager</h2>
+
+  <div class="section">
+    <a href="{% url 'add_box' %}" class="btn green">Add New Box</a>
+  </div>
+
+  <div class="section">
+    <h5>Existing Boxes</h5>
+    <ul class="collection">
+      {% for box in boxes %}
+        <li class="collection-item">
+          <strong>{{ box.name }}</strong> — {{ box.shipping_date }}
+          <div class="secondary-content">
+            <a href="{% url 'edit_box' box.id %}" class="btn-small">Edit</a>
+            <a href="{% url 'delete_box' box.id %}" class="btn-small red">Delete</a>
+          </div>
+        </li>
+      {% empty %}
+        <li class="collection-item">No boxes available yet.</li>
+      {% endfor %}
+    </ul>
+  </div>
+</div>
+{% endblock %}

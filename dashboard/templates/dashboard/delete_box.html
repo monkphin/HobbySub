@@ -1,0 +1,11 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="container">
+  <h4>Are you sure you want to delete <strong>{{ box.name }}</strong>?</h4>
+  <form method="post">
+    {% csrf_token %}
+    <button class="btn red" type="submit">Yes, Delete</button>
+    <a href="{% url 'box_admin' %}" class="btn grey">Cancel</a>
+  </form>
+</div>
+{% endblock %}
