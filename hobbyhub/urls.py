@@ -22,5 +22,6 @@ urlpatterns = [
     path('past_boxes/', include('boxes.urls')),  # Routes root URL to the boxes app
     path('accounts/', include('users.urls')), # Routes to user based URLs in the users app
     path('orders/', include('orders.urls')), # Routes to order based URLs in the orders app
+    path('dashboard/', include('dashboard.urls')), # Routes to custom admin UI
 
     ]
