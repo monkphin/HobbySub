@@ -28,3 +28,6 @@ def home(request):
         'box_contents': box_contents,
         'next_box': next_box
     })
+
+def subscribe_options(request):
+    return render(request, 'orders/subscribe.html')

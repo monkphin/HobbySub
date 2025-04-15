@@ -42,6 +42,21 @@ def create_monthly_subscription(request):
     return create_subscription_checkout(request, STRIPE_MONTHLY_PRICE_ID)
 
 
+@login_required
+def create_3mo_subscription(request): 
+    return create_subscription_checkout(request, STRIPE_3MO_PRICE_ID)
+
+
+@login_required
+def create_6mo_subscription(request): 
+    return create_subscription_checkout(request, STRIPE_6MO_PRICE_ID)
+
+
+@login_required
+def create_12mo_subscription(request): 
+    return create_subscription_checkout(request, STRIPE_12MO_PRICE_ID)
+
+
 def handle_checkout(request, price_id):
     if request.method == 'POST':
         form = PreCheckoutForm(request.POST)
