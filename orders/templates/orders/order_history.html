@@ -1,4 +1,4 @@
-<!-- templates/orders/order_history.html -->
+
 {% extends "base.html" %}
 {% block title %}Order History{% endblock %}
 
@@ -13,26 +13,26 @@
           <strong>Status:</strong> {{ order.status|title }}<br>
           <strong>Date:</strong> {{ order.order_date }}<br>
           <strong>Shipping To:</strong> {{ order.shipping_address }}<br>
+          <a class="btn-small modal-trigger" href="#order-modal-{{ order.id }}">View Details</a>
         </li>
-        <a class="btn-small modal-trigger" href="#order-modal-{{ order.id }}">View Details</a>
+
+        <!-- MODAL: now inside the loop -->
+        <div id="order-modal-{{ order.id }}" class="modal">
+          <div class="modal-content">
+            <h4>Order #{{ order.id }}</h4>
+            <p><strong>Status:</strong> {{ order.status }}</p>
+            <p><strong>Shipping Address:</strong> {{ order.shipping_address }}</p>
+            <p><strong>Stripe ID:</strong> {{ order.stripe_subscription_id }}</p>
+            <p><strong>Scheduled Shipping:</strong> {{ order.scheduled_shipping_date }}</p>
+          </div>
+          <div class="modal-footer">
+            <a href="#!" class="modal-close btn-flat">Close</a>
+          </div>
+        </div>
       {% endfor %}
     </ul>
   {% else %}
     <p>You haven’t placed any orders yet.</p>
   {% endif %}
 </section>
-
-<div id="order-modal-{{ order.id }}" class="modal">
-  <div class="modal-content">
-    <h4>Order #{{ order.id }}</h4>
-    <p><strong>Status:</strong> {{ order.status }}</p>
-    <p><strong>Shipping Address:</strong> {{ order.shipping_address }}</p>
-    <p><strong>Stripe ID:</strong> {{ order.stripe_subscription_id }}</p>
-    <p><strong>Scheduled Shipping:</strong> {{ order.scheduled_shipping_date }}</p>
-    <!-- Add more detail fields here -->
-  </div>
-  <div class="modal-footer">
-    <a href="#!" class="modal-close btn-flat">Close</a>
-  </div>
-</div>
 {% endblock %}

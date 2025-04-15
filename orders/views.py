@@ -8,8 +8,14 @@ from .models import Order
 
 
 stripe.api_key = settings.STRIPE_SECRET_KEY
+
 GIFT_PRICE_ID = settings.STRIPE_GIFT_PRICE_ID
 ONEOFF_PRICE_ID = settings.STRIPE_ONEOFF_PRICE_ID
+STRIPE_MONTHLY_PRICE_ID = settings.STRIPE_MONTHLY_PRICE_ID
+STRIPE_3MO_PRICE_ID = settings.STRIPE_3MO_PRICE_ID
+STRIPE_6MO_PRICE_ID = settings.STRIPE_6MO_PRICE_ID
+STRIPE_12MO_PRICE_ID = settings.STRIPE_12MO_PRICE_ID
+
 
 @login_required
 def order_success(request):
@@ -29,6 +35,11 @@ def order_gift(request):
 @login_required
 def order_oneoff(request):
     return handle_checkout(request, price_id=ONEOFF_PRICE_ID)
+
+
+@login_required
+def create_monthly_subscription(request):
+    return create_subscription_checkout(request, STRIPE_MONTHLY_PRICE_ID)
 
 
 def handle_checkout(request, price_id):
@@ -81,6 +92,25 @@ def handle_checkout(request, price_id):
         form = PreCheckoutForm()
 
     return render(request, 'orders/pre_checkout.html', {'form': form})
+
+@login_required
+def create_subscription_checkout(request, price_id):
+    checkout_session = stripe.checkout.Session.create(
+        customer_email=request.user.email,
+        payment_method_types=['card'],
+        mode='subscription',
+        line_items=[{
+            'price': price_id,
+            'quantity': 1,
+        }],
+        metadata={
+            'user_id': request.user.id,
+        },
+        success_url=request.build_absolute_uri('/orders/success/'),
+        cancel_url=request.build_absolute_uri('/orders/cancel/'),
+    )
+    return redirect(checkout_session.url, code=303)
+
 
 @login_required
 def order_history(request):

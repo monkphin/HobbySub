@@ -50,6 +50,9 @@ def stripe_webhook(request):
         print("🎯 Event type:", event['type'])
 
         payment_intent_id = session.get('payment_intent')
+        user_id = session.get('metadata', {}).get('user_id')
+
+        from orders.models import StripeSubscriptionMeta
         if payment_intent_id:
             payment_intent = stripe.PaymentIntent.retrieve(payment_intent_id)
             metadata = payment_intent.metadata
@@ -82,6 +85,24 @@ def stripe_webhook(request):
                     print(f"❌ User ID {user_id} not found")
                 except Exception as e:
                     print(f"❌ Error creating order: {e}")
+        elif session.get('mode') == 'subscription' and user_id: 
+            try:
+                user = User.objects.get(pk=user_id)
+                shipping = user.addresses.filter(is_default=True).first()
+                sub_id = session.get('subscription')
+                subscription = stripe.Subscription.retrieve(sub_id)
+                price_id = subscription['items']['data'][0]['price']['id']
+
+                StripeSubscriptionMeta.objects.create(
+                    user=user, 
+                    stripe_subscription_id=sub_id,
+                    stripe_price_id=price_id,
+                    shipping_address=shipping,
+                    is_gift=False,
+                )
+                print("✅ Subscription saved for:", user.username)
+            except Exception as e:
+                print(f"❌ Subscription handling error: {e}")
 
     return JsonResponse({'status': 'success'})
 
