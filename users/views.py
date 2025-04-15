@@ -5,6 +5,7 @@ from django.contrib.auth.forms import UserChangeForm
 from django.views.decorators.csrf import csrf_exempt
 from django.http import HttpResponse, JsonResponse
 from django.contrib.auth.models import User
+from django.utils import timezone
 from django.conf import settings
 
 import stripe
@@ -13,7 +14,7 @@ import json
 import stripe.error
 
 from .models import ShippingAddress
-from orders.models import Order
+from orders.models import Order, Payment, Box, StripeSubscriptionMeta
 from .forms import Register, AddAddressForm, ChangePassword
 
 
@@ -52,7 +53,6 @@ def stripe_webhook(request):
         payment_intent_id = session.get('payment_intent')
         user_id = session.get('metadata', {}).get('user_id')
 
-        from orders.models import StripeSubscriptionMeta
         if payment_intent_id:
             payment_intent = stripe.PaymentIntent.retrieve(payment_intent_id)
             metadata = payment_intent.metadata
@@ -103,6 +103,62 @@ def stripe_webhook(request):
                 print("✅ Subscription saved for:", user.username)
             except Exception as e:
                 print(f"❌ Subscription handling error: {e}")
+
+    elif event['type'] == 'invoice.payment_succeeded':
+        print("📩 Received invoice.payment_succeeded")
+        invoice = event['data']['object']
+        print("💸 Payment succeeded for subscription")
+
+        subscription_id = invoice.get('subscription')
+        customer_id = invoice.get('customer') 
+        customer = stripe.Customer.retrieve(customer_id)
+        customer_email = customer.get('email')
+        amount_paid = invoice['amount_paid'] / 100  # convert from cents
+        payment_date = timezone.now()
+
+        try:
+            print("🔍 Looking for user and sub")
+            user = User.objects.get(email=customer_email)
+            sub_meta = StripeSubscriptionMeta.objects.filter(
+                user=user, stripe_subscription_id=subscription_id
+            ).first()
+
+            # Fallback shipping logic
+            shipping = None
+            if sub_meta and sub_meta.shipping_address:
+                shipping = sub_meta.shipping_address
+            else:
+                shipping = user.addresses.filter(is_default=True).first() or user.addresses.first()
+
+            if not shipping:
+                print(f"❌ No valid shipping address found for user {user.username}")
+                return JsonResponse({'status': 'no shipping address'}, status=200)
+
+            box = Box.objects.filter(is_archived=False).order_by('-shipping_date').first()
+
+            order = Order.objects.create(
+                user=user,
+                stripe_subscription_id=subscription_id,
+                shipping_address=shipping,
+                box=box,
+                order_date=payment_date.date(),
+                scheduled_shipping_date=box.shipping_date if box else None,
+                status='processing',
+            )
+
+            Payment.objects.create(
+                user=user,
+                order_id=order.id,
+                payment_date=payment_date,
+                amount=amount_paid,
+                status='succeeded',
+                payment_method='card',
+            )
+
+            print(f"✅ Created order + payment for {user.username}")
+
+        except Exception as e:
+            print(f"❌ Failed to create recurring order/payment: {e}")
 
     return JsonResponse({'status': 'success'})
 

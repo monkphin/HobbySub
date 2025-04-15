@@ -106,7 +106,7 @@ def create_subscription_checkout(request, price_id):
         metadata={
             'user_id': request.user.id,
         },
-        success_url=request.build_absolute_uri('/orders/success/'),
+        success_url=request.build_absolute_uri('/orders/success/?sub=monthly'),
         cancel_url=request.build_absolute_uri('/orders/cancel/'),
     )
     return redirect(checkout_session.url, code=303)
