@@ -1,6 +1,9 @@
 from django import forms 
+from django.contrib.auth import get_user_model
 
 from boxes.models import Box, BoxProduct
+
+User = get_user_model()
 
 class BoxForm(forms.ModelForm):
     class Meta:
@@ -24,4 +27,17 @@ class ProductForm(forms.ModelForm):
             'image_url': forms.URLInput(attrs={'class': 'validate'}),
             'description': forms.Textarea(attrs={'class': 'materialize-textarea'}),
             'quantity': forms.NumberInput(attrs={'min': 1}),
+        }
+
+class UserEditForm(forms.ModelForm):
+    class Meta:
+        model = User
+        fields = ['username', 'email', 'is_staff']
+        widgets = {
+            'username': forms.TextInput(attrs={'class': 'validate'}),
+            'email': forms.EmailInput(attrs={'class': 'validate'}),
+            'is_staff': forms.CheckboxInput(attrs={'class': 'filled-in'}),
+        }
+        labels = {
+            'is_staff': 'Admin user?',
         }

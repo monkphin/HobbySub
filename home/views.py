@@ -7,7 +7,7 @@ def home(request):
 
     # Current box if shipped
     box = Box.objects.filter(is_archived=False, shipping_date__lte=today).order_by('-shipping_date').first()
-    box_contents = box.contents.all() if box else []
+    box_contents = box.products.all() if box else []
 
     # Next month’s box
     if today.month == 12:

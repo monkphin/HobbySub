@@ -10,7 +10,8 @@
       <tr>
         <th>Username</th>
         <th>Email</th>
-        <th>Admin?</th>
+        <th>Admin</th>
+        <th>Active</th>
         <th>Actions</th>
       </tr>
     </thead>
@@ -20,6 +21,13 @@
           <td>{{ user.username }}</td>
           <td>{{ user.email }}</td>
           <td>{{ user.is_staff|yesno:"Yes,No" }}</td>
+          <td>
+            {% if user.is_active %}
+              Active
+            {% else %}
+              <span class="red-text">Inactive</span>
+            {% endif %}
+          </td>
           <td>
             <a href="{% url 'edit_user' user.id %}" class="btn-small blue">Edit</a>
             <a href="{% url 'user_orders' user.id %}" class="btn-small green">Orders</a>

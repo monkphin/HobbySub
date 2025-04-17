@@ -4,8 +4,8 @@ from django.contrib.auth import get_user_model
 
 
 from boxes.models import Box, BoxProduct
-from .forms import BoxForm, ProductForm
-
+from .forms import BoxForm, ProductForm, UserEditForm
+from orders.models import Order, StripeSubscriptionMeta
 
 User = get_user_model()
 
@@ -124,21 +124,49 @@ def remove_product_from_box(request, product_id):
 
 @staff_member_required
 def user_admin(request):
-        users = User.objects.all().order_by('username')
-        return render(request, 'dashboard/user_admin.html', {'users':users})
+    users = User.objects.all().order_by('username')
+    return render(request, 'dashboard/user_admin.html', {'users':users})
 
 
 @staff_member_required
 def edit_user(request, user_id):
-        user = get_object_or_404(User, pk=user_id)
-        return render(request, 'dashboard/edit_user.html', {'user':user})
+    user = get_object_or_404(User, pk=user_id)
+
+    if request.method == 'POST':
+        form = UserEditForm(request.POST, instance=user)
+        if form.is_valid():
+            form.save()
+            return redirect('user_admin')
+    else:
+        form = UserEditForm(instance=user)
+
+    return render(request, 'dashboard/edit_user.html', {'form': form, 'user': user})
 
 
 @staff_member_required
-def delete_user(request):
-        return render(request, 'dashboard/delete_user.html')
+def delete_user(request, user_id):
+    user = get_object_or_404(User, pk=user_id)
+
+    if request.method == 'POST':
+        user.is_active = False
+        user.save()
+        messages.success(request, f"{user.username}'s account has been deactivated.")
+        return redirect('user_admin')
+
+    return render(request, 'dashboard/delete_user.html', {'user': user})
 
 
 @staff_member_required
-def user_orders(request):
-        return render(request, 'dashboard/user_orders.html')
+def user_orders(request, user_id):
+    user = get_object_or_404(User, pk=user_id)
+    orders = Order.objects.filter(user=user).order_by('-order_date')
+    subs = StripeSubscriptionMeta.objects.filter(user=user).order_by('-created_at')
+    active_sub = subs.filter(cancelled_at__isnull=True).first()
+    cancelled_subs = subs.filter(cancelled_at__isnull=False)
+
+    return render(request, 'dashboard/user_orders.html', {
+        'user': user,
+        'orders': orders,
+        'active_sub': active_sub,
+        'cancelled_subs': cancelled_subs,
+    })

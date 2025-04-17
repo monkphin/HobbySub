@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+{% block title %}Edit {{ user.username }}{% endblock %}
+
+{% block content %}
+<div class="container">
+  <h4>Edit {{ user.username }}</h4>
+  <form method="POST">
+    {% csrf_token %}
+
+    <div class="input-field">
+      <input id="username" name="username" type="text" value="{{ form.username.value }}" class="validate">
+      <label for="username" class="{% if form.username.value %}active{% endif %}">Username</label>
+      {% if form.username.errors %}
+        <span class="helper-text red-text">{{ form.username.errors.0 }}</span>
+      {% endif %}
+    </div>
+
+    <div class="input-field">
+      <input id="email" name="email" type="email" value="{{ form.email.value }}" class="validate">
+      <label for="email" class="{% if form.email.value %}active{% endif %}">Email</label>
+      {% if form.email.errors %}
+        <span class="helper-text red-text">{{ form.email.errors.0 }}</span>
+      {% endif %}
+    </div>
+
+    <p>
+      <label>
+        <input type="checkbox" name="is_staff" {% if form.is_staff.value %}checked{% endif %} />
+        <span>Admin user?</span>
+      </label>
+      {% if form.is_staff.errors %}
+        <span class="helper-text red-text">{{ form.is_staff.errors.0 }}</span>
+      {% endif %}
+    </p>
+
+    <button type="submit" class="btn green">Save</button>
+    <a href="{% url 'user_admin' %}" class="btn grey">Cancel</a>
+  </form>
+</div>
+{% endblock %}

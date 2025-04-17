@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+{% block title %}{{ user.username }}'s Orders{% endblock %}
+
+{% block content %}
+<div class="container">
+  <h3>{{ user.username }}’s Orders</h3>
+
+  {% if orders %}
+    <table class="highlight">
+      <thead>
+        <tr>
+          <th>Order ID</th>
+          <th>Order Date</th>
+          <th>Status</th>
+          <th>Box</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for order in orders %}
+        <tr>
+          <td>#{{ order.id }}</td>
+          <td>{{ order.order_date }}</td>
+          <td>{{ order.status|title }}</td>
+          <td>{{ order.box }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  {% else %}
+    <p>No orders found for this user.</p>
+  {% endif %}
+</div>
+{% endblock %}

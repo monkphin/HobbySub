@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+{% block title %}Deactivate User{% endblock %}
+
+{% block content %}
+<div class="container">
+  <h4 class="center-align red-text">Deactivate User Account</h4>
+
+  <p class="center-align">
+    Are you sure you want to deactivate <strong>{{ user.username }}</strong>'s account?
+    <br>
+    This user will no longer be able to log in, but their data (orders, subscriptions, etc.) will be preserved.
+  </p>
+
+  <form method="post" class="center-align">
+    {% csrf_token %}
+    <a href="{% url 'user_admin' %}" class="btn grey">Cancel</a>
+    <button type="submit" class="btn red">Deactivate</button>
+  </form>
+</div>
+{% endblock %}
