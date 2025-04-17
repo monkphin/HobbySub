@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+{% block title %}{% if editing %}Edit Product{% else %}Add Product{% endif %}{% endblock %}
+
+{% block content %}
+<div class="container">
+  <h4>{% if editing %}Edit Product{% else %}Add Product{% endif %}</h4>
+
+  <form method="post">
+    {% csrf_token %}
+    <div class="input-field">{{ form.name.label_tag }}{{ form.name }}</div>
+    <div class="input-field">{{ form.description.label_tag }}{{ form.description }}</div>
+    <div class="input-field">{{ form.image_url.label_tag }}{{ form.image_url }}</div>
+    <div class="input-field">{{ form.quantity.label_tag }}{{ form.quantity }}</div>
+    {% if form.box %}
+      <div class="input-field">{{ form.box.label_tag }}{{ form.box }}</div>
+    {% endif %}
+
+    <button type="submit" class="btn green">{% if editing %}Update{% else %}Save{% endif %}</button>
+    <a href="{% url 'box_admin' %}" class="btn grey">Cancel</a>
+  </form>
+</div>
+{% endblock %}

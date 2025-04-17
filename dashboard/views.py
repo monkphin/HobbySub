@@ -2,8 +2,8 @@ from django.contrib.admin.views.decorators import staff_member_required
 from django.shortcuts import render, redirect, get_object_or_404
 
 
-from boxes.models import Box
-from .forms import BoxForm
+from boxes.models import Box, BoxProduct
+from .forms import BoxForm, ProductForm
 
 
 @staff_member_required
@@ -44,3 +44,75 @@ def delete_box(request, box_id):
         box.delete()
         return redirect('box_admin')
     return render(request, 'dashboard/delete_box.html', {'box_id': box_id})
+
+
+@staff_member_required
+def add_products(request):
+    if request.method == 'POST':
+        form = ProductForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('box_admin')
+    else:
+        form = ProductForm()
+    return render(request, 'dashboard/box.html', {'form':form})
+
+from boxes.models import BoxProduct  # you need this import
+
+
+@staff_member_required
+def edit_product(request, product_id):
+    product = get_object_or_404(BoxProduct, pk=product_id)
+    if request.method == 'POST':
+        form = ProductForm(request.POST, instance=product)
+        if form.is_valid():
+            form.save()
+            return redirect('edit_box_products', box_id=product.box.id)
+    else:
+        form = ProductForm(instance=product)
+
+    return render(request, 'dashboard/product_form.html', {'form': form, 'product': product, 'editing':True})
+
+
+@staff_member_required
+def delete_product(request, product_id):
+    product = get_object_or_404(BoxProduct, pk=product_id)
+    box_id = product.box_id
+    if request.method == 'POST':
+        product.delete()
+        return redirect('edit_box_products', box_id=box_id)
+    return render(request, 'dashboard/delete_product.html', {'product': product})
+
+
+@staff_member_required
+def add_product_to_box(request, box_id):
+    box = get_object_or_404(Box, pk=box_id)
+    if request.method == 'POST':
+        form = ProductForm(request.POST)
+        if form.is_valid():
+            product = form.save(commit=False)
+            product.box = box
+            product.save()
+            return redirect('edit_box_products', box_id=box.id)
+    else:
+        form = ProductForm()
+
+    return render(request, 'dashboard/product_form.html', {'form': form, 'box': box})
+
+
+@staff_member_required
+def edit_box_products(request, box_id):
+    box = get_object_or_404(Box, pk=box_id)
+    products = box.products.all()
+    return render(request, 'dashboard/box_products.html', {'box': box, 'products': products})
+
+
+@staff_member_required
+def remove_product_from_box(request, product_id):
+    product = get_object_or_404(BoxProduct, pk=product_id)
+    box_id = request.GET.get('box_id') or product.box_id
+    if request.method == 'POST':
+        product.box = None
+        product.save()
+        return redirect('edit_box_products', box_id=box_id)
+    return render(request, 'dashboard/remove_product.html', {'product': product})

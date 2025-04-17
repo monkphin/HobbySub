@@ -17,6 +17,7 @@
           <strong>{{ box.name }}</strong> — {{ box.shipping_date }}
           <div class="secondary-content">
             <a href="{% url 'edit_box' box.id %}" class="btn-small">Edit</a>
+            <a href="{% url 'edit_box_products' box.id %}" class="btn-small blue">Products</a>
             <a href="{% url 'delete_box' box.id %}" class="btn-small red">Delete</a>
           </div>
         </li>
@@ -24,6 +25,27 @@
         <li class="collection-item">No boxes available yet.</li>
       {% endfor %}
     </ul>
+    <div class="section">
+      <h5>Orphaned Products (Unassigned)</h5>
+      {% if orphaned_products %}
+        <ul class="collection">
+          {% for product in orphaned_products %}
+            <li class="collection-item">
+              <strong>{{ product.name }}</strong> (x{{ product.quantity }})
+              <div class="secondary-content">
+                <a href="{% url 'edit_product' product.id %}" class="btn-small">Edit</a>
+                <a href="{% url 'delete_product' product.id %}" class="btn-small red">Delete</a>
+              </div>
+            </li>
+          {% endfor %}
+        </ul>
+      {% else %}
+        <p class="grey-text">No orphaned products found.</p>
+      {% endif %}
+    </div>
+    <div class="section">
+      <a href="{% url 'add_products' %}" class="btn blue">➕ Add Product</a>
+    </div>
   </div>
 </div>
 {% endblock %}

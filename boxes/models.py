@@ -31,8 +31,10 @@ class BoxProduct(models.Model):
     Used to populate box displays for current or historic boxes
     """
     box = models.ForeignKey(Box,
-                            on_delete=models.CASCADE,
-                            related_name='contents',
+                            on_delete=models.SET_NULL,
+                            null=True,
+                            blank=True,
+                            related_name='products',
                             help_text="The box this product is part of."
                             )
     name = models.CharField(max_length=100,

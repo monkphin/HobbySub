@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+{% block title %}Box Contents{% endblock %}
+
+{% block content %}
+<div class="container">
+  <h4>Contents of "{{ box.name }}"</h4>
+
+  <div class="right-align">
+    <a href="{% url 'add_product_to_box' box.id %}" class="btn green">➕ Add Product</a>
+    <a href="{% url 'box_admin' %}" class="btn grey">Back to Boxes</a>
+  </div>
+
+  {% if products %}
+    <ul class="collection">
+      {% for product in products %}
+        <li class="collection-item">
+          <strong>{{ product.name }}</strong> — {{ product.description }} (x{{ product.quantity }})
+          <div class="secondary-content">
+            <a href="{% url 'edit_product' product.id %}" class="btn-small">Edit</a>
+            <a href="{% url 'remove_product_from_box' product.id %}?box_id={{ box.id }}" class="btn-small orange">Remove</a>
+            <a href="{% url 'delete_product' product.id %}" class="btn-small red">Delete</a>
+          </div>
+        </li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <p>No products in this box yet.</p>
+  {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,15 @@
+{% extends 'base.html' %}
+{% block title %}Remove Product{% endblock %}
+
+{% block content %}
+<div class="container">
+  <h5>Remove <strong>{{ product.name }}</strong> from the box?</h5>
+  <p>This will keep the product in the system, but unlink it from the current box.</p>
+
+  <form method="post">
+    {% csrf_token %}
+    <button type="submit" class="btn orange">Remove</button>
+    <a href="{% url 'edit_box_products' product.box.id %}" class="btn grey">Cancel</a>
+  </form>
+</div>
+{% endblock %}
