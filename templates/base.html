@@ -16,6 +16,10 @@
 </head>
 <body>
     <header>
+        <ul id="dropdown1" class="dropdown-content">
+          <li><a href="{% url 'box_admin' %}">Box Admin</a></li>
+          <li><a href="{% url 'user_admin' %}">User Admin</a></li>
+        </ul>
         <nav>
             <a href="{% url 'home' %}">Home</a>
             <a href="{% url 'past_boxes' %}">Past Boxes</a>
@@ -27,7 +31,7 @@
               <a href="{% url 'login' %}">Login</a>
             {% endif %}
             {% if user.is_staff %}
-              <a href="{% url 'box_admin' %}">Box Admin</a>
+              <a class="dropdown-trigger" href="#!" data-target="dropdown1">Administration<i class="material-icons right">arrow_drop_down</i></a>
             {% endif %}
         </nav>
     </header>

@@ -1,15 +1,19 @@
 from django.contrib.admin.views.decorators import staff_member_required
 from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib.auth import get_user_model
 
 
 from boxes.models import Box, BoxProduct
 from .forms import BoxForm, ProductForm
 
 
+User = get_user_model()
+
 @staff_member_required
 def box_admin(request):
     boxes = Box.objects.all().order_by('-shipping_date')
-    return render(request, 'dashboard/box_manager.html', {'boxes':boxes, 'editing': False})
+    orphaned_products = BoxProduct.objects.filter(box__isnull=True).order_by('name')
+    return render(request, 'dashboard/box_manager.html', {'boxes':boxes, 'orphaned_products':orphaned_products, 'editing': False})
 
 
 @staff_member_required
@@ -116,3 +120,25 @@ def remove_product_from_box(request, product_id):
         product.save()
         return redirect('edit_box_products', box_id=box_id)
     return render(request, 'dashboard/remove_product.html', {'product': product})
+
+
+@staff_member_required
+def user_admin(request):
+        users = User.objects.all().order_by('username')
+        return render(request, 'dashboard/user_admin.html', {'users':users})
+
+
+@staff_member_required
+def edit_user(request, user_id):
+        user = get_object_or_404(User, pk=user_id)
+        return render(request, 'dashboard/edit_user.html', {'user':user})
+
+
+@staff_member_required
+def delete_user(request):
+        return render(request, 'dashboard/delete_user.html')
+
+
+@staff_member_required
+def user_orders(request):
+        return render(request, 'dashboard/user_orders.html')
