@@ -24,3 +24,17 @@ body {
     margin-bottom: 1rem;
     justify-content: center;
   }
+
+
+  .card-panel {
+    padding: 1rem;
+    border-radius: 4px;
+    margin-bottom: 1rem;
+    font-weight: 500;
+  }
+  
+  .green-text { color: #2e7d32; background-color: #c8e6c9; }
+  .red-text   { color: #c62828; background-color: #ffcdd2; }
+  .orange-text { color: #ef6c00; background-color: #ffe0b2; }
+  .blue-text  { color: #1565c0; background-color: #bbdefb; }
+  

@@ -39,7 +39,9 @@
       {% if editing %}Update{% else %}Save{% endif %}
     </button>
     <a href="{% url 'box_admin' %}" class="btn grey">Cancel</a>
-    <a href="{% url 'edit_box_products' box_id %}" class="btn blue">Manage Products</a>
+    {% if box %}
+    <a href="{% url 'edit_box_products' box.id %}">Manage Products</a>
+    {% endif %}
   </form>
 </div>
 {% endblock %}

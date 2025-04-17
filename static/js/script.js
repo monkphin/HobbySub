@@ -24,3 +24,10 @@ document.addEventListener('DOMContentLoaded', function() {
     const elems = document.querySelectorAll('.dropdown-trigger');
     M.Dropdown.init(elems);
   });
+
+  document.addEventListener('DOMContentLoaded', function() {
+    setTimeout(() => {
+      const alerts = document.querySelectorAll('.card-panel');
+      alerts.forEach(alert => alert.remove());
+    }, 2000);
+  });

@@ -1,11 +1,13 @@
 from django.contrib.admin.views.decorators import staff_member_required
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import get_user_model
+from django.contrib import messages
 
 
 from boxes.models import Box, BoxProduct
 from .forms import BoxForm, ProductForm, UserEditForm
 from orders.models import Order, StripeSubscriptionMeta
+from hobbyhub.utils import alert
 
 User = get_user_model()
 
@@ -21,8 +23,12 @@ def add_box(request):
     if request.method == 'POST':
         form = BoxForm(request.POST)
         if form.is_valid():
+            new_box = form.save()
             form.save()
-            return redirect('box_admin')
+            alert(request, "success", "Box successfully created.")
+            return redirect('edit_box_products', box_id=new_box.id)
+        else:
+            alert(request, "error", "There was a problem creating the box.")
     else:
         form = BoxForm()
     return render(request, 'dashboard/box.html', {'form':form})
@@ -35,7 +41,10 @@ def edit_box(request, box_id):
         form = BoxForm(request.POST, instance=box)
         if form.is_valid():
             form.save()
+            alert(request, "success", "Box successfully edited.")
             return redirect('box_admin')
+        else:
+            alert(request, "error", "There was a problem editing the box.")
     else:
         form = BoxForm(instance=box)
     return render(request, 'dashboard/box.html', {'form': form, 'box_id': box_id, 'editing': True})
@@ -46,7 +55,9 @@ def delete_box(request, box_id):
     box = get_object_or_404(Box, pk=box_id)
     if request.method == 'POST':
         box.delete()
+        alert(request, "success", "Box successfully deleted.")
         return redirect('box_admin')
+
     return render(request, 'dashboard/delete_box.html', {'box_id': box_id})
 
 
@@ -56,7 +67,10 @@ def add_products(request):
         form = ProductForm(request.POST)
         if form.is_valid():
             form.save()
+            alert(request, "success", "Product successfully added.")
             return redirect('box_admin')
+        else:
+            alert(request, "error", "There was a problem adding the products.")
     else:
         form = ProductForm()
     return render(request, 'dashboard/box.html', {'form':form})
@@ -71,7 +85,10 @@ def edit_product(request, product_id):
         form = ProductForm(request.POST, instance=product)
         if form.is_valid():
             form.save()
+            alert(request, "success", "Products successfully edited.")
             return redirect('edit_box_products', box_id=product.box.id)
+        else:
+            alert(request, "error", "There was a problem editing the products.")
     else:
         form = ProductForm(instance=product)
 
@@ -84,7 +101,10 @@ def delete_product(request, product_id):
     box_id = product.box_id
     if request.method == 'POST':
         product.delete()
+        alert(request, "success", "Products successfully deleted.")
         return redirect('edit_box_products', box_id=box_id)
+    else:
+        alert(request, "error", "There was a problem editing the products.")
     return render(request, 'dashboard/delete_product.html', {'product': product})
 
 
@@ -97,7 +117,10 @@ def add_product_to_box(request, box_id):
             product = form.save(commit=False)
             product.box = box
             product.save()
+            alert(request, "success", f"Products were successfully added to the box: {box.box_name}.")
             return redirect('edit_box_products', box_id=box.id)
+        else:
+            alert(request, "error", "There was a problem adding the products to the box.")
     else:
         form = ProductForm()
 
@@ -115,10 +138,14 @@ def edit_box_products(request, box_id):
 def remove_product_from_box(request, product_id):
     product = get_object_or_404(BoxProduct, pk=product_id)
     box_id = request.GET.get('box_id') or product.box_id
+    box = get_object_or_404(Box, pk=box_id)
     if request.method == 'POST':
         product.box = None
         product.save()
+        alert(request, "success", f"Products were successfully removed from the box: {box.box_name}.")
         return redirect('edit_box_products', box_id=box_id)
+    else:
+        alert(request, "error", "There was a problem adding the products to the box.")
     return render(request, 'dashboard/remove_product.html', {'product': product})
 
 
@@ -136,7 +163,10 @@ def edit_user(request, user_id):
         form = UserEditForm(request.POST, instance=user)
         if form.is_valid():
             form.save()
+            alert(request, "success", f"User '{user.username}' updated successfully.")
             return redirect('user_admin')
+        else:
+            alert(request, "error", f"Unable to update User '{user.username}'.")
     else:
         form = UserEditForm(instance=user)
 
@@ -150,7 +180,10 @@ def delete_user(request, user_id):
     if request.method == 'POST':
         user.is_active = False
         user.save()
+        alert(request, "success", f"User '{user.username}' has been deactivated.")
         return redirect('user_admin')
+    else:
+        alert(request, "error", f"Unable to deactivate User '{user.username}'.")
 
     return render(request, 'dashboard/delete_user.html', {'user': user})
 
