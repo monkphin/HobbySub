@@ -117,7 +117,7 @@ def add_product_to_box(request, box_id):
             product = form.save(commit=False)
             product.box = box
             product.save()
-            alert(request, "success", f"Products were successfully added to the box: {box.box_name}.")
+            alert(request, "success", f"Products were successfully added to the box: {box.name}.")
             return redirect('edit_box_products', box_id=box.id)
         else:
             alert(request, "error", "There was a problem adding the products to the box.")

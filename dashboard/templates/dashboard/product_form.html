@@ -12,7 +12,7 @@
     <div class="input-field">{{ form.image_url.label_tag }}{{ form.image_url }}</div>
     <div class="input-field">{{ form.quantity.label_tag }}{{ form.quantity }}</div>
     {% if form.box %}
-      <div class="input-field">{{ form.box.label_tag }}{{ form.box }}</div>
+      <div class="input-field">{{ form.box.name }}{{ form.box }}</div>
     {% endif %}
 
     <button type="submit" class="btn green">{% if editing %}Update{% else %}Save{% endif %}</button>
