@@ -150,7 +150,6 @@ def delete_user(request, user_id):
     if request.method == 'POST':
         user.is_active = False
         user.save()
-        messages.success(request, f"{user.username}'s account has been deactivated.")
         return redirect('user_admin')
 
     return render(request, 'dashboard/delete_user.html', {'user': user})
