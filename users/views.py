@@ -1,3 +1,11 @@
+"""
+users/views.py
+
+Handles user registration, authentication, account management, 
+shipping address operations, password changes, and Stripe webhooks.
+"""
+
+# Django/Remote imports 
 from django.contrib.auth import login, logout, update_session_auth_hash
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
@@ -7,12 +15,11 @@ from django.http import HttpResponse, JsonResponse
 from django.contrib.auth.models import User
 from django.utils import timezone
 from django.conf import settings
-
+import stripe.error
 import stripe
 import json
 
-import stripe.error
-
+# Local imports
 from .models import ShippingAddress
 from orders.models import Order, Payment, Box, StripeSubscriptionMeta
 from .forms import Register, AddAddressForm, ChangePassword
@@ -20,6 +27,10 @@ from hobbyhub.utils import alert
 
 
 def register_user(request):
+    """
+    Registers a new user and logs them in immediately.
+    Renders the registration form and handles POST submissions.
+    """
     if request.method == 'POST':
         form = Register(request.POST)
         if form.is_valid():
@@ -41,11 +52,17 @@ def register_user(request):
 
 @login_required
 def account_view(request):
+    """
+    Displays the user's account dashboard.
+    """
     return render(request, 'users/account.html')
 
 
 @login_required
 def edit_account(request):
+    """
+    Allows the user to update their account information.
+    """
     if request.method == 'POST':
         form = UserChangeForm(request.POST, instance=request.user)
         if form.is_valid():
@@ -60,6 +77,9 @@ def edit_account(request):
 
 @login_required
 def change_password(request):
+    """
+    Lets the user change their password securely.
+    """
     if request.method == 'POST':
         form = ChangePassword(request.POST)
         if form.is_valid():
@@ -79,6 +99,10 @@ def change_password(request):
 
 @login_required
 def delete_account(request):
+    """
+    Deletes the currently logged-in user’s account.
+    Logs them out before deletion.
+    """
     user = request.user
     alert(
         request,
@@ -92,6 +116,10 @@ def delete_account(request):
 
 @login_required
 def add_address(request):
+    """
+    Allows the user to add a new shipping address.
+    If marked as default, unsets all other default addresses.
+    """
     if request.method == 'POST':
         form = AddAddressForm(request.POST)
         if form.is_valid():
@@ -116,6 +144,10 @@ def add_address(request):
 
 @login_required
 def edit_address(request, address_id):
+    """
+    Edits an existing shipping address for the user.
+    Updates default address status if necessary.
+    """
     address = get_object_or_404(ShippingAddress, id=address_id, user=request.user)
 
     if request.method == 'POST':
@@ -137,6 +169,10 @@ def edit_address(request, address_id):
 
 @login_required
 def set_default_address(request, address_id):
+    """
+    Sets the selected address as the user's default.
+    Unsets any previously marked default address.
+    """
     user = request.user
     address = get_object_or_404(ShippingAddress, id=address_id, user=user)
     # Unset existing default
@@ -150,6 +186,9 @@ def set_default_address(request, address_id):
 
 @login_required
 def delete_address(request, address_id):
+    """
+    Deletes a user's shipping address.
+    """
     address = get_object_or_404(ShippingAddress, id=address_id, user=request.user)
     address.delete()
     alert(request, "info", "Address deleted.")
@@ -158,6 +197,10 @@ def delete_address(request, address_id):
 
 @csrf_exempt
 def stripe_webhook(request):
+    """
+    Handles incoming Stripe webhook events for orders and subscriptions.
+    Supports `checkout.session.completed` and `invoice.payment_succeeded`.
+    """
     print("🚀 Stripe webhook received")
     payload = request.body
     sig_header = request.META.get('HTTP_STRIPE_SIGNATURE')
