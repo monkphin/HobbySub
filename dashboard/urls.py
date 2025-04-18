@@ -1,4 +1,9 @@
-# dashboard/urls.py
+"""
+dashboard/urls.py
+
+Defines URL patterns for custom admin dashboard views.
+Includes management routes for boxes, products, and users.
+"""
 from django.urls import path
 from . import views
 

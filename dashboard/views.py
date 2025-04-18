@@ -1,8 +1,22 @@
+"""
+dashboard/views.py
+
+Custom admin dashboard views for managing:
+- Subscription boxes (create, edit, delete, assign products)
+- Products (CRUD, orphan management)
+- Users (admin-only edit/deactivation)
+- Orders and subscriptions (view history per user)
+
+All views are protected with @staff_member_required.
+Uses MaterializeCSS-compatible forms and a custom `alert()` utility for messaging.
+"""
+
+#Django Imports 
 from django.contrib.admin.views.decorators import staff_member_required
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import get_user_model
 
-
+# Local Imports
 from boxes.models import Box, BoxProduct
 from .forms import BoxForm, ProductForm, UserEditForm
 from orders.models import Order, StripeSubscriptionMeta
@@ -10,8 +24,15 @@ from hobbyhub.utils import alert
 
 User = get_user_model()
 
+
 @staff_member_required
 def box_admin(request):
+    """
+    Displays the admin dashboard for box management.
+
+    - Lists all boxes ordered by shipping date
+    - Also displays orphaned products (not assigned to any box)
+    """
     boxes = Box.objects.all().order_by('-shipping_date')
     orphaned_products = BoxProduct.objects.filter(box__isnull=True).order_by('name')
     return render(request, 'dashboard/box_manager.html', {'boxes':boxes, 'orphaned_products':orphaned_products, 'editing': False})
@@ -19,6 +40,13 @@ def box_admin(request):
 
 @staff_member_required
 def add_box(request):
+    """
+    Allows an admin to create a new subscription box.
+
+    - On GET: displays an empty BoxForm
+    - On POST: saves the new box and redirects to its product management page
+    - Uses alerts to indicate success or form errors
+    """
     if request.method == 'POST':
         form = BoxForm(request.POST)
         if form.is_valid():
@@ -34,6 +62,13 @@ def add_box(request):
 
 @staff_member_required
 def edit_box(request, box_id):
+    """
+    Allows an admin to update an existing box.
+
+    - Pre-populates the form with current box data
+    - On success, redirects back to the box admin overview
+    - Displays error messages on invalid submissions
+    """
     box = get_object_or_404(Box, pk=box_id)
     if request.method == 'POST':
         form = BoxForm(request.POST, instance=box)
@@ -50,6 +85,12 @@ def edit_box(request, box_id):
 
 @staff_member_required
 def delete_box(request, box_id):
+    """
+    Deletes a box after confirmation.
+
+    - Only performs deletion on POST
+    - Redirects back to box admin on success
+    """
     box = get_object_or_404(Box, pk=box_id)
     if request.method == 'POST':
         box.delete()
@@ -60,7 +101,52 @@ def delete_box(request, box_id):
 
 
 @staff_member_required
+def edit_box_products(request, box_id):
+    """
+    Displays and manages products linked to a specific box.
+
+    - Shows all products currently assigned to the box
+    - Provides links to edit or remove each product
+    """
+    box = get_object_or_404(Box, pk=box_id)
+    products = box.products.all()
+    return render(request, 'dashboard/box_products.html', {'box': box, 'products': products})
+
+
+@staff_member_required
+def add_product_to_box(request, box_id):
+    """
+    Adds a new product directly to a specific box.
+
+    - On GET: displays a product form
+    - On POST: creates a new BoxProduct and links it to the given box
+    - Redirects back to the box’s product editor with a success or error message
+    """
+    box = get_object_or_404(Box, pk=box_id)
+    if request.method == 'POST':
+        form = ProductForm(request.POST)
+        if form.is_valid():
+            product = form.save(commit=False)
+            product.box = box
+            product.save()
+            alert(request, "success", f"Products were successfully added to the box: {box.name}.")
+            return redirect('edit_box_products', box_id=box.id)
+        else:
+            alert(request, "error", "There was a problem adding the products to the box.")
+    else:
+        form = ProductForm()
+
+    return render(request, 'dashboard/product_form.html', {'form': form, 'box': box})
+
+
+@staff_member_required
 def add_products(request):
+    """
+    Adds a new product without assigning it to a box (orphaned product).
+
+    - Useful for creating products ahead of time
+    - Appears in the orphaned list until assigned to a box
+    """
     if request.method == 'POST':
         form = ProductForm(request.POST)
         if form.is_valid():
@@ -73,11 +159,15 @@ def add_products(request):
         form = ProductForm()
     return render(request, 'dashboard/box.html', {'form':form})
 
-from boxes.models import BoxProduct  # you need this import
-
 
 @staff_member_required
 def edit_product(request, product_id):
+    """
+    Allows an admin to edit a product’s name, quantity, or box assignment.
+
+    - Supports both box-linked and orphaned products
+    - Redirects to the related box’s product editor after saving
+    """
     product = get_object_or_404(BoxProduct, pk=product_id)
     if request.method == 'POST':
         form = ProductForm(request.POST, instance=product)
@@ -95,6 +185,12 @@ def edit_product(request, product_id):
 
 @staff_member_required
 def delete_product(request, product_id):
+    """
+    Permanently deletes a product from the system.
+
+    - Handles both box-linked and orphaned products
+    - On success: redirects to the relevant box product page or box admin
+    """
     product = get_object_or_404(BoxProduct, pk=product_id)
     box_id = product.box_id  # This will be None if product is an orphan.
 
@@ -119,33 +215,13 @@ def delete_product(request, product_id):
 
 
 @staff_member_required
-def add_product_to_box(request, box_id):
-    box = get_object_or_404(Box, pk=box_id)
-    if request.method == 'POST':
-        form = ProductForm(request.POST)
-        if form.is_valid():
-            product = form.save(commit=False)
-            product.box = box
-            product.save()
-            alert(request, "success", f"Products were successfully added to the box: {box.name}.")
-            return redirect('edit_box_products', box_id=box.id)
-        else:
-            alert(request, "error", "There was a problem adding the products to the box.")
-    else:
-        form = ProductForm()
-
-    return render(request, 'dashboard/product_form.html', {'form': form, 'box': box})
-
-
-@staff_member_required
-def edit_box_products(request, box_id):
-    box = get_object_or_404(Box, pk=box_id)
-    products = box.products.all()
-    return render(request, 'dashboard/box_products.html', {'box': box, 'products': products})
-
-
-@staff_member_required
 def remove_product_from_box(request, product_id):
+    """
+    Unassigns a product from its box (makes it orphaned).
+
+    - Does not delete the product
+    - Product will remain visible in the orphaned list until reassigned or deleted
+    """
     product = get_object_or_404(BoxProduct, pk=product_id)
     box_id = request.GET.get('box_id') or product.box_id
     box = get_object_or_404(Box, pk=box_id)
@@ -165,15 +241,26 @@ def remove_product_from_box(request, product_id):
     })
 
 
-
 @staff_member_required
 def user_admin(request):
+    """
+    Admin overview of all users.
+
+    - Displays a list of users ordered by username
+    - Provides links to edit, deactivate, or view order history
+    """
     users = User.objects.all().order_by('username')
     return render(request, 'dashboard/user_admin.html', {'users':users})
 
 
 @staff_member_required
 def edit_user(request, user_id):
+    """
+    Allows an admin to update a user's details.
+
+    - Supports changing username, email, and admin status
+    - Uses a Materialize-compatible form for inline editing
+    """
     user = get_object_or_404(User, pk=user_id)
 
     if request.method == 'POST':
@@ -192,6 +279,12 @@ def edit_user(request, user_id):
 
 @staff_member_required
 def delete_user(request, user_id):
+    """
+    Deactivates a user account instead of deleting it. 
+
+    - Sets is_active to False on POST
+    - Prevents accidental loss of related data (orders, addresses, etc.)
+    """
     user = get_object_or_404(User, pk=user_id)
 
     if request.method == 'POST':
@@ -207,6 +300,12 @@ def delete_user(request, user_id):
 
 @staff_member_required
 def user_orders(request, user_id):
+    """
+    Displays a user's order and subscription history for admin review.
+
+    - Shows all orders (most recent first)
+    - Separates active and cancelled subscriptions
+    """
     user = get_object_or_404(User, pk=user_id)
     orders = Order.objects.filter(user=user).order_by('-order_date')
     subs = StripeSubscriptionMeta.objects.filter(user=user).order_by('-created_at')
