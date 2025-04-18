@@ -17,7 +17,6 @@ from django.utils import timezone
 from django.conf import settings
 import stripe.error
 import stripe
-import json
 
 # Local imports
 from .models import ShippingAddress
