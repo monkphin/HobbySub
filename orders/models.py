@@ -1,3 +1,10 @@
+"""
+orders/models.py
+
+Defines database models for the orders app.
+Includes models for subscription metadata, individual orders, and payments.
+"""
+
 from django.db import models
 from django.contrib.auth.models import User
 from users.models import ShippingAddress
@@ -7,7 +14,8 @@ from boxes.models import Box
 
 class StripeSubscriptionMeta(models.Model):
     """
-    Stores Stripe subscription details tied to a user.
+    Stores Stripe subscription metadata for a user, including the selected pricing tier,
+    shipping address, and gift status.
     """
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='subscriptions')
     stripe_subscription_id = models.CharField(max_length=100, blank=True, null=True)
@@ -24,6 +32,10 @@ class StripeSubscriptionMeta(models.Model):
 
 
 class Order(models.Model):
+    """
+    Represents an individual order placed by a user.
+    Includes shipping info, related box, Stripe reference, and status.
+    """
     STATUS_CHOICES = [
         ('pending', 'Pending'),
         ('processing', 'Processing'),
@@ -44,6 +56,9 @@ class Order(models.Model):
 
 
 class Payment(models.Model):
+    """
+    Records payments made against orders, including amount, method, and payment status.
+    """
     PAYMENT_STATUS = [
         ('paid', 'Paid'),
         ('failed', 'Failed'),
