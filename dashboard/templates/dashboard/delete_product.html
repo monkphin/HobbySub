@@ -8,7 +8,10 @@
   <form method="post">
     {% csrf_token %}
     <button type="submit" class="btn red">Yes, Delete</button>
-    <a href="{% url 'edit_box_products' product.box.id %}" class="btn grey">Cancel</a>
-  </form>
+    {% if product.box %}
+      <a href="{% url 'edit_box_products' product.box.id %}" class="btn grey">Cancel</a>
+    {% else %}
+      <a href="{% url 'box_admin' %}" class="btn grey">Cancel</a>
+    {% endif %}  </form>
 </div>
 {% endblock %}

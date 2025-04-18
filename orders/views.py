@@ -5,6 +5,8 @@ from django.contrib.auth.decorators import login_required
 
 from .forms import PreCheckoutForm
 from .models import Order
+from hobbyhub.utils import alert
+
 
 
 stripe.api_key = settings.STRIPE_SECRET_KEY
@@ -19,11 +21,13 @@ STRIPE_12MO_PRICE_ID = settings.STRIPE_12MO_PRICE_ID
 
 @login_required
 def order_success(request):
+    alert(request, "success", "Your order was successfully processed. Thank you!")
     return render(request, 'orders/order_success.html')
 
 
 @login_required
 def order_cancel(request):
+    alert(request, "info", "Your checkout was cancelled, no payment has been taken")
     return render(request, 'orders/order_cancel.html')
 
 
@@ -68,41 +72,48 @@ def handle_checkout(request, price_id):
 
             shipping_address = request.user.addresses.filter(is_default=True).first()
 
-            shipping_details = {}
-            if shipping_address:
-                shipping_details = {
-                    'name': f'{shipping_address.recipient_f_name} {shipping_address.recipient_l_name}',
-                    'address': {
-                        'line1': shipping_address.address_line_1,
-                        'line2': shipping_address.address_line_2 or '',
-                        'city': shipping_address.town_or_city,
-                        'state': shipping_address.county,
-                        'postal_code': shipping_address.postcode,
-                        'country': shipping_address.country,
-                    }
-                }
+            if not shipping_address:
+                alert(request, "error", "You must set a default shipping address before placing an order.")
+                return redirect('account_settings')
 
-            session = stripe.checkout.Session.create(
-                payment_method_types=['card'],
-                mode='payment',
-                line_items=[{
-                    'price': price_id,
-                    'quantity': 1,
-                }],
-                payment_intent_data={
-                    'metadata': {
-                        'recipient_name': recipient_name,
-                        'sender_name': sender_name,
-                        'gift_message': gift_message,
-                        'user_id': str(request.user.id),
+            shipping_details = {
+                'name': f'{shipping_address.recipient_f_name} {shipping_address.recipient_l_name}',
+                'address': {
+                    'line1': shipping_address.address_line_1,
+                    'line2': shipping_address.address_line_2 or '',
+                    'city': shipping_address.town_or_city,
+                    'state': shipping_address.county,
+                    'postal_code': shipping_address.postcode,
+                    'country': shipping_address.country,
+                }
+            }
+            try:
+                session = stripe.checkout.Session.create(
+                    payment_method_types=['card'],
+                    mode='payment',
+                    line_items=[{
+                        'price': price_id,
+                        'quantity': 1,
+                    }],
+                    payment_intent_data={
+                        'metadata': {
+                            'recipient_name': recipient_name,
+                            'sender_name': sender_name,
+                            'gift_message': gift_message,
+                            'user_id': str(request.user.id),
+                        },
+                        'shipping': shipping_details
                     },
-                    'shipping': shipping_details
-                },
-                customer_email=request.user.email,
-                success_url=request.build_absolute_uri('/orders/success/'),
-                cancel_url=request.build_absolute_uri('/orders/cancel/'),
-            )
-            return redirect(session.url, code=303)
+                    customer_email=request.user.email,
+                    success_url=request.build_absolute_uri('/orders/success/'),
+                    cancel_url=request.build_absolute_uri('/orders/cancel/'),
+                )
+                return redirect(session.url, code=303)
+            except stripe.error.StripeError:
+                alert(request, "error", "There was a problem connecting to the payment service. Please try again shortly.")
+                return render(request, 'orders/pre_checkout.html', {'form': form})
+        else:
+            alert(request, "error", "Please correct the errors in the form.")
     else:
         form = PreCheckoutForm()
 
@@ -110,24 +121,30 @@ def handle_checkout(request, price_id):
 
 @login_required
 def create_subscription_checkout(request, price_id):
-    checkout_session = stripe.checkout.Session.create(
-        customer_email=request.user.email,
-        payment_method_types=['card'],
-        mode='subscription',
-        line_items=[{
-            'price': price_id,
-            'quantity': 1,
-        }],
-        metadata={
-            'user_id': request.user.id,
-        },
-        success_url=request.build_absolute_uri('/orders/success/?sub=monthly'),
-        cancel_url=request.build_absolute_uri('/orders/cancel/'),
-    )
-    return redirect(checkout_session.url, code=303)
+    try:
+        checkout_session = stripe.checkout.Session.create(
+            customer_email=request.user.email,
+            payment_method_types=['card'],
+            mode='subscription',
+            line_items=[{
+                'price': price_id,
+                'quantity': 1,
+            }],
+            metadata={
+                'user_id': request.user.id,
+            },
+            success_url=request.build_absolute_uri('/orders/success/?sub=monthly'),
+            cancel_url=request.build_absolute_uri('/orders/cancel/'),
+        )
+        return redirect(checkout_session.url, code=303)
+    except stripe.error.StripeError:
+        alert(request, "error", "There was a problem connecting to the payment service. Please try again shortly.")
+    return redirect('subscribe_options')
 
 
 @login_required
 def order_history(request):
     orders = Order.objects.filter(user=request.user).order_by('-order_date')
+    if not orders.exists():
+        alert(request, "info", "You haven’t placed any orders yet.")
     return render(request, 'orders/order_history.html', {'orders': orders})

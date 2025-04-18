@@ -17,15 +17,13 @@
 <body>
     <header>
 
-        {% if messages %}
-          <div class="container">
-            {% for message in messages %}
-              <div class="card-panel {% if message.tags == 'success' %}green lighten-4 green-text text-darken-4 {% elif message.tags == 'error' %}red lighten-4 red-text text-darken-4 {% elif message.tags == 'warning' %}orange lighten-4 orange-text text-darken-4 {% else %}blue lighten-4 blue-text text-darken-4{% endif %}">
-                <span>{{ message }}</span>
-              </div>
-            {% endfor %}
-          </div>
-        {% endif %}
+      {% if messages %}
+        <div id="toast-container">
+          {% for message in messages %}
+            <div class="toast {{ message.tags }}">{{ message }}</div>
+          {% endfor %}
+        </div>
+      {% endif %}
 
         <ul id="dropdown1" class="dropdown-content">
           <li><a href="{% url 'box_admin' %}">Box Admin</a></li>

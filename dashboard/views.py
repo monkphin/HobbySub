@@ -1,7 +1,6 @@
 from django.contrib.admin.views.decorators import staff_member_required
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import get_user_model
-from django.contrib import messages
 
 
 from boxes.models import Box, BoxProduct
@@ -24,7 +23,6 @@ def add_box(request):
         form = BoxForm(request.POST)
         if form.is_valid():
             new_box = form.save()
-            form.save()
             alert(request, "success", "Box successfully created.")
             return redirect('edit_box_products', box_id=new_box.id)
         else:
@@ -98,14 +96,27 @@ def edit_product(request, product_id):
 @staff_member_required
 def delete_product(request, product_id):
     product = get_object_or_404(BoxProduct, pk=product_id)
-    box_id = product.box_id
+    box_id = product.box_id  # This will be None if product is an orphan.
+
     if request.method == 'POST':
-        product.delete()
-        alert(request, "success", "Products successfully deleted.")
-        return redirect('edit_box_products', box_id=box_id)
-    else:
-        alert(request, "error", "There was a problem editing the products.")
-    return render(request, 'dashboard/delete_product.html', {'product': product})
+        try:
+            product.delete()
+            alert(request, "success", "Product permanently deleted.")
+        except Exception as e:
+            print(f"❌ Deletion error: {e}")
+            alert(request, "error", "There was a problem deleting the product.")
+
+        if box_id:
+            return redirect('edit_box_products', box_id=box_id)
+        else:
+            return redirect('box_admin')
+
+
+    return render(request, 'dashboard/delete_product.html', {
+        'product': product,
+        'box_id': box_id
+    })
+
 
 
 @staff_member_required
@@ -139,14 +150,21 @@ def remove_product_from_box(request, product_id):
     product = get_object_or_404(BoxProduct, pk=product_id)
     box_id = request.GET.get('box_id') or product.box_id
     box = get_object_or_404(Box, pk=box_id)
+
     if request.method == 'POST':
-        product.box = None
-        product.save()
-        alert(request, "success", f"Products were successfully removed from the box: {box.box_name}.")
+        try:
+            product.box = None
+            product.save()
+            alert(request, "success", f"Product successfully removed from box: {box.name}.")
+        except Exception as e:
+            alert(request, "error", "There was a problem removing the product from the box.")
         return redirect('edit_box_products', box_id=box_id)
-    else:
-        alert(request, "error", "There was a problem adding the products to the box.")
-    return render(request, 'dashboard/remove_product.html', {'product': product})
+
+    return render(request, 'dashboard/remove_product.html', {
+        'product': product,
+        'box': box
+    })
+
 
 
 @staff_member_required

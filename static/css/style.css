@@ -3,19 +3,19 @@ body {
     font-family: sans-serif;
 }
 
-
 .carousel {
     height: 200px !important;
   }
+
   .carousel .carousel-item {
     height: 200px !important;
     line-height: 200px !important;
   }
+
   .carousel .carousel-item img {
     max-height: 200px !important;
     width: 200px;
   }
-  
 
   .chip-container {
     display: flex;
@@ -24,7 +24,6 @@ body {
     margin-bottom: 1rem;
     justify-content: center;
   }
-
 
   .card-panel {
     padding: 1rem;
@@ -37,4 +36,28 @@ body {
   .red-text   { color: #c62828; background-color: #ffcdd2; }
   .orange-text { color: #ef6c00; background-color: #ffe0b2; }
   .blue-text  { color: #1565c0; background-color: #bbdefb; }
-  
+
+  #toast-container {
+    position: fixed;
+    top: 1rem;
+    right: 1rem;
+    z-index: 9999;
+  }
+
+  .toast {
+    background-color: #323232;
+    color: white;
+    padding: 1rem 1.5rem;
+    margin-bottom: 1rem;
+    border-radius: 8px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+    opacity: 0.95;
+    transition: all 0.3s ease-in-out;
+    cursor: pointer;
+  }
+
+  /* Tag-based coloring */
+  .toast.success { background-color: #4caf50; }
+  .toast.error   { background-color: #f44336; }
+  .toast.warning { background-color: #ff9800; }
+  .toast.info    { background-color: #2196f3; }
