@@ -118,7 +118,6 @@ def delete_product(request, product_id):
     })
 
 
-
 @staff_member_required
 def add_product_to_box(request, box_id):
     box = get_object_or_404(Box, pk=box_id)
