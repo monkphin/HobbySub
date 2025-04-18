@@ -3,9 +3,10 @@ from django.utils.text import slugify
 
 class Box(models.Model):
     """
-    Represents the monthly box available to subscribers. Boxes are created by
-    admins and can be marked as archived once they're no longer active to be 
-    shipped
+    Represents a monthly subscription box created by an admin.
+
+    Each Box contains a curated selection of products and is assigned a shipping
+    date. Boxes can be archived once no longer available for active shipping.
     """
     name = models.CharField(max_length=100)
     slug = models.SlugField(unique=True)
@@ -16,37 +17,45 @@ class Box(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     def save(self, *args, **kwargs):
-        """Auto-generate slug if not set."""
+        """Auto-generate the slug from the box name if not manually set."""
         if not self.slug:
             self.slug = slugify(self.name)
         super().save(*args, **kwargs)
 
     def __str__(self):
         return f"{self.name} - {self.shipping_date.strftime('%b %Y')}"
-        
+
 
 class BoxProduct(models.Model):
     """
-    Represents a single item included a box (eg: paintbrush, mini, paint etc).
-    Used to populate box displays for current or historic boxes
+    Represents a single product included in a specific Box.
+
+    Products can include miniatures, paints, brushes, or other hobby items.
+    This model supports display of past box contents as well as upcoming releases.
     """
-    box = models.ForeignKey(Box,
-                            on_delete=models.SET_NULL,
-                            null=True,
-                            blank=True,
-                            related_name='products',
-                            help_text="The box this product is part of."
-                            )
-    name = models.CharField(max_length=100,
-                            help_text="Name of the included product."
-                            )
-    image_url = models.URLField(help_text="Image of the product.")
-    description = models.TextField(blank=True,
-                                   help_text="Optional description shown in carousel."
-                                   )
-    quantity = models.PositiveIntegerField(default=1,
-                                           help_text="Quantity of this product in the box."
-                                           )
-    
-    def __str__ (self):
+    box = models.ForeignKey(
+        Box,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='products',
+        help_text="The box this product belongs to. Can be left blank if unassigned."
+    )
+    name = models.CharField(
+        max_length=100,
+        help_text="Name of the included product."
+    )
+    image_url = models.URLField(
+        help_text="URL to an image representing the product."
+    )
+    description = models.TextField(
+        blank=True,
+        help_text="Optional description for this product (shown in UI carousel)."
+    )
+    quantity = models.PositiveIntegerField(
+        default=1,
+        help_text="Quantity of this product included in the box."
+    )
+
+    def __str__(self):
         return f"{self.name} (x{self.quantity})"
