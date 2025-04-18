@@ -2,6 +2,7 @@ from django.shortcuts import render
 from boxes.models import Box
 from datetime import date
 
+
 def home(request):
     today = date.today()
 
@@ -29,5 +30,14 @@ def home(request):
         'next_box': next_box
     })
 
+
 def subscribe_options(request):
     return render(request, 'orders/subscribe.html')
+
+
+def about(request):
+    return render(request, 'home/about.html')
+
+
+def contact(request):
+    return render(request, 'home/contact.html')

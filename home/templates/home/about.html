@@ -1,0 +1,12 @@
+{% extends 'base.html' %}
+{% block title %}About{% endblock %}
+
+{% block content %}
+<div class="container">
+  <h4>About Hobby Hub</h4>
+  <p>Hobby Hub is a subscription box service for miniature painting enthusiasts.</p>
+  <p>Each month, we curate a selection of paints, brushes, tools, and models to inspire your hobby time.</p>
+  <p>Whether you're a new hobbyist or a seasoned pro, our boxes are designed to help you discover new techniques, try new products, and keep your painting queue exciting.</p>
+  <p>Want to get in touch? Head over to our <a href="{% url 'contact' %}">Contact</a> page.</p>
+</div>
+{% endblock %}
