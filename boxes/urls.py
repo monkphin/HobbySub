@@ -1,4 +1,9 @@
+"""
 # boxes/urls.py
+Defines URL patterns for the boxes app.
+Includes views for listing past boxes and viewing individual box details.
+"""
+
 from django.urls import path
 from . import views
 
