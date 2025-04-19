@@ -21,9 +21,10 @@ import stripe.error
 import stripe
 
 # Local imports
-from .models import ShippingAddress
 from orders.models import Order, Payment, Box, StripeSubscriptionMeta
 from .forms import Register, AddAddressForm, ChangePassword
+from hobbyhub.mail import send_gift_notification_to_recipient, send_registration_email, send_account_update_email, send_address_change_email, send_account_deletion_email, send_subscription_confirmation_email, send_gift_confirmation_to_sender, send_order_confirmation_email, send_payment_failed_email
+from .models import ShippingAddress
 from hobbyhub.utils import alert
 
 
@@ -38,6 +39,7 @@ def register_user(request):
             user = form.save()
             # Auto login on registration
             login(request, user) 
+            send_registration_email(user)
             alert(
                 request,
                 "success",
@@ -68,6 +70,7 @@ def edit_account(request):
         form = UserChangeForm(request.POST, instance=request.user)
         if form.is_valid():
             form.save()
+            send_account_update_email(request.user)
             alert(request, "success", "Your account details have been updated.")
             return redirect('account')
     else:
@@ -111,6 +114,7 @@ def delete_account(request):
         "Your account has been deleted. We're sorry to see you go!"
         )
     logout(request)
+    send_account_deletion_email(user.email)
     user.delete()
     return redirect('account')
 
@@ -136,6 +140,7 @@ def add_address(request):
                     is_default=True
                     ).update(is_default=False)
             address.save()
+            send_address_change_email(request.user, change_type="added")
             alert(request, "success", "Address added successfully.")
 
             # Only redirect to a safe URL
@@ -171,6 +176,7 @@ def edit_address(request, address_id):
                 ShippingAddress.objects.filter(user=request.user, is_default=True).exclude(id=address.id).update(is_default=False)
 
             updated_address.save()
+            send_address_change_email(request.user, change_type="updated")
             alert(request, "success", "Address updated successfully.")
             return redirect('account')
     else:
@@ -192,6 +198,7 @@ def set_default_address(request, address_id):
     # Set the new default address
     address.is_default=True
     address.save()
+    send_address_change_email(request.user, change_type="default")
     alert(request, "success", "Default address updated.")
     return redirect('account')
 
@@ -203,16 +210,13 @@ def delete_address(request, address_id):
     """
     address = get_object_or_404(ShippingAddress, id=address_id, user=request.user)
     address.delete()
+    send_address_change_email(request.user, change_type="deleted")
     alert(request, "info", "Address deleted.")
     return redirect('account')
 
 
 @csrf_exempt
 def stripe_webhook(request):
-    """
-    Handles incoming Stripe webhook events for orders and subscriptions.
-    Supports `checkout.session.completed` and `invoice.payment_succeeded`.
-    """
     print("🚀 Stripe webhook received")
     payload = request.body
     sig_header = request.META.get('HTTP_STRIPE_SIGNATURE')
@@ -278,16 +282,18 @@ def stripe_webhook(request):
 
                     print(f"Payment recorded for one-off order #{order.id}")
 
-                    # ✅ Send gift email only if recipient_email exists
+                    # ✅ Email logic
                     if recipient_email:
-                        send_mail(
-                            subject="You've received a gift from Hobby Hub!",
-                            message=f"{metadata.get('sender_name', 'Someone')} sent you a subscription box from Hobby Hub!\n\nGift Message:\n{metadata.get('gift_message', '')}",
-                            from_email="noreply@hobbyhub.com",
-                            recipient_list=[recipient_email],
-                            fail_silently=False,
+                        send_gift_notification_to_recipient(
+                            recipient_email=recipient_email,
+                            sender_name=metadata.get('sender_name', 'Someone'),
+                            gift_message=metadata.get('gift_message', '')
                         )
+                        send_gift_confirmation_to_sender(user, recipient_email)
                         print(f"Gift email sent to {recipient_email}")
+                    else:
+                        send_order_confirmation_email(user, order.id)
+                        print(f"Order confirmation sent to {user.email}")
 
                 except User.DoesNotExist:
                     print(f"User ID {user_id} not found")
@@ -311,6 +317,10 @@ def stripe_webhook(request):
                 )
 
                 print(f"Subscription metadata saved for {user.username}")
+
+                # ✅ Email logic
+                send_subscription_confirmation_email(user, plan_name="Subscription Box")
+                print(f"Subscription confirmation email sent to {user.email}")
 
             except Exception as e:
                 print(f"Subscription handling error: {e}")
@@ -364,8 +374,22 @@ def stripe_webhook(request):
             )
 
             print(f"Recurring order + payment created for {user.username}")
+            # (You can optionally add a shipping confirmation email later)
 
         except Exception as e:
             print(f"Failed to create recurring order/payment: {e}")
+    
+    elif event['type'] == 'invoice.payment_failed':
+        invoice = event['data']['object']
+        customer_id = invoice.get('customer')
+        customer = stripe.Customer.retrieve(customer_id)
+        customer_email = customer.get('email')
+
+        try:
+            user = User.objects.get(email=customer_email)
+            send_payment_failed_email(user)
+            print(f"Payment failure email sent to {user.email}")
+        except User.DoesNotExist:
+            print(f"User with email {customer_email} not found")
 
     return JsonResponse({'status': 'success'})
