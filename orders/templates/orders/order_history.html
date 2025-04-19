@@ -22,6 +22,14 @@
             <h4>Order #{{ order.id }}</h4>
             <p><strong>Status:</strong> {{ order.status|title }}</p>
             <p><strong>Order Date:</strong> {{ order.order_date|date:"F j, Y" }}</p>
+            {% with payments_by_order|dictsort:order.id as payment %}
+              {% if payment %}
+                <p><strong>Payment:</strong> £{{ payment.amount }} — {{ payment.status|title }}</p>
+                <p><strong>Date:</strong> {{ payment.payment_date|date:"M d, Y H:i" }}</p>
+              {% else %}
+                <p><strong>Payment:</strong> Not recorded</p>
+              {% endif %}
+            {% endwith %}
             <p><strong>Shipping Address:</strong><br>
               {{ order.shipping_address.recipient_f_name }} {{ order.shipping_address.recipient_l_name }}<br>
               {{ order.shipping_address.address_line_1 }}<br>
