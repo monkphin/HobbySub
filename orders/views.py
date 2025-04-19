@@ -109,6 +109,11 @@ def handle_checkout(request, price_id):
 
         if form.is_valid():
             recipient_name = form.cleaned_data.get('recipient_name')
+            recipient_email = form.EmailField(
+                                required=False,
+                                label="Recipient Email",
+                                widget=form.EmailInput(attrs={'class': 'validate'})
+                            )
             sender_name = form.cleaned_data.get('sender_name')
             gift_message = form.cleaned_data.get('gift_message')
 
@@ -187,12 +192,17 @@ def create_subscription_checkout(request, price_id):
     return redirect('subscribe_options')
 
 
+from orders.models import Order, Payment
+
 @login_required
 def order_history(request):
-    """
-    Displays a list of past orders for the current user.
-    """
     orders = Order.objects.filter(user=request.user).order_by('-order_date')
-    if not orders.exists():
-        alert(request, "info", "You haven’t placed any orders yet.")
-    return render(request, 'orders/order_history.html', {'orders': orders})
+    payments = Payment.objects.filter(order__in=orders)
+
+    # Map payments by order ID
+    payments_by_order = {p.order_id: p for p in payments}
+
+    return render(request, 'orders/order_history.html', {
+        'orders': orders,
+        'payments_by_order': payments_by_order,
+    })
