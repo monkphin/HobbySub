@@ -217,11 +217,15 @@ def stripe_webhook(request):
     sig_header = request.META.get('HTTP_STRIPE_SIGNATURE')
     endpoint_secret = settings.STRIPE_WEBHOOK_SECRET
 
-    try: 
+    try:
         event = stripe.Webhook.construct_event(payload, sig_header, endpoint_secret)
     except (ValueError, stripe.error.SignatureVerificationError):
+        print("Invalid payload or signature")
         return HttpResponse(status=400)
 
+    # ----------------------
+    # One-off or Subscription Checkout
+    # ----------------------
     if event['type'] == 'checkout.session.completed':
         session = event['data']['object']
         print("Event type:", event['type'])
@@ -234,34 +238,50 @@ def stripe_webhook(request):
             metadata = payment_intent.metadata
             shipping_info = payment_intent.shipping
             user_id = metadata.get('user_id')
+            amount_total = session.get('amount_total', 0)  # in cents
 
             print("Shipping info:", shipping_info)
             print("Metadata:", metadata)
+            print("Session amount_total:", amount_total)
 
             if user_id and shipping_info:
                 try:
                     user = User.objects.get(pk=user_id)
-                    address = ShippingAddress.objects.filter(user=user, postcode=shipping_info['address']['postal_code']).first()
+                    address = ShippingAddress.objects.filter(
+                        user=user, postcode=shipping_info['address']['postal_code']
+                    ).first()
 
-                    print("Looking for ShippingAddress with postcode:", shipping_info['address']['postal_code'])
-                    print("User:", user)
+                    print("User:", user.username)
                     print("Found address:", address)
 
-                    Order.objects.create(
+                    order = Order.objects.create(
                         user=user,
                         shipping_address=address,
                         box=None,
-                        stripe_subscription_id=session.get('subscription'),
+                        stripe_subscription_id=None,
                         scheduled_shipping_date=None,
                         status='processing'
                     )
-                    print("Order created successfully")
+
+                    print(f"Order #{order.id} created successfully")
+
+                    Payment.objects.create(
+                        user=user,
+                        order=order,
+                        payment_date=timezone.now(),
+                        amount=amount_total / 100,  # convert cents to £
+                        status='paid',
+                        payment_method='card',
+                    )
+
+                    print(f"Payment recorded for one-off order #{order.id}")
 
                 except User.DoesNotExist:
                     print(f"User ID {user_id} not found")
                 except Exception as e:
-                    print(f"Error creating order: {e}")
-        elif session.get('mode') == 'subscription' and user_id: 
+                    print(f"Error creating order or payment: {e}")
+
+        elif session.get('mode') == 'subscription' and user_id:
             try:
                 user = User.objects.get(pk=user_id)
                 shipping = user.addresses.filter(is_default=True).first()
@@ -270,44 +290,43 @@ def stripe_webhook(request):
                 price_id = subscription['items']['data'][0]['price']['id']
 
                 StripeSubscriptionMeta.objects.create(
-                    user=user, 
+                    user=user,
                     stripe_subscription_id=sub_id,
                     stripe_price_id=price_id,
                     shipping_address=shipping,
                     is_gift=False,
                 )
-                print("Subscription saved for:", user.username)
+
+                print(f"Subscription metadata saved for {user.username}")
+
             except Exception as e:
                 print(f"Subscription handling error: {e}")
 
+    # ----------------------
+    # Recurring Subscription Payments
+    # ----------------------
     elif event['type'] == 'invoice.payment_succeeded':
         print("Received invoice.payment_succeeded")
         invoice = event['data']['object']
-        print("Payment succeeded for subscription")
-
         subscription_id = invoice.get('subscription')
-        customer_id = invoice.get('customer') 
+        customer_id = invoice.get('customer')
         customer = stripe.Customer.retrieve(customer_id)
         customer_email = customer.get('email')
-        amount_paid = invoice['amount_paid'] / 100  # convert from cents
+        amount_paid = invoice['amount_paid'] / 100
         payment_date = timezone.now()
 
         try:
-            print("Looking for user and sub")
             user = User.objects.get(email=customer_email)
             sub_meta = StripeSubscriptionMeta.objects.filter(
                 user=user, stripe_subscription_id=subscription_id
             ).first()
 
-            # Fallback shipping logic
-            shipping = None
-            if sub_meta and sub_meta.shipping_address:
-                shipping = sub_meta.shipping_address
-            else:
-                shipping = user.addresses.filter(is_default=True).first() or user.addresses.first()
+            shipping = sub_meta.shipping_address if sub_meta and sub_meta.shipping_address else (
+                user.addresses.filter(is_default=True).first() or user.addresses.first()
+            )
 
             if not shipping:
-                print(f"No valid shipping address found for user {user.username}")
+                print(f"No shipping address found for {user.username}")
                 return JsonResponse({'status': 'no shipping address'}, status=200)
 
             box = Box.objects.filter(is_archived=False).order_by('-shipping_date').first()
@@ -324,14 +343,14 @@ def stripe_webhook(request):
 
             Payment.objects.create(
                 user=user,
-                order_id=order.id,
+                order=order,
                 payment_date=payment_date,
                 amount=amount_paid,
                 status='succeeded',
                 payment_method='card',
             )
 
-            print(f"Created order + payment for {user.username}")
+            print(f"Recurring order + payment created for {user.username}")
 
         except Exception as e:
             print(f"Failed to create recurring order/payment: {e}")

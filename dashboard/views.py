@@ -12,15 +12,15 @@ Uses MaterializeCSS-compatible forms and a custom `alert()` utility for messagin
 """
 
 #Django Imports 
-from django.contrib.admin.views.decorators import staff_member_required
-from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import get_user_model
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib.admin.views.decorators import staff_member_required
 
 # Local Imports
+from hobbyhub.utils import alert
 from boxes.models import Box, BoxProduct
 from .forms import BoxForm, ProductForm, UserEditForm
-from orders.models import Order, StripeSubscriptionMeta
-from hobbyhub.utils import alert
+from orders.models import Order, Payment, StripeSubscriptionMeta
 
 User = get_user_model()
 
@@ -300,25 +300,23 @@ def delete_user(request, user_id):
 
 @staff_member_required
 def user_orders(request, user_id):
-    """
-    Displays a user's order and subscription history for admin review.
-
-    - Shows all orders (most recent first)
-    - Separates active and cancelled subscriptions
-    """
     user = get_object_or_404(User, pk=user_id)
     orders = Order.objects.filter(user=user).order_by('-order_date')
     subs = StripeSubscriptionMeta.objects.filter(user=user).order_by('-created_at')
     active_sub = subs.filter(cancelled_at__isnull=True).first()
     cancelled_subs = subs.filter(cancelled_at__isnull=False)
 
+    # Instead of a dictionary, just annotate each order with payment manually
+    for order in orders:
+        order.payment = Payment.objects.filter(order=order).first()
+
     return render(request, 'dashboard/user_orders.html', {
         'user': user,
         'orders': orders,
         'active_sub': active_sub,
         'cancelled_subs': cancelled_subs,
-        'STATUS_CHOICES': Order.STATUS_CHOICES,
     })
+
 
 
 @staff_member_required

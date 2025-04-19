@@ -21,18 +21,26 @@
           <td>#{{ order.id }}</td>
           <td>{{ order.order_date }}</td>
           <td>
+            {% if order.payment %}
+              £{{ order.payment.amount }} — {{ order.payment.status|title }}<br>
+              {{ order.payment.payment_date|date:"M d, Y H:i" }}
+            {% else %}
+              <em>No payment</em>
+            {% endif %}
+          </td>
+          <td>
             <form method="post" action="{% url 'update_order_status' order.id %}">
               {% csrf_token %}
               <div class="input-field inline" style="margin:0">
                 <select name="status" class="browser-default" style="width: auto;">
-                  {% for key, label in STATUS_CHOICES %}
+                  {% for key, label in order.STATUS_CHOICES %}
                     <option value="{{ key }}" {% if order.status == key %}selected{% endif %}>{{ label }}</option>
                   {% endfor %}
                 </select>
                 <button type="submit" class="btn-small">Update</button>
               </div>
             </form>
-          </td>          
+          </td>
           <td>{{ order.box }}</td>
         </tr>
         {% endfor %}
