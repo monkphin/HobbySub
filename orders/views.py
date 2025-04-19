@@ -8,10 +8,13 @@ Handles order and checkout flows including:
 - Order history display
 """
 # Django/External Imports
-import stripe 
-from django.conf import settings
-from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
+from django.shortcuts import render, redirect
+from django.conf import settings
+from django.urls import reverse
+import stripe 
+
+
 
 # LOcal imports
 from .forms import PreCheckoutForm
@@ -113,7 +116,7 @@ def handle_checkout(request, price_id):
 
             if not shipping_address:
                 alert(request, "error", "You must set a default shipping address before placing an order.")
-                return redirect('account_settings')
+                return redirect(f"{reverse('add_address')}?next={request.path}")
 
             shipping_details = {
                 'name': f'{shipping_address.recipient_f_name} {shipping_address.recipient_l_name}',

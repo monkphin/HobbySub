@@ -31,5 +31,5 @@ urlpatterns = [
     path('user_admin/<int:user_id>/edit/', views.edit_user, name='edit_user'),
     path('user_admin/<int:user_id>/delete/', views.delete_user, name='delete_user'),
     path('user_admin/<int:user_id>/orders/', views.user_orders, name='user_orders'),
-
+    path('order/<int:order_id>/update_status/', views.update_order_status, name='update_order_status'),
 ]

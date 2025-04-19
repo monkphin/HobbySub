@@ -317,4 +317,25 @@ def user_orders(request, user_id):
         'orders': orders,
         'active_sub': active_sub,
         'cancelled_subs': cancelled_subs,
+        'STATUS_CHOICES': Order.STATUS_CHOICES,
     })
+
+
+@staff_member_required
+def update_order_status(request, order_id):
+    """
+    Allows an admin to update the status of an order from the dashboard.
+    """
+    order = get_object_or_404(Order, id=order_id)
+
+    if request.method == 'POST':
+        new_status = request.POST.get('status')
+        if new_status in dict(Order.STATUS_CHOICES):
+            order.status = new_status
+            order.save()
+            alert(request, "success", f"Order #{order.id} status updated to {new_status.title()}")
+        else:
+            alert(request, "error", "Invalid status selected.")
+
+    return redirect('user_orders', user_id=order.user.id)
+

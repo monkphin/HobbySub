@@ -1,29 +1,45 @@
-
 {% extends "base.html" %}
 {% block title %}Order History{% endblock %}
 
 {% block content %}
 <section class="section">
   <h3>Your Orders</h3>
+
   {% if orders %}
     <ul class="collection">
       {% for order in orders %}
         <li class="collection-item">
-          <strong>Order ID:</strong> {{ order.id }}<br>
+          <strong>Order #{{ order.id }}</strong><br>
           <strong>Status:</strong> {{ order.status|title }}<br>
-          <strong>Date:</strong> {{ order.order_date }}<br>
-          <strong>Shipping To:</strong> {{ order.shipping_address }}<br>
+          <strong>Order Date:</strong> {{ order.order_date|date:"F j, Y" }}<br>
+          <strong>Shipping To:</strong> {{ order.shipping_address.recipient_f_name }} {{ order.shipping_address.recipient_l_name }}, {{ order.shipping_address.postcode }}<br>
           <a class="btn-small modal-trigger" href="#order-modal-{{ order.id }}">View Details</a>
         </li>
 
-        <!-- MODAL: now inside the loop -->
+        <!-- Modal for Order Details -->
         <div id="order-modal-{{ order.id }}" class="modal">
           <div class="modal-content">
             <h4>Order #{{ order.id }}</h4>
-            <p><strong>Status:</strong> {{ order.status }}</p>
-            <p><strong>Shipping Address:</strong> {{ order.shipping_address }}</p>
-            <p><strong>Stripe ID:</strong> {{ order.stripe_subscription_id }}</p>
-            <p><strong>Scheduled Shipping:</strong> {{ order.scheduled_shipping_date }}</p>
+            <p><strong>Status:</strong> {{ order.status|title }}</p>
+            <p><strong>Order Date:</strong> {{ order.order_date|date:"F j, Y" }}</p>
+            <p><strong>Shipping Address:</strong><br>
+              {{ order.shipping_address.recipient_f_name }} {{ order.shipping_address.recipient_l_name }}<br>
+              {{ order.shipping_address.address_line_1 }}<br>
+              {% if order.shipping_address.address_line_2 %}
+                {{ order.shipping_address.address_line_2 }}<br>
+              {% endif %}
+              {{ order.shipping_address.town_or_city }}<br>
+              {{ order.shipping_address.county }}<br>
+              {{ order.shipping_address.postcode }}<br>
+              {{ order.shipping_address.country.name }}<br>
+              {{ order.shipping_address.phone_number }}
+            </p>
+            {% if order.scheduled_shipping_date %}
+              <p><strong>Estimated Shipping Date:</strong> {{ order.scheduled_shipping_date|date:"F j, Y" }}</p>
+            {% endif %}
+            {% if order.box %}
+              <p><strong>Box:</strong> {{ order.box.name }}</p>
+            {% endif %}
           </div>
           <div class="modal-footer">
             <a href="#!" class="modal-close btn-flat">Close</a>

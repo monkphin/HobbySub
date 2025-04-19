@@ -20,7 +20,19 @@
         <tr>
           <td>#{{ order.id }}</td>
           <td>{{ order.order_date }}</td>
-          <td>{{ order.status|title }}</td>
+          <td>
+            <form method="post" action="{% url 'update_order_status' order.id %}">
+              {% csrf_token %}
+              <div class="input-field inline" style="margin:0">
+                <select name="status" class="browser-default" style="width: auto;">
+                  {% for key, label in STATUS_CHOICES %}
+                    <option value="{{ key }}" {% if order.status == key %}selected{% endif %}>{{ label }}</option>
+                  {% endfor %}
+                </select>
+                <button type="submit" class="btn-small">Update</button>
+              </div>
+            </form>
+          </td>          
           <td>{{ order.box }}</td>
         </tr>
         {% endfor %}

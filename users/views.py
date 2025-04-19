@@ -8,6 +8,7 @@ shipping address operations, password changes, and Stripe webhooks.
 # Django/Remote imports 
 from django.contrib.auth import login, logout, update_session_auth_hash
 from django.shortcuts import render, redirect, get_object_or_404
+from django.utils.http import url_has_allowed_host_and_scheme
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import UserChangeForm
 from django.views.decorators.csrf import csrf_exempt
@@ -118,7 +119,11 @@ def add_address(request):
     """
     Allows the user to add a new shipping address.
     If marked as default, unsets all other default addresses.
+    Redirects to the URL provided in 'next' query parameter (if valid),
+    or falls back to 'account'.
     """
+    next_url = request.GET.get('next', request.POST.get('next', 'account'))
+
     if request.method == 'POST':
         form = AddAddressForm(request.POST)
         if form.is_valid():
@@ -131,15 +136,22 @@ def add_address(request):
                     ).update(is_default=False)
             address.save()
             alert(request, "success", "Address added successfully.")
-            return redirect('account')
+
+            # Only redirect to a safe URL
+            if url_has_allowed_host_and_scheme(next_url, allowed_hosts={request.get_host()}):
+                return redirect(next_url)
+            return redirect('account')  # fallback
+
     else:
         form = AddAddressForm(initial={
             'recipient_f_name': request.user.first_name,
             'recipient_l_name': request.user.last_name,
         })
 
-    return render(request, 'users/add_address.html', {'form': form})
-
+    return render(request, 'users/add_address.html', {
+        'form': form,
+        'next': next_url  # pass this to the template
+    })
 
 @login_required
 def edit_address(request, address_id):
@@ -212,7 +224,7 @@ def stripe_webhook(request):
 
     if event['type'] == 'checkout.session.completed':
         session = event['data']['object']
-        print("🎯 Event type:", event['type'])
+        print("Event type:", event['type'])
 
         payment_intent_id = session.get('payment_intent')
         user_id = session.get('metadata', {}).get('user_id')
@@ -223,17 +235,17 @@ def stripe_webhook(request):
             shipping_info = payment_intent.shipping
             user_id = metadata.get('user_id')
 
-            print("📦 Shipping info:", shipping_info)
-            print("🧠 Metadata:", metadata)
+            print("Shipping info:", shipping_info)
+            print("Metadata:", metadata)
 
             if user_id and shipping_info:
                 try:
                     user = User.objects.get(pk=user_id)
                     address = ShippingAddress.objects.filter(user=user, postcode=shipping_info['address']['postal_code']).first()
 
-                    print("🔍 Looking for ShippingAddress with postcode:", shipping_info['address']['postal_code'])
-                    print("👤 User:", user)
-                    print("📬 Found address:", address)
+                    print("Looking for ShippingAddress with postcode:", shipping_info['address']['postal_code'])
+                    print("User:", user)
+                    print("Found address:", address)
 
                     Order.objects.create(
                         user=user,
@@ -243,12 +255,12 @@ def stripe_webhook(request):
                         scheduled_shipping_date=None,
                         status='processing'
                     )
-                    print("✅ Order created successfully")
+                    print("Order created successfully")
 
                 except User.DoesNotExist:
-                    print(f"❌ User ID {user_id} not found")
+                    print(f"User ID {user_id} not found")
                 except Exception as e:
-                    print(f"❌ Error creating order: {e}")
+                    print(f"Error creating order: {e}")
         elif session.get('mode') == 'subscription' and user_id: 
             try:
                 user = User.objects.get(pk=user_id)
@@ -264,14 +276,14 @@ def stripe_webhook(request):
                     shipping_address=shipping,
                     is_gift=False,
                 )
-                print("✅ Subscription saved for:", user.username)
+                print("Subscription saved for:", user.username)
             except Exception as e:
-                print(f"❌ Subscription handling error: {e}")
+                print(f"Subscription handling error: {e}")
 
     elif event['type'] == 'invoice.payment_succeeded':
-        print("📩 Received invoice.payment_succeeded")
+        print("Received invoice.payment_succeeded")
         invoice = event['data']['object']
-        print("💸 Payment succeeded for subscription")
+        print("Payment succeeded for subscription")
 
         subscription_id = invoice.get('subscription')
         customer_id = invoice.get('customer') 
@@ -281,7 +293,7 @@ def stripe_webhook(request):
         payment_date = timezone.now()
 
         try:
-            print("🔍 Looking for user and sub")
+            print("Looking for user and sub")
             user = User.objects.get(email=customer_email)
             sub_meta = StripeSubscriptionMeta.objects.filter(
                 user=user, stripe_subscription_id=subscription_id
@@ -295,7 +307,7 @@ def stripe_webhook(request):
                 shipping = user.addresses.filter(is_default=True).first() or user.addresses.first()
 
             if not shipping:
-                print(f"❌ No valid shipping address found for user {user.username}")
+                print(f"No valid shipping address found for user {user.username}")
                 return JsonResponse({'status': 'no shipping address'}, status=200)
 
             box = Box.objects.filter(is_archived=False).order_by('-shipping_date').first()
@@ -319,9 +331,9 @@ def stripe_webhook(request):
                 payment_method='card',
             )
 
-            print(f"✅ Created order + payment for {user.username}")
+            print(f"Created order + payment for {user.username}")
 
         except Exception as e:
-            print(f"❌ Failed to create recurring order/payment: {e}")
+            print(f"Failed to create recurring order/payment: {e}")
 
     return JsonResponse({'status': 'success'})
