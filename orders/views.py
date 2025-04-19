@@ -109,11 +109,7 @@ def handle_checkout(request, price_id):
 
         if form.is_valid():
             recipient_name = form.cleaned_data.get('recipient_name')
-            recipient_email = form.EmailField(
-                                required=False,
-                                label="Recipient Email",
-                                widget=form.EmailInput(attrs={'class': 'validate'})
-                            )
+            recipient_email = form.cleaned_data.get('recipient_email')
             sender_name = form.cleaned_data.get('sender_name')
             gift_message = form.cleaned_data.get('gift_message')
 
@@ -145,6 +141,7 @@ def handle_checkout(request, price_id):
                     payment_intent_data={
                         'metadata': {
                             'recipient_name': recipient_name,
+                            'recipient_email' : form.cleaned_data.get('recipient_email'),
                             'sender_name': sender_name,
                             'gift_message': gift_message,
                             'user_id': str(request.user.id),

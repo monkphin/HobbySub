@@ -14,6 +14,7 @@ from django.contrib.auth.forms import UserChangeForm
 from django.views.decorators.csrf import csrf_exempt
 from django.http import HttpResponse, JsonResponse
 from django.contrib.auth.models import User
+from django.core.mail import send_mail
 from django.utils import timezone
 from django.conf import settings
 import stripe.error
@@ -236,9 +237,10 @@ def stripe_webhook(request):
         if payment_intent_id:
             payment_intent = stripe.PaymentIntent.retrieve(payment_intent_id)
             metadata = payment_intent.metadata
+            recipient_email = metadata.get('recipient_email')
             shipping_info = payment_intent.shipping
             user_id = metadata.get('user_id')
-            amount_total = session.get('amount_total', 0)  # in cents
+            amount_total = session.get('amount_total', 0)
 
             print("Shipping info:", shipping_info)
             print("Metadata:", metadata)
@@ -269,12 +271,23 @@ def stripe_webhook(request):
                         user=user,
                         order=order,
                         payment_date=timezone.now(),
-                        amount=amount_total / 100,  # convert cents to £
+                        amount=amount_total / 100,
                         status='paid',
                         payment_method='card',
                     )
 
                     print(f"Payment recorded for one-off order #{order.id}")
+
+                    # ✅ Send gift email only if recipient_email exists
+                    if recipient_email:
+                        send_mail(
+                            subject="You've received a gift from Hobby Hub!",
+                            message=f"{metadata.get('sender_name', 'Someone')} sent you a subscription box from Hobby Hub!\n\nGift Message:\n{metadata.get('gift_message', '')}",
+                            from_email="noreply@hobbyhub.com",
+                            recipient_list=[recipient_email],
+                            fail_silently=False,
+                        )
+                        print(f"Gift email sent to {recipient_email}")
 
                 except User.DoesNotExist:
                     print(f"User ID {user_id} not found")

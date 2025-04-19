@@ -165,3 +165,20 @@ STRIPE_12MO_PRICE_ID = os.getenv('STRIPE_12MO_PRICE_ID')
 
 # Stripe webhook secret for event verification
 STRIPE_WEBHOOK_SECRET = os.environ.get("STRIPE_WEBHOOK_SECRET")
+
+# Detect environment (from .env or server config)
+DEVELOPMENT = os.getenv("DEVELOPMENT", "True") == "True"
+
+if DEVELOPMENT:
+    # Log emails to console for dev
+    EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+    DEFAULT_FROM_EMAIL = 'noreply@hobbyhub.local'
+else:
+    # Real email sending setup
+    EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+    EMAIL_HOST = os.getenv('EMAIL_HOST', 'smtp.sendgrid.net')
+    EMAIL_PORT = int(os.getenv('EMAIL_PORT', 587))
+    EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER', 'apikey')  # or real user
+    EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD')
+    EMAIL_USE_TLS = True
+    DEFAULT_FROM_EMAIL = os.getenv('DEFAULT_FROM_EMAIL', 'noreply@hobbyhub.com')
