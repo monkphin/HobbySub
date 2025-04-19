@@ -114,13 +114,14 @@ def send_upcoming_renewal_email(user, renewal_date):
     )
 
 # Shipping Confirmation
-def send_shipping_confirmation_email(user, box, tracking_number=None):
+def send_shipping_confirmation_email(user, box=None, tracking_number=None):
+    box_name = box.name if box else "Hobby Hub"
     tracking_info = f"\nTracking Number: {tracking_number}" if tracking_number else ""
     send_user_email(
         subject="Your Hobby Hub box has shipped!",
         message=(
             f"Hi {user.username},\n\n"
-            f"Your {box.name} box has shipped and is on its way!{tracking_info}\n\n"
+            f"Your {box_name} box has shipped and is on its way!{tracking_info}\n\n"
             "Thanks for being part of the Hobby Hub community."
         ),
         recipient_email=user.email

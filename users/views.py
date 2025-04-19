@@ -23,7 +23,7 @@ import stripe
 # Local imports
 from orders.models import Order, Payment, Box, StripeSubscriptionMeta
 from .forms import Register, AddAddressForm, ChangePassword
-from hobbyhub.mail import send_gift_notification_to_recipient, send_registration_email, send_account_update_email, send_address_change_email, send_account_deletion_email, send_subscription_confirmation_email, send_gift_confirmation_to_sender, send_order_confirmation_email, send_payment_failed_email
+from hobbyhub.mail import send_gift_notification_to_recipient, send_registration_email, send_account_update_email, send_address_change_email, send_account_deletion_email, send_subscription_confirmation_email, send_gift_confirmation_to_sender, send_order_confirmation_email, send_payment_failed_email, send_upcoming_renewal_email
 from .models import ShippingAddress
 from hobbyhub.utils import alert
 
@@ -391,5 +391,28 @@ def stripe_webhook(request):
             print(f"Payment failure email sent to {user.email}")
         except User.DoesNotExist:
             print(f"User with email {customer_email} not found")
+
+    elif event['type'] == 'invoice.upcoming':
+        invoice = event['data']['object']
+        customer_id = invoice.get('customer')
+        subscription_id = invoice.get('subscription')
+        next_renewal_ts = invoice.get('next_payment_attempt')
+
+        # Sometimes this is null
+        if not next_renewal_ts:
+            print("No next_payment_attempt found on invoice.upcoming")
+            return JsonResponse({'status': 'ignored'})
+
+        next_renewal = timezone.datetime.fromtimestamp(next_renewal_ts, tz=timezone.utc)
+        customer = stripe.Customer.retrieve(customer_id)
+        customer_email = customer.get('email')
+
+        try:
+            user = User.objects.get(email=customer_email)
+            send_upcoming_renewal_email(user, next_renewal)
+            print(f"Upcoming renewal email sent to {user.email}")
+        except User.DoesNotExist:
+            print(f"No user found for Stripe customer {customer_email}")
+
 
     return JsonResponse({'status': 'success'})

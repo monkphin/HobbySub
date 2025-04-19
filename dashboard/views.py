@@ -20,7 +20,9 @@ from django.contrib.admin.views.decorators import staff_member_required
 from hobbyhub.utils import alert
 from boxes.models import Box, BoxProduct
 from .forms import BoxForm, ProductForm, UserEditForm
+from hobbyhub.mail import send_shipping_confirmation_email
 from orders.models import Order, Payment, StripeSubscriptionMeta
+
 
 User = get_user_model()
 
@@ -331,6 +333,10 @@ def update_order_status(request, order_id):
         if new_status in dict(Order.STATUS_CHOICES):
             order.status = new_status
             order.save()
+            # If marked as shipped, trigger shipping email
+            if new_status == "shipped":
+                send_shipping_confirmation_email(order.user, order.box)
+                print(f"Shipping confirmation email sent to {order.user.email}")
             alert(request, "success", f"Order #{order.id} status updated to {new_status.title()}")
         else:
             alert(request, "error", "Invalid status selected.")

@@ -1,0 +1,21 @@
+{
+  "id": "evt_test_invoice_upcoming",
+  "object": "event",
+  "api_version": "2024-03-15",
+  "created": 1745054795,
+  "data": {
+    "object": {
+      "object": "invoice",
+      "customer": "cus_S99CvAKCxWOpNl",
+      "subscription": "si_S99CBvjLJR23AT",
+      "next_payment_attempt": 1745354795
+    }
+  },
+  "livemode": false,
+  "pending_webhooks": 1,
+  "request": {
+    "id": "req_test123",
+    "idempotency_key": null
+  },
+  "type": "invoice.upcoming"
+}
