@@ -11,15 +11,17 @@ Handles order and checkout flows including:
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect
 from django.conf import settings
-from django.urls import reverse
 import stripe 
 
-
-
-# LOcal imports
-from .forms import PreCheckoutForm
+# Local imports
 from .models import Order
-from hobbyhub.utils import alert
+from .forms import PreCheckoutForm
+from hobbyhub.utils import (
+    alert,
+    get_user_default_shipping_address,
+    build_shipping_details,
+    get_gift_metadata
+)
 
 # Configure Stripe with secret API key
 stripe.api_key = settings.STRIPE_SECRET_KEY
@@ -33,7 +35,6 @@ STRIPE_6MO_PRICE_ID = settings.STRIPE_6MO_PRICE_ID
 STRIPE_12MO_PRICE_ID = settings.STRIPE_12MO_PRICE_ID
 
 
-@login_required
 def order_success(request):
     """
     Renders the order success page with a success message.
@@ -42,7 +43,6 @@ def order_success(request):
     return render(request, 'orders/order_success.html')
 
 
-@login_required
 def order_cancel(request):
     """
     Renders the order cancellation page with an info message.
@@ -51,7 +51,6 @@ def order_cancel(request):
     return render(request, 'orders/order_cancel.html')
 
 
-@login_required
 def order_gift(request):
     """
     Starts checkout for a gift order.
@@ -59,7 +58,6 @@ def order_gift(request):
     return handle_checkout(request, price_id=GIFT_PRICE_ID)
 
 
-@login_required
 def order_oneoff(request):
     """
     Starts checkout for a one-off order.
@@ -67,69 +65,42 @@ def order_oneoff(request):
     return handle_checkout(request, price_id=ONEOFF_PRICE_ID)
 
 
-@login_required
-def create_monthly_subscription(request):
+def subscribe(request):
     """
-    Starts checkout for a monthly subscription.
+    Displays subscription plan options for the user to choose from.
     """
-    return create_subscription_checkout(request, STRIPE_MONTHLY_PRICE_ID)
+    return render(request, 'orders/subscribe.html')
+
+
+def create_subscription(request, plan):
+    plan_map = {
+        "monthly": STRIPE_MONTHLY_PRICE_ID,
+        "3mo": STRIPE_3MO_PRICE_ID,
+        "6mo": STRIPE_6MO_PRICE_ID,
+        "12mo": STRIPE_12MO_PRICE_ID,
+    }
+    price_id = plan_map.get(plan)
+    if not price_id:
+        alert(request, "error", "Invalid subscription plan.")
+        return redirect('subscribe_options')
+
+    return create_subscription_checkout(request, price_id)
 
 
 @login_required
-def create_3mo_subscription(request):
-    """
-    Starts checkout for a 3-month subscription.
-    """
-    return create_subscription_checkout(request, STRIPE_3MO_PRICE_ID)
-
-
-@login_required
-def create_6mo_subscription(request): 
-    """
-    Starts checkout for a 6-month subscription.
-    """
-    return create_subscription_checkout(request, STRIPE_6MO_PRICE_ID)
-
-
-@login_required
-def create_12mo_subscription(request): 
-    """
-    Starts checkout for a 12-month subscription.
-    """
-    return create_subscription_checkout(request, STRIPE_12MO_PRICE_ID)
-
-
 def handle_checkout(request, price_id):
     """
     Handles checkout for gift or one-off purchases.
     Validates pre-checkout form and creates Stripe checkout session.
     """
+    form = PreCheckoutForm(request.POST or None)
+
     if request.method == 'POST':
-        form = PreCheckoutForm(request.POST)
-
         if form.is_valid():
-            recipient_name = form.cleaned_data.get('recipient_name')
-            recipient_email = form.cleaned_data.get('recipient_email')
-            sender_name = form.cleaned_data.get('sender_name')
-            gift_message = form.cleaned_data.get('gift_message')
+            shipping_address, redirect_response = get_user_default_shipping_address(request)
+            if redirect_response:
+                return redirect_response
 
-            shipping_address = request.user.addresses.filter(is_default=True).first()
-
-            if not shipping_address:
-                alert(request, "error", "You must set a default shipping address before placing an order.")
-                return redirect(f"{reverse('add_address')}?next={request.path}")
-
-            shipping_details = {
-                'name': f'{shipping_address.recipient_f_name} {shipping_address.recipient_l_name}',
-                'address': {
-                    'line1': shipping_address.address_line_1,
-                    'line2': shipping_address.address_line_2 or '',
-                    'city': shipping_address.town_or_city,
-                    'state': shipping_address.county,
-                    'postal_code': shipping_address.postcode,
-                    'country': shipping_address.country,
-                }
-            }
             try:
                 session = stripe.checkout.Session.create(
                     payment_method_types=['card'],
@@ -139,14 +110,8 @@ def handle_checkout(request, price_id):
                         'quantity': 1,
                     }],
                     payment_intent_data={
-                        'metadata': {
-                            'recipient_name': recipient_name,
-                            'recipient_email' : form.cleaned_data.get('recipient_email'),
-                            'sender_name': sender_name,
-                            'gift_message': gift_message,
-                            'user_id': str(request.user.id),
-                        },
-                        'shipping': shipping_details
+                        'metadata': get_gift_metadata(form, request.user.id),
+                        'shipping': build_shipping_details(shipping_address)
                     },
                     customer_email=request.user.email,
                     success_url=request.build_absolute_uri('/orders/success/'),
@@ -155,13 +120,11 @@ def handle_checkout(request, price_id):
                 return redirect(session.url, code=303)
             except stripe.error.StripeError:
                 alert(request, "error", "There was a problem connecting to the payment service. Please try again shortly.")
-                return render(request, 'orders/pre_checkout.html', {'form': form})
         else:
             alert(request, "error", "Please correct the errors in the form.")
-    else:
-        form = PreCheckoutForm()
 
     return render(request, 'orders/pre_checkout.html', {'form': form})
+
 
 @login_required
 def create_subscription_checkout(request, price_id):

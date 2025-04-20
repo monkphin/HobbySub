@@ -16,10 +16,8 @@ urlpatterns = [
     path('oneoff/', views.order_oneoff, name='order_oneoff'),
 
     # Subscriptions.
-    path('subscribe/monthly/', views.create_monthly_subscription, name='create_monthly_subscription'),
-    path('subscribe/3months/', views.create_3mo_subscription, name='create_3mo_subscription'),
-    path('subscribe/6months/', views.create_6mo_subscription, name='create_6mo_subscription'),
-    path('subscribe/12months/', views.create_12mo_subscription, name='create_12mo_subscription'),
+    path('subscribe/', views.subscribe, name='subscribe'),
+    path('subscribe/subscribe/<str:plan>/', views.create_subscription, name='create_subscription'),
 
     # Checkout outcomes'
     path('success/', views.order_success, name='order_success'),
