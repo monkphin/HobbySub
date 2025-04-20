@@ -13,19 +13,27 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import UserChangeForm
 from django.views.decorators.csrf import csrf_exempt
 from django.http import HttpResponse, JsonResponse
-from django.contrib.auth.models import User
-from django.core.mail import send_mail
-from django.utils import timezone
 from django.conf import settings
 import stripe.error
 import stripe
 
 # Local imports
-from orders.models import Order, Payment, Box, StripeSubscriptionMeta
+from hobbyhub.mail import (
+    send_registration_email,
+    send_account_update_email,
+    send_address_change_email,
+    send_account_deletion_email    
+    )
+from hobbyhub.stripe_handlers import (
+    handle_checkout_session_completed,
+    handle_invoice_payment_succeeded,
+    handle_invoice_payment_failed,
+    handle_invoice_upcoming,
+)
 from .forms import Register, AddAddressForm, ChangePassword
-from hobbyhub.mail import send_gift_notification_to_recipient, send_registration_email, send_account_update_email, send_address_change_email, send_account_deletion_email, send_subscription_confirmation_email, send_gift_confirmation_to_sender, send_order_confirmation_email, send_payment_failed_email, send_upcoming_renewal_email
 from .models import ShippingAddress
 from hobbyhub.utils import alert
+
 
 
 def register_user(request):
@@ -225,195 +233,21 @@ def stripe_webhook(request):
     try:
         event = stripe.Webhook.construct_event(payload, sig_header, endpoint_secret)
     except (ValueError, stripe.error.SignatureVerificationError):
-        print("Invalid payload or signature")
+        print("Invalid webhook signature or payload")
         return HttpResponse(status=400)
 
-    # ----------------------
-    # One-off or Subscription Checkout
-    # ----------------------
-    if event['type'] == 'checkout.session.completed':
-        session = event['data']['object']
-        print("Event type:", event['type'])
+    event_type = event['type']
+    data = event['data']['object']
 
-        payment_intent_id = session.get('payment_intent')
-        user_id = session.get('metadata', {}).get('user_id')
-
-        if payment_intent_id:
-            payment_intent = stripe.PaymentIntent.retrieve(payment_intent_id)
-            metadata = payment_intent.metadata
-            print("🔎 Metadata from Stripe:", metadata)
-            recipient_email = metadata.get('recipient_email')
-            shipping_info = payment_intent.shipping
-            user_id = metadata.get('user_id')
-            amount_total = session.get('amount_total', 0)
-
-            print("Shipping info:", shipping_info)
-            print("Metadata:", metadata)
-            print("Session amount_total:", amount_total)
-
-            if user_id and shipping_info:
-                try:
-                    user = User.objects.get(pk=user_id)
-                    address = ShippingAddress.objects.filter(
-                        user=user, postcode=shipping_info['address']['postal_code']
-                    ).first()
-
-                    print("User:", user.username)
-                    print("Found address:", address)
-
-                    order = Order.objects.create(
-                        user=user,
-                        shipping_address=address,
-                        box=None,
-                        stripe_subscription_id=None,
-                        scheduled_shipping_date=None,
-                        status='processing'
-                    )
-
-                    print(f"Order #{order.id} created successfully")
-
-                    Payment.objects.create(
-                        user=user,
-                        order=order,
-                        payment_date=timezone.now(),
-                        amount=amount_total / 100,
-                        status='paid',
-                        payment_method='card',
-                    )
-
-                    print(f"Payment recorded for one-off order #{order.id}")
-
-                    # ✅ Email logic
-                    if recipient_email:
-                        send_gift_notification_to_recipient(
-                            recipient_email=recipient_email,
-                            sender_name=metadata.get('sender_name', 'Someone'),
-                            gift_message=metadata.get('gift_message', '')
-                        )
-                        send_gift_confirmation_to_sender(user, recipient_email)
-                        print(f"Gift email sent to {recipient_email}")
-                    else:
-                        send_order_confirmation_email(user, order.id)
-                        print(f"Order confirmation sent to {user.email}")
-
-                except User.DoesNotExist:
-                    print(f"User ID {user_id} not found")
-                except Exception as e:
-                    print(f"Error creating order or payment: {e}")
-
-        elif session.get('mode') == 'subscription' and user_id:
-            try:
-                user = User.objects.get(pk=user_id)
-                shipping = user.addresses.filter(is_default=True).first()
-                sub_id = session.get('subscription')
-                subscription = stripe.Subscription.retrieve(sub_id)
-                price_id = subscription['items']['data'][0]['price']['id']
-
-                StripeSubscriptionMeta.objects.create(
-                    user=user,
-                    stripe_subscription_id=sub_id,
-                    stripe_price_id=price_id,
-                    shipping_address=shipping,
-                    is_gift=False,
-                )
-
-                print(f"Subscription metadata saved for {user.username}")
-
-                # ✅ Email logic
-                send_subscription_confirmation_email(user, plan_name="Subscription Box")
-                print(f"Subscription confirmation email sent to {user.email}")
-
-            except Exception as e:
-                print(f"Subscription handling error: {e}")
-
-    # ----------------------
-    # Recurring Subscription Payments
-    # ----------------------
-    elif event['type'] == 'invoice.payment_succeeded':
-        print("Received invoice.payment_succeeded")
-        invoice = event['data']['object']
-        subscription_id = invoice.get('subscription')
-        customer_id = invoice.get('customer')
-        customer = stripe.Customer.retrieve(customer_id)
-        customer_email = customer.get('email')
-        amount_paid = invoice['amount_paid'] / 100
-        payment_date = timezone.now()
-
-        try:
-            user = User.objects.get(email=customer_email)
-            sub_meta = StripeSubscriptionMeta.objects.filter(
-                user=user, stripe_subscription_id=subscription_id
-            ).first()
-
-            shipping = sub_meta.shipping_address if sub_meta and sub_meta.shipping_address else (
-                user.addresses.filter(is_default=True).first() or user.addresses.first()
-            )
-
-            if not shipping:
-                print(f"No shipping address found for {user.username}")
-                return JsonResponse({'status': 'no shipping address'}, status=200)
-
-            box = Box.objects.filter(is_archived=False).order_by('-shipping_date').first()
-
-            order = Order.objects.create(
-                user=user,
-                stripe_subscription_id=subscription_id,
-                shipping_address=shipping,
-                box=box,
-                order_date=payment_date.date(),
-                scheduled_shipping_date=box.shipping_date if box else None,
-                status='processing',
-            )
-
-            Payment.objects.create(
-                user=user,
-                order=order,
-                payment_date=payment_date,
-                amount=amount_paid,
-                status='succeeded',
-                payment_method='card',
-            )
-
-            print(f"Recurring order + payment created for {user.username}")
-            # (You can optionally add a shipping confirmation email later)
-
-        except Exception as e:
-            print(f"Failed to create recurring order/payment: {e}")
-    
-    elif event['type'] == 'invoice.payment_failed':
-        invoice = event['data']['object']
-        customer_id = invoice.get('customer')
-        customer = stripe.Customer.retrieve(customer_id)
-        customer_email = customer.get('email')
-
-        try:
-            user = User.objects.get(email=customer_email)
-            send_payment_failed_email(user)
-            print(f"Payment failure email sent to {user.email}")
-        except User.DoesNotExist:
-            print(f"User with email {customer_email} not found")
-
-    elif event['type'] == 'invoice.upcoming':
-        invoice = event['data']['object']
-        customer_id = invoice.get('customer')
-        subscription_id = invoice.get('subscription')
-        next_renewal_ts = invoice.get('next_payment_attempt')
-
-        # Sometimes this is null
-        if not next_renewal_ts:
-            print("No next_payment_attempt found on invoice.upcoming")
-            return JsonResponse({'status': 'ignored'})
-
-        next_renewal = timezone.datetime.fromtimestamp(next_renewal_ts, tz=timezone.utc)
-        customer = stripe.Customer.retrieve(customer_id)
-        customer_email = customer.get('email')
-
-        try:
-            user = User.objects.get(email=customer_email)
-            send_upcoming_renewal_email(user, next_renewal)
-            print(f"Upcoming renewal email sent to {user.email}")
-        except User.DoesNotExist:
-            print(f"No user found for Stripe customer {customer_email}")
-
+    if event_type == 'checkout.session.completed':
+        handle_checkout_session_completed(data)
+    elif event_type == 'invoice.payment_succeeded':
+        handle_invoice_payment_succeeded(data)
+    elif event_type == 'invoice.payment_failed':
+        handle_invoice_payment_failed(data)
+    elif event_type == 'invoice.upcoming':
+        handle_invoice_upcoming(data)
+    else:
+        print(f"Ignored event type: {event_type}")
 
     return JsonResponse({'status': 'success'})

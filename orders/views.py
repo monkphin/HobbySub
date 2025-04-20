@@ -144,9 +144,10 @@ def handle_checkout(request, price_id):
                         'price': price_id,
                         'quantity': 1,
                     }],
+                    metadata=get_gift_metadata(form, request.user.id),
                     payment_intent_data={
                         'metadata': get_gift_metadata(form, request.user.id),
-                        'shipping': build_shipping_details(shipping_address)
+                        'shipping': build_shipping_details(shipping_address),
                     },
                     customer_email=request.user.email,
                     success_url=request.build_absolute_uri('/orders/success/'),
