@@ -7,6 +7,7 @@ Includes helpers for:
 - Building Shipping details
 - Collecting metadata for gifts
 - Display Sub Duration
+- Display Sub Status
 
 Import and use these anywhere you need a reusable function that keeps views clean and DRY.
 """
@@ -93,3 +94,11 @@ def get_subscription_duration_display(subscription):
     
     end_date = subscription.created_at + relativedelta(months=months)
     return f"{label} – ends {end_date.strftime('%B %Y')}"
+
+
+def get_subscription_status(sub):
+    if not sub:
+        return "No subscription"
+    if sub.cancelled_at:
+        return f"Cancelled on {sub.cancelled_at.strftime('%d %b %Y')}"
+    return "Active"

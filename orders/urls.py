@@ -18,6 +18,7 @@ urlpatterns = [
     # Subscriptions.
     path('subscribe/', views.subscribe, name='subscribe'),
     path('subscribe/subscribe/<str:plan>/', views.create_subscription, name='create_subscription'),
+    path('cancel-subscription/', views.cancel_subscription, name='cancel_subscription'),
 
     # Checkout outcomes'
     path('success/', views.order_success, name='order_success'),

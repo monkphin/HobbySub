@@ -10,20 +10,23 @@ Handles order and checkout flows including:
 # Django/External Imports
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect
+from django.utils import timezone
 from django.conf import settings
 import stripe 
 
+
 # Local imports
 from .forms import PreCheckoutForm
+from hobbyhub.mail import send_subscription_cancelled_email
 from .models import Order, Payment, StripeSubscriptionMeta
 from hobbyhub.utils import (
     alert,
     get_user_default_shipping_address,
     build_shipping_details,
     get_gift_metadata,
-    get_subscription_duration_display
+    get_subscription_duration_display,
+    get_subscription_status
 )
-
 
 # Configure Stripe with secret API key
 stripe.api_key = settings.STRIPE_SECRET_KEY
@@ -87,6 +90,36 @@ def create_subscription(request, plan):
         return redirect('subscribe_options')
 
     return create_subscription_checkout(request, price_id)
+
+
+@login_required
+def cancel_subscription(request):
+    if request.method == 'POST':
+        try:
+            sub = StripeSubscriptionMeta.objects.filter(
+                user=request.user,
+                cancelled_at__isnull=True
+            ).latest('created_at')
+            if not sub.stripe_subscription_id:
+                alert(request, "error", "No Stripe subscription found.")
+                return redirect('order_history')
+
+            stripe.Subscription.modify(
+                sub.stripe_subscription_id,
+                cancel_at_period_end=True
+            )
+
+            sub.cancelled_at = timezone.now()
+            sub.save()
+            send_subscription_cancelled_email(
+                request.user,
+                plan_id=sub.stripe_price_id,
+                start_date=sub.created_at
+            )
+            alert(request, "success", "Your subscription will remain active until the end of your current billing period, then it will be cancelled.")
+        except StripeSubscriptionMeta.DoesNotExist:
+            alert(request, "error", "No active subscription found to cancel.")
+    return redirect('order_history')
 
 
 @login_required
@@ -163,6 +196,7 @@ def order_history(request):
         sub.stripe_subscription_id: {
             'sub': sub,
             'label': get_subscription_duration_display(sub),
+            'status': get_subscription_status(sub),
         } for sub in subscriptions
     }
     payments_by_order = {p.order_id: p for p in payments}
@@ -175,5 +209,5 @@ def order_history(request):
         'orders': oneoff_orders,
         'payments_by_order': payments_by_order,
         'get_subscription_duration_display': get_subscription_duration_display,
-        'sub_map': sub_map
+        'sub_map': sub_map,
     })

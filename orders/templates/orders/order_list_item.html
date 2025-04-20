@@ -13,6 +13,17 @@
   
     <strong>Shipping To:</strong> {{ order.shipping_address.recipient_f_name }} {{ order.shipping_address.recipient_l_name }}, {{ order.shipping_address.postcode }}<br>
     <a class="btn-small modal-trigger" href="#order-modal-{{ order.id }}">View Details</a>
+    {% if order.stripe_subscription_id %}
+      {% with sub_map|get_item:order.stripe_subscription_id as sub_info %}
+        {% if not sub_info.sub.cancelled_at %}
+          <a class="btn-small red lighten-1 modal-trigger" href="#cancel-modal-{{ order.id }}" style="margin-left: 8px;">
+            Cancel
+          </a>
+        {% else %}
+          <p><strong>Status:</strong> <span class="red-text text-darken-2">Cancelled on {{ sub_info.sub.cancelled_at|date:"d M Y" }}</span></p>
+        {% endif %}
+      {% endwith %}
+    {% endif %}
   </li>
   
   <!-- Modal for Order Details -->
@@ -50,6 +61,21 @@
     </div>
     <div class="modal-footer">
       <a href="#!" class="modal-close btn-flat">Close</a>
+    </div>
+  </div>
+
+  <!-- Modal for cancel confirmation -->
+  <div id="cancel-modal-{{ order.id }}" class="modal">
+    <div class="modal-content">
+      <h5>Cancel Subscription?</h5>
+      <p>Are you sure you want to cancel your subscription? It will remain active until the end of your current billing period.</p>
+    </div>
+    <div class="modal-footer" style="display: flex; gap: 10px; align-items: center;">
+      <a href="#!" class="modal-close btn green">No, Keep It</a>
+      <form method="post" action="{% url 'cancel_subscription' %}" style="margin: 0;">
+        {% csrf_token %}
+        <button type="submit" class="btn red">Yes, Cancel</button>
+      </form>
     </div>
   </div>
   

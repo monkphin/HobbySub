@@ -1,5 +1,9 @@
+from dateutil.relativedelta import relativedelta
 from django.core.mail import send_mail
 from django.conf import settings
+
+from .utils import PLAN_MAP
+
 
 def send_user_email(subject, message, recipient_email):
     """
@@ -123,6 +127,25 @@ def send_shipping_confirmation_email(user, box=None, tracking_number=None):
             f"Hi {user.username},\n\n"
             f"Your {box_name} box has shipped and is on its way!{tracking_info}\n\n"
             "Thanks for being part of the Hobby Hub community."
+        ),
+        recipient_email=user.email
+    )
+
+# Cancellation Email
+def send_subscription_cancelled_email(user, plan_id, start_date):
+    """
+    Notify user that their subscription has been cancelled.
+    """
+    months, label = PLAN_MAP.get(plan_id, (0, "Your plan"))
+    end_date = start_date + relativedelta(months=months)
+
+    send_user_email(
+        subject="Subscription Cancelled",
+        message=(
+            f"Hi {user.username},\n\n"
+            f"Your subscription to the {label} has been cancelled.\n"
+            f"You’ll still receive your boxes through {end_date.strftime('%B %Y')}.\n\n"
+            "Thanks for being part of Hobby Hub!"
         ),
         recipient_email=user.email
     )
