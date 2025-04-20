@@ -14,13 +14,14 @@ from django.conf import settings
 import stripe 
 
 # Local imports
-from .models import Order, Payment
 from .forms import PreCheckoutForm
+from .models import Order, Payment, StripeSubscriptionMeta
 from hobbyhub.utils import (
     alert,
     get_user_default_shipping_address,
     build_shipping_details,
-    get_gift_metadata
+    get_gift_metadata,
+    get_subscription_duration_display
 )
 
 
@@ -157,7 +158,13 @@ def create_subscription_checkout(request, price_id):
 def order_history(request):
     all_orders = Order.objects.filter(user=request.user).order_by('-order_date')
     payments = Payment.objects.filter(order__in=all_orders)
-
+    subscriptions = StripeSubscriptionMeta.objects.filter(user=request.user)
+    sub_map = {
+        sub.stripe_subscription_id: {
+            'sub': sub,
+            'label': get_subscription_duration_display(sub),
+        } for sub in subscriptions
+    }
     payments_by_order = {p.order_id: p for p in payments}
 
     sub_orders = [o for o in all_orders if o.stripe_subscription_id]
@@ -167,4 +174,6 @@ def order_history(request):
         'subscriptions': sub_orders,
         'orders': oneoff_orders,
         'payments_by_order': payments_by_order,
+        'get_subscription_duration_display': get_subscription_duration_display,
+        'sub_map': sub_map
     })

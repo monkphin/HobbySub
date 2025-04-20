@@ -6,12 +6,24 @@ Includes helpers for:
 - Getting shipping addresses. 
 - Building Shipping details
 - Collecting metadata for gifts
+- Display Sub Duration
 
 Import and use these anywhere you need a reusable function that keeps views clean and DRY.
 """
+
+from django.conf import settings
 from django.urls import reverse
 from django.contrib import messages
 from django.shortcuts import redirect
+from dateutil.relativedelta import relativedelta
+
+
+PLAN_MAP = {
+    settings.STRIPE_MONTHLY_PRICE_ID: (1, "Monthly"),
+    settings.STRIPE_3MO_PRICE_ID: (3, "3-month plan"),
+    settings.STRIPE_6MO_PRICE_ID: (6, "6-month plan"),
+    settings.STRIPE_12MO_PRICE_ID: (12, "12-month plan"),
+}
 
 
 def alert(request, level, msg):
@@ -72,3 +84,12 @@ def get_gift_metadata(form, user_id):
         'gift_message': form.cleaned_data.get('gift_message'),
         'user_id': str(user_id),
     }
+
+
+def get_subscription_duration_display(subscription):
+    months, label = PLAN_MAP.get(subscription.stripe_price_id, (None, None))
+    if not months:
+        return "Unknown plan"
+    
+    end_date = subscription.created_at + relativedelta(months=months)
+    return f"{label} – ends {end_date.strftime('%B %Y')}"

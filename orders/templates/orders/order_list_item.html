@@ -5,6 +5,12 @@
     <strong>Order #{{ order.id }}</strong><br>
     <strong>Status:</strong> {{ order.status|title }}<br>
     <strong>Order Date:</strong> {{ order.order_date|date:"F j, Y" }}<br>
+    {% if order.stripe_subscription_id %}
+      {% with sub_map|get_item:order.stripe_subscription_id as sub_info %}
+        <p><strong>Plan:</strong> {{ sub_info.label }}</p>
+      {% endwith %}
+    {% endif %}
+  
     <strong>Shipping To:</strong> {{ order.shipping_address.recipient_f_name }} {{ order.shipping_address.recipient_l_name }}, {{ order.shipping_address.postcode }}<br>
     <a class="btn-small modal-trigger" href="#order-modal-{{ order.id }}">View Details</a>
   </li>
