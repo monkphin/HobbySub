@@ -4,96 +4,93 @@
 {% block title %}Welcome to Hobby Hub{% endblock %}
 
 {% block content %}
-<div class="container">
+  <div class="container">
 
-  <!-- Hero Section -->
-  <section class="section center-align">
-    <img src="{% static 'images/hero.png' %}" alt="Your hobby delivered to your door">
-    <h1 class="flow-text">Unbox Hobby Joy Monthly</h1>
-    <p class="lead">Get curated miniatures, paints, and hobby gear delivered to your door.</p>
-    <a href="{% url 'subscribe' %}" class="btn btn-large">Subscribe Now</a>
-    <a href="{% url 'order_oneoff' %}" class="btn btn-large">Try a one off Box</a>
-    <a href="{% url 'order_gift' %}" class="btn btn-large">Gift a Box</a>
-  </section>
+    <!-- Hero Section -->
+    <section class="section center-align">
+      <img src="{% static 'images/hero.png' %}" alt="Your hobby delivered to your door">
+    </section>
 
-  <hr>
+    <hr>
 
-  <!-- How It Works -->
-  <section class="section">
-    <h2 class="center-align">How It Works</h2>
-    <div class="row center-align">
-      <div class="col s12 m4">
-        <i class="fa-solid fa-gifts fa-3x"></i>        <!-- Pick Your Plan -->
-        <h5>Pick Your Plan</h5>
-        <p>Choose how long you want to subscribe — or gift a one-off box.</p>
+    <!-- How It Works -->
+    <section class="section">
+      <h2 class="center-align">How It Works</h2>
+      <div class="row center-align">
+        <div class="col s12 m4">
+          <i class="fa-solid fa-gifts fa-3x"></i>        <!-- Pick Your Plan -->
+          <h5>Pick Your Plan</h5>
+          <p>Choose how long you want to subscribe — or gift a one-off box.</p>
+        </div>
+        <div class="col s12 m4">
+          <i class="fa-solid fa-truck-fast fa-3x"></i>     <!-- We Ship -->
+          <h5>We Ship</h5>
+          <p>Boxes ship on the 1st of each month, loaded with surprise contents.</p>
+        </div>
+        <div class="col s12 m4">
+          <i class="fa-solid fa-paintbrush fa-3x"></i>     <!-- You Enjoy -->
+          <h5>You Enjoy</h5>
+          <p>Paint, build, and explore new gear — every month.</p>
+        </div>
       </div>
-      <div class="col s12 m4">
-        <i class="fa-solid fa-truck-fast fa-3x"></i>     <!-- We Ship -->
-        <h5>We Ship</h5>
-        <p>Boxes ship on the 1st of each month, loaded with surprise contents.</p>
-      </div>
-      <div class="col s12 m4">
-        <i class="fa-solid fa-paintbrush fa-3x"></i>     <!-- You Enjoy -->
-        <h5>You Enjoy</h5>
-        <p>Paint, build, and explore new gear — every month.</p>
-      </div>
-    </div>
-  </section>
+    </section>
 
-  <hr>
+    <hr>
 
+    <section class="section center-align">
+      <h1 class="flow-text">Unbox Hobby Joy Monthly</h1>
+      <p class="lead">Get curated miniatures, paints, and hobby gear delivered to your door.</p>
+      <a href="{% url 'select_purchase_type' %}?gift=false" class="btn btn-large">Subscribe Now</a>
+      <a href="{% url 'select_purchase_type' %}?gift=true" class="btn btn-large">Give as a gift</a>
+    </section>
+    
+    <!-- Current Box Preview -->
+    {% if box %}
+      <section class="section center-align">
+        <h2>This Month’s Box</h2>
+        <img src="{{ box.image_url }}" alt="{{ box.name }}" class="responsive-img z-depth-2" style="max-height: 300px;" />
+        <h5>{{ box.name }}</h5>
+        <p class="grey-text text-darken-1">{{ box.description|truncatewords:25 }}</p>
+      
+      <!-- Current Box Content Carousel -->
+        <div class="carousel" style="height: 150px;">
+            {% for item in box.contents.all %}
+            <a class="carousel-item" href="#{{ item.id }}">
+                <img src="{{ item.image_url }}" alt="{{ item.name }}">
+                <h6>{{ item.name }}</h6>
+            </a>
+            {% endfor %}
+        </div>
+        <br>
+        <a href="" class="btn">Get This Box</a>
+      </section>
 
-   
-  <!-- Current Box Preview -->
-{% if box %}
-  <section class="section center-align">
-    <h2>This Month’s Box</h2>
-    <img src="{{ box.image_url }}" alt="{{ box.name }}" class="responsive-img z-depth-2" style="max-height: 300px;" />
-    <h5>{{ box.name }}</h5>
-    <p class="grey-text text-darken-1">{{ box.description|truncatewords:25 }}</p>
-  
-  <!-- Current Box Content Carousel -->
-    <div class="carousel" style="height: 150px;">
-        {% for item in box.contents.all %}
-        <a class="carousel-item" href="#{{ item.id }}">
-            <img src="{{ item.image_url }}" alt="{{ item.name }}">
-            <h6>{{ item.name }}</h6>
-        </a>
-        {% endfor %}
-    </div>
-    <br>
-    <a href="" class="btn">Get This Box</a>
-  </section>
-
-{% endif %}
+    {% endif %}
 
 
-  <hr>
-  <!-- Next Box Preview -->
-{% if next_box %}
-  <section class="section center-align">
-    <h2>Coming Next Month!</h2>
-    <h3>{{ next_box.name }}</h3>
-    <p class="grey-text">Ships {{ next_box.shipping_date|date:"d M Y" }}</p>
-    <p class="grey-text text-darken-1">{{ next_box.description|truncatewords:20 }}</p>
-  </section>
+    <hr>
+    <!-- Next Box Preview -->
+    {% if next_box %}
+      <section class="section center-align">
+        <h2>Coming Next Month!</h2>
+        <h3>{{ next_box.name }}</h3>
+        <p class="grey-text">Ships {{ next_box.shipping_date|date:"d M Y" }}</p>
+        <p class="grey-text text-darken-1">{{ next_box.description|truncatewords:20 }}</p>
+      </section>
 
-{% endif %}
+    {% endif %}
 
-<!-- Handle scenarios where no boxes are available -->
-{% if not box and not next_box %}
-  <section class="section center-align">
-    <h5>No active boxes at the moment — check back soon!</h5>
-    <p class="grey-text text-darken-1">
-      We're preparing something special. New boxes are added monthly, so keep your brushes ready!
-    </p>
-    <a class="btn disabled">Subscribe Now</a>
-    <a class="btn-flat" href="{% url 'contact' %}">Contact Us</a>
-  </section>
-{% endif %}
+    <!-- Handle scenarios where no boxes are available -->
+    {% if not box and not next_box %}
+      <section class="section center-align">
+        <h5>No active boxes at the moment — check back soon!</h5>
+        <p class="grey-text text-darken-1">
+          We're preparing something special. New boxes are added monthly, so keep your brushes ready!
+        </p>
+        <a class="btn disabled">Subscribe Now</a>
+        <a class="btn-flat" href="{% url 'contact' %}">Contact Us</a>
+      </section>
+    {% endif %}
 
-
-  
-
-</div>
+  </div>
 {% endblock %}

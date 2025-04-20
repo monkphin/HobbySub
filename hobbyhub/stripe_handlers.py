@@ -55,7 +55,7 @@ def handle_checkout_session_completed(session):
         try:
             payment_intent_id = session.get('payment_intent')
             if not payment_intent_id:
-                print("❌ No payment_intent ID found in session")
+                print("No payment_intent ID found in session")
                 return
 
             payment_intent = stripe.PaymentIntent.retrieve(payment_intent_id)

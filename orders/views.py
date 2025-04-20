@@ -40,6 +40,164 @@ STRIPE_6MO_PRICE_ID = settings.STRIPE_6MO_PRICE_ID
 STRIPE_12MO_PRICE_ID = settings.STRIPE_12MO_PRICE_ID
 
 
+@login_required
+def order_start(request):
+    """
+    Presents user with choice: Buy for self or gift.
+    """
+    return render(request, 'orders/order_start.html')
+
+
+@login_required
+def select_purchase_type(request):
+    """
+    User selects one of the 5 purchase types (single, sub, etc.).
+    'gift' passed as ?gift=true or false.
+    """
+    gift = request.GET.get('gift', 'false').lower() == 'true'
+    return render(request, 'orders/select_purchase_type.html', {'gift': gift})
+
+
+
+@login_required
+def handle_purchase_type(request, plan):
+    """
+    Routes user to gift message step or checkout based on selection.
+    """
+    gift_raw = request.GET.get('gift')
+    gift = request.GET.get('gift', 'false') == 'true'
+    print(f"GIFT PARAM: {gift_raw} → Interpreted as gift={gift}")
+
+
+    plan_map = {
+        "oneoff": ONEOFF_PRICE_ID,
+        "monthly": STRIPE_MONTHLY_PRICE_ID,
+        "3mo": STRIPE_3MO_PRICE_ID,
+        "6mo": STRIPE_6MO_PRICE_ID,
+        "12mo": STRIPE_12MO_PRICE_ID,
+    }
+    price_id = plan_map.get(plan)
+    if not price_id:
+        alert(request, "error", "Invalid selection.")
+        return redirect('order_start')
+
+    if plan == "oneoff" and not gift:
+        return handle_checkout(request, price_id)
+
+    if gift:
+        return redirect('gift_message', plan=plan)
+    
+    else:
+        return create_subscription_checkout(request, price_id)
+
+
+@login_required
+def gift_message(request, plan):
+    """
+    Gathers gift message, then sends to checkout with correct price_id.
+    """
+    form = PreCheckoutForm(request.POST or None)
+    plan_map = {
+        "oneoff": GIFT_PRICE_ID,
+        "monthly": STRIPE_MONTHLY_PRICE_ID,
+        "3mo": STRIPE_3MO_PRICE_ID,
+        "6mo": STRIPE_6MO_PRICE_ID,
+        "12mo": STRIPE_12MO_PRICE_ID,
+    }
+    price_id = plan_map.get(plan)
+
+    if request.method == 'POST':
+        if form.is_valid():
+            shipping_address, redirect_response = get_user_default_shipping_address(request)
+            if redirect_response:
+                return redirect_response
+
+            try:
+                session = stripe.checkout.Session.create(
+                    payment_method_types=['card'],
+                    mode='payment' if plan == 'oneoff' else 'subscription',
+                    line_items=[{
+                        'price': price_id,
+                        'quantity': 1,
+                    }],
+                    metadata=get_gift_metadata(form, request.user.id),
+                    payment_intent_data={
+                        'metadata': get_gift_metadata(form, request.user.id),
+                        'shipping': build_shipping_details(shipping_address),
+                    },
+                    customer_email=request.user.email,
+                    success_url=request.build_absolute_uri('/orders/success/'),
+                    cancel_url=request.build_absolute_uri('/orders/cancel/'),
+                )
+                return redirect(session.url, code=303)
+            except stripe.error.StripeError:
+                alert(request, "error", "There was a problem with the payment service.")
+        else:
+            alert(request, "error", "Please correct the errors in the form.")
+
+    return render(request, 'orders/pre_checkout.html', {'form': form})
+
+
+@login_required
+def handle_checkout(request, price_id):
+    """
+    Handles checkout for non-gift one-off purchases.
+    Goes straight to Stripe without showing a form.
+    """
+    shipping_address, redirect_response = get_user_default_shipping_address(request)
+    if redirect_response:
+        return redirect_response
+
+    try:
+        session = stripe.checkout.Session.create(
+            payment_method_types=['card'],
+            mode='payment',
+            line_items=[{
+                'price': price_id,
+                'quantity': 1,
+            }],
+            metadata={'user_id': request.user.id},
+            payment_intent_data={
+                'metadata': {'user_id': request.user.id},
+                'shipping': build_shipping_details(shipping_address),
+            },
+            customer_email=request.user.email,
+            success_url=request.build_absolute_uri('/orders/success/'),
+            cancel_url=request.build_absolute_uri('/orders/cancel/'),
+        )
+        return redirect(session.url, code=303)
+    except stripe.error.StripeError:
+        alert(request, "error", "There was a problem connecting to the payment service. Please try again shortly.")
+        return redirect('order_start')
+
+
+
+@login_required
+def create_subscription_checkout(request, price_id):
+    """
+    Handles Stripe checkout session creation for subscription purchases.
+    """
+    try:
+        checkout_session = stripe.checkout.Session.create(
+            customer_email=request.user.email,
+            payment_method_types=['card'],
+            mode='subscription',
+            line_items=[{
+                'price': price_id,
+                'quantity': 1,
+            }],
+            metadata={
+                'user_id': request.user.id,
+            },
+            success_url=request.build_absolute_uri('/orders/success/?sub=monthly'),
+            cancel_url=request.build_absolute_uri('/orders/cancel/'),
+        )
+        return redirect(checkout_session.url, code=303)
+    except stripe.error.StripeError:
+        alert(request, "error", "There was a problem connecting to the payment service. Please try again shortly.")
+    return redirect('subscribe_options')
+
+
 def order_success(request):
     """
     Renders the order success page with a success message.
@@ -56,40 +214,30 @@ def order_cancel(request):
     return render(request, 'orders/order_cancel.html')
 
 
-def order_gift(request):
-    """
-    Starts checkout for a gift order.
-    """
-    return handle_checkout(request, price_id=GIFT_PRICE_ID)
-
-
-def order_oneoff(request):
-    """
-    Starts checkout for a one-off order.
-    """
-    return handle_checkout(request, price_id=ONEOFF_PRICE_ID)
-
-
-def subscribe(request):
-    """
-    Displays subscription plan options for the user to choose from.
-    """
-    return render(request, 'orders/subscribe.html')
-
-
-def create_subscription(request, plan):
-    plan_map = {
-        "monthly": STRIPE_MONTHLY_PRICE_ID,
-        "3mo": STRIPE_3MO_PRICE_ID,
-        "6mo": STRIPE_6MO_PRICE_ID,
-        "12mo": STRIPE_12MO_PRICE_ID,
+@login_required
+def order_history(request):
+    all_orders = Order.objects.filter(user=request.user).order_by('-order_date')
+    payments = Payment.objects.filter(order__in=all_orders)
+    subscriptions = StripeSubscriptionMeta.objects.filter(user=request.user)
+    sub_map = {
+        sub.stripe_subscription_id: {
+            'sub': sub,
+            'label': get_subscription_duration_display(sub),
+            'status': get_subscription_status(sub),
+        } for sub in subscriptions
     }
-    price_id = plan_map.get(plan)
-    if not price_id:
-        alert(request, "error", "Invalid subscription plan.")
-        return redirect('subscribe_options')
+    payments_by_order = {p.order_id: p for p in payments}
 
-    return create_subscription_checkout(request, price_id)
+    sub_orders = [o for o in all_orders if o.stripe_subscription_id]
+    oneoff_orders = [o for o in all_orders if not o.stripe_subscription_id]
+
+    return render(request, 'orders/order_history.html', {
+        'subscriptions': sub_orders,
+        'orders': oneoff_orders,
+        'payments_by_order': payments_by_order,
+        'get_subscription_duration_display': get_subscription_duration_display,
+        'sub_map': sub_map,
+    })
 
 
 @login_required
@@ -120,95 +268,3 @@ def cancel_subscription(request):
         except StripeSubscriptionMeta.DoesNotExist:
             alert(request, "error", "No active subscription found to cancel.")
     return redirect('order_history')
-
-
-@login_required
-def handle_checkout(request, price_id):
-    """
-    Handles checkout for gift or one-off purchases.
-    Validates pre-checkout form and creates Stripe checkout session.
-    """
-    form = PreCheckoutForm(request.POST or None)
-
-    if request.method == 'POST':
-        if form.is_valid():
-            shipping_address, redirect_response = get_user_default_shipping_address(request)
-            if redirect_response:
-                return redirect_response
-
-            try:
-                session = stripe.checkout.Session.create(
-                    payment_method_types=['card'],
-                    mode='payment',
-                    line_items=[{
-                        'price': price_id,
-                        'quantity': 1,
-                    }],
-                    metadata=get_gift_metadata(form, request.user.id),
-                    payment_intent_data={
-                        'metadata': get_gift_metadata(form, request.user.id),
-                        'shipping': build_shipping_details(shipping_address),
-                    },
-                    customer_email=request.user.email,
-                    success_url=request.build_absolute_uri('/orders/success/'),
-                    cancel_url=request.build_absolute_uri('/orders/cancel/'),
-                )
-                return redirect(session.url, code=303)
-            except stripe.error.StripeError:
-                alert(request, "error", "There was a problem connecting to the payment service. Please try again shortly.")
-        else:
-            alert(request, "error", "Please correct the errors in the form.")
-
-    return render(request, 'orders/pre_checkout.html', {'form': form})
-
-
-@login_required
-def create_subscription_checkout(request, price_id):
-    """
-    Handles Stripe checkout session creation for subscription purchases.
-    """
-    try:
-        checkout_session = stripe.checkout.Session.create(
-            customer_email=request.user.email,
-            payment_method_types=['card'],
-            mode='subscription',
-            line_items=[{
-                'price': price_id,
-                'quantity': 1,
-            }],
-            metadata={
-                'user_id': request.user.id,
-            },
-            success_url=request.build_absolute_uri('/orders/success/?sub=monthly'),
-            cancel_url=request.build_absolute_uri('/orders/cancel/'),
-        )
-        return redirect(checkout_session.url, code=303)
-    except stripe.error.StripeError:
-        alert(request, "error", "There was a problem connecting to the payment service. Please try again shortly.")
-    return redirect('subscribe_options')
-
-
-@login_required
-def order_history(request):
-    all_orders = Order.objects.filter(user=request.user).order_by('-order_date')
-    payments = Payment.objects.filter(order__in=all_orders)
-    subscriptions = StripeSubscriptionMeta.objects.filter(user=request.user)
-    sub_map = {
-        sub.stripe_subscription_id: {
-            'sub': sub,
-            'label': get_subscription_duration_display(sub),
-            'status': get_subscription_status(sub),
-        } for sub in subscriptions
-    }
-    payments_by_order = {p.order_id: p for p in payments}
-
-    sub_orders = [o for o in all_orders if o.stripe_subscription_id]
-    oneoff_orders = [o for o in all_orders if not o.stripe_subscription_id]
-
-    return render(request, 'orders/order_history.html', {
-        'subscriptions': sub_orders,
-        'orders': oneoff_orders,
-        'payments_by_order': payments_by_order,
-        'get_subscription_duration_display': get_subscription_duration_display,
-        'sub_map': sub_map,
-    })

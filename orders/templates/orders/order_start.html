@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block title %}Start Your Order{% endblock %}
+
+{% block content %}
+<section class="section center-align">
+  <h4 class="green-text text-darken-2">Who's the box for?</h4>
+  <p class="grey-text">Choose whether you're treating yourself or sending a gift to someone else.</p>
+
+  <div class="row" style="margin-top: 40px;">
+    <div class="col s12 m6">
+      <a href="{% url 'select_purchase_type' %}?gift=false" class="btn-large waves-effect green darken-2">Buy for Myself</a>
+    </div>
+    <div class="col s12 m6">
+      <a href="{% url 'select_purchase_type' %}?gift=true" class="btn-large waves-effect teal">Send as a Gift</a>
+    </div>
+  </div>
+</section>
+{% endblock %}

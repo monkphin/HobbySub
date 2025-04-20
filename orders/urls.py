@@ -11,13 +11,14 @@ from django.urls import path
 from . import views
 
 urlpatterns = [
-    # One off gifts/orders.
-    path('gift/', views.order_gift, name='order_gift'),
-    path('oneoff/', views.order_oneoff, name='order_oneoff'),
 
-    # Subscriptions.
-    path('subscribe/', views.subscribe, name='subscribe'),
-    path('subscribe/subscribe/<str:plan>/', views.create_subscription, name='create_subscription'),
+    # Unified entry point for orders
+    path('start/', views.order_start, name='order_start'),
+    path('select/', views.select_purchase_type, name='select_purchase_type'),
+    path('purchase/<str:plan>/', views.handle_purchase_type, name='handle_purchase_type'),
+    path('gift/message/<str:plan>/', views.gift_message, name='gift_message'),
+
+    # Subscription Cancellation
     path('cancel-subscription/', views.cancel_subscription, name='cancel_subscription'),
 
     # Checkout outcomes'

@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+{% block title %}Choose a Plan{% endblock %}
+
+{% block content %}
+<section class="section center-align">
+  <h4 class="green-text text-darken-2">
+    {{ gift|yesno:"🎁 Choose a Gift Plan,📦 Choose a Plan" }}
+  </h4>
+  <p class="grey-text">
+    {{ gift|yesno:"Your recipient will receive a surprise box based on your selection,Choose a plan that suits your hobby lifestyle." }}
+  </p>
+
+  <!-- One-Off Box Section -->
+  <div class="row" style="margin-top: 40px;">
+    <div class="col s12">
+      <h5 class="blue-grey-text text-darken-2">🎁 One-Off Box</h5>
+    </div>
+    <div class="col s12 m8 offset-m2 l6 offset-l3">
+      <div class="card">
+        <div class="card-content">
+          <span class="card-title">One-Off Box</span>
+          <p>£35 total. A single HobbyCrate with no commitment — perfect for trying it out or sending a surprise!</p>
+        </div>
+        <div class="card-action">
+          <a href="{% url 'handle_purchase_type' 'oneoff' %}?gift={{ gift|yesno:'true,false' }}" class="btn green">Select</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Subscription Plans Section -->
+  <div class="row" style="margin-top: 60px;">
+    <div class="col s12">
+      <h5 class="blue-grey-text text-darken-2">📦 Subscription Plans</h5>
+    </div>
+
+    <!-- Monthly -->
+    <div class="col s12 m6 l4">
+      <div class="card">
+        <div class="card-content">
+          <span class="card-title">Monthly Subscription</span>
+          <p>£35 per month total. Great if you're unable to make a single large payment.</p>
+        </div>
+        <div class="card-action">
+          <a href="{% url 'handle_purchase_type' 'monthly' %}?gift={{ gift|yesno:'true,false' }}" class="btn green">Select</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- 3-Month -->
+    <div class="col s12 m6 l4">
+      <div class="card">
+        <div class="card-content">
+          <span class="card-title">3-Month Subscription</span>
+          <p>£100 total (save £5). Great for seasonal hobbying.</p>
+        </div>
+        <div class="card-action">
+          <a href="{% url 'handle_purchase_type' '3mo' %}?gift={{ gift|yesno:'true,false' }}" class="btn green">Select</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- 6-Month -->
+    <div class="col s12 m6 l4">
+      <div class="card">
+        <div class="card-content">
+          <span class="card-title">6-Month Subscription</span>
+          <p>£180 total (save £30). Half a year of hobby joy.</p>
+        </div>
+        <div class="card-action">
+          <a href="{% url 'handle_purchase_type' '6mo' %}?gift={{ gift|yesno:'true,false' }}" class="btn green">Select</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- 12-Month -->
+    <div class="col s12 m6 l4 offset-m3 offset-l4">
+      <div class="card">
+        <div class="card-content">
+          <span class="card-title">12-Month Subscription</span>
+          <p>£300 total (save £120). Best value for committed hobbyists.</p>
+        </div>
+        <div class="card-action">
+          <a href="{% url 'handle_purchase_type' '12mo' %}?gift={{ gift|yesno:'true,false' }}" class="btn green">Select</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</section>
+{% endblock %}
