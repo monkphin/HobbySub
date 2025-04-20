@@ -14,7 +14,7 @@ from django.conf import settings
 import stripe 
 
 # Local imports
-from .models import Order
+from .models import Order, Payment
 from .forms import PreCheckoutForm
 from hobbyhub.utils import (
     alert,
@@ -22,6 +22,7 @@ from hobbyhub.utils import (
     build_shipping_details,
     get_gift_metadata
 )
+
 
 # Configure Stripe with secret API key
 stripe.api_key = settings.STRIPE_SECRET_KEY
@@ -152,17 +153,18 @@ def create_subscription_checkout(request, price_id):
     return redirect('subscribe_options')
 
 
-from orders.models import Order, Payment
-
 @login_required
 def order_history(request):
-    orders = Order.objects.filter(user=request.user).order_by('-order_date')
-    payments = Payment.objects.filter(order__in=orders)
+    all_orders = Order.objects.filter(user=request.user).order_by('-order_date')
+    payments = Payment.objects.filter(order__in=all_orders)
 
-    # Map payments by order ID
     payments_by_order = {p.order_id: p for p in payments}
 
+    sub_orders = [o for o in all_orders if o.stripe_subscription_id]
+    oneoff_orders = [o for o in all_orders if not o.stripe_subscription_id]
+
     return render(request, 'orders/order_history.html', {
-        'orders': orders,
+        'subscriptions': sub_orders,
+        'orders': oneoff_orders,
         'payments_by_order': payments_by_order,
     })

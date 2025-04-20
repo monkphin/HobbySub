@@ -241,6 +241,7 @@ def stripe_webhook(request):
         if payment_intent_id:
             payment_intent = stripe.PaymentIntent.retrieve(payment_intent_id)
             metadata = payment_intent.metadata
+            print("🔎 Metadata from Stripe:", metadata)
             recipient_email = metadata.get('recipient_email')
             shipping_info = payment_intent.shipping
             user_id = metadata.get('user_id')
