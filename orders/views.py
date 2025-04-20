@@ -12,6 +12,7 @@ from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, redirect
 from django.utils import timezone
 from django.conf import settings
+from django.urls import reverse
 import stripe 
 
 
@@ -58,16 +59,14 @@ def select_purchase_type(request):
     return render(request, 'orders/select_purchase_type.html', {'gift': gift})
 
 
-
 @login_required
 def handle_purchase_type(request, plan):
     """
     Routes user to gift message step or checkout based on selection.
     """
     gift_raw = request.GET.get('gift')
-    gift = request.GET.get('gift', 'false') == 'true'
+    gift = gift_raw and gift_raw.lower() == 'true'
     print(f"GIFT PARAM: {gift_raw} → Interpreted as gift={gift}")
-
 
     plan_map = {
         "oneoff": ONEOFF_PRICE_ID,
@@ -81,21 +80,33 @@ def handle_purchase_type(request, plan):
         alert(request, "error", "Invalid selection.")
         return redirect('order_start')
 
+    # ✅ Force address selection if not already chosen
+    if 'checkout_shipping_id' not in request.session:
+        return redirect(f"{reverse('choose_shipping_address', args=[plan])}?gift={'true' if gift else 'false'}")
+
+    # ⬇️ Proceed to correct flow based on plan + gift flag
     if plan == "oneoff" and not gift:
         return handle_checkout(request, price_id)
 
     if gift:
         return redirect('gift_message', plan=plan)
-    
-    else:
-        return create_subscription_checkout(request, price_id)
+
+    return create_subscription_checkout(request, price_id)
+
 
 
 @login_required
 def gift_message(request, plan):
     """
     Gathers gift message, then sends to checkout with correct price_id.
+    If user has no shipping address, redirect before showing form.
     """
+    shipping_address, redirect_response = get_user_default_shipping_address(request)
+    if redirect_response:
+        # Include return path so user is redirected back here
+        request.session['return_to_gift'] = plan
+        alert(request, "info", "Before continuing with your gift, we need a shipping address on file for you.")
+        return redirect('add_shipping_address')
     form = PreCheckoutForm(request.POST or None)
     plan_map = {
         "oneoff": GIFT_PRICE_ID,
@@ -169,7 +180,6 @@ def handle_checkout(request, price_id):
     except stripe.error.StripeError:
         alert(request, "error", "There was a problem connecting to the payment service. Please try again shortly.")
         return redirect('order_start')
-
 
 
 @login_required
@@ -268,3 +278,33 @@ def cancel_subscription(request):
         except StripeSubscriptionMeta.DoesNotExist:
             alert(request, "error", "No active subscription found to cancel.")
     return redirect('order_history')
+
+
+@login_required
+def choose_shipping_address(request, plan):
+    """
+    Lets the user select a shipping address before checkout.
+    Stores selected address in session and redirects accordingly.
+    """
+    gift = request.GET.get('gift', 'false').lower() == 'true'
+    addresses = request.user.addresses.all()
+
+    if request.method == 'POST':
+        selected_id = request.POST.get('shipping_address')
+        if not selected_id:
+            alert(request, "error", "Please select an address.")
+            return redirect('choose_shipping_address', plan=plan)
+
+        request.session['checkout_shipping_id'] = int(selected_id)
+
+        if gift:
+            return redirect('gift_message', plan=plan)
+        if plan == "oneoff":
+            return redirect('handle_purchase_type', plan='oneoff')
+        return redirect('handle_purchase_type', plan=plan)
+
+    return render(request, 'orders/choose_shipping_address.html', {
+        'addresses': addresses,
+        'plan': plan,
+        'gift': gift,
+    })

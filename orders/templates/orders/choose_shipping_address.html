@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% block title %}Choose Shipping Address{% endblock %}
+
+{% block content %}
+<section class="section container">
+  <h4 class="green-text text-darken-2 center-align">Choose a Shipping Address</h4>
+
+  {% if addresses %}
+  <div class="row">
+    {% for address in addresses %}
+    <div class="col s12 m6">
+      <div class="card">
+        <div class="card-content">
+            <span class="card-title">
+              {{ address.recipient_f_name }} {{ address.recipient_l_name }}
+              {% if address.is_default %}
+                <span class="new badge green" data-badge-caption="Default"></span>
+              {% endif %}
+            </span>
+          
+            <p>{{ address.address_line_1 }}</p>
+            {% if address.address_line_2 %}
+              <p>{{ address.address_line_2 }}</p>
+            {% endif %}
+            <p>{{ address.town_or_city }}</p>
+            <p>{{ address.county }}</p>
+            <p>{{ address.postcode }}</p>
+            <p>{{ address.country }}</p>
+          
+            <p class="grey-text small"><i class="material-icons tiny">phone</i> {{ address.phone_number }}</p>
+          </div>
+        <div class="card-action">
+          <form method="POST" action="">
+            {% csrf_token %}
+            <input type="hidden" name="shipping_address" value="{{ address.id }}">
+            <button type="submit" class="btn green">Deliver to this address</button>
+          </form>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+  <p class="red-text center-align">You don’t have any saved addresses yet.</p>
+  {% endif %}
+
+  <div class="section center-align">
+    <a href="{% url 'add_address' %}?next={{ request.path }}" class="btn-flat">
+      <i class="material-icons left">add</i>Add a New Address
+    </a>
+  </div>
+
+  <div class="section center-align">
+    <a href="{% url 'order_start' %}" class="btn-flat grey-text text-darken-2">
+      <i class="material-icons left">arrow_back</i>Back
+    </a>
+  </div>
+</section>
+{% endblock %}

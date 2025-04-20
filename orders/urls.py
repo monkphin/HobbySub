@@ -25,4 +25,6 @@ urlpatterns = [
     path('success/', views.order_success, name='order_success'),
     path('cancel/', views.order_cancel, name='order_cancel'),
     path('history/', views.order_history, name='order_history'),
+    path('shipping/select/<str:plan>/', views.choose_shipping_address, name='choose_shipping_address'),
+
 ]

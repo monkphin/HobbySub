@@ -151,9 +151,15 @@ def add_address(request):
             send_address_change_email(request.user, change_type="added")
             alert(request, "success", "Address added successfully.")
 
-            # Only redirect to a safe URL
+            # Check if we're returning to a gift flow
+            if 'return_to_gift' in request.session:
+                plan = request.session.pop('return_to_gift')
+                return redirect('gift_message', plan=plan)
+
+            # Otherwise, follow next_url if safe
             if url_has_allowed_host_and_scheme(next_url, allowed_hosts={request.get_host()}):
                 return redirect(next_url)
+
             return redirect('account')  # fallback
 
     else:
