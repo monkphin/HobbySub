@@ -22,6 +22,7 @@ core.mongo*
 core.python*
 env.py
 db_seed.py 
+*.json
 
 node_modules/
 .github/
