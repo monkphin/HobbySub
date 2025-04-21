@@ -1,40 +1,58 @@
-document.addEventListener('DOMContentLoaded', function() {
-  const elems = document.querySelectorAll('.carousel');
-  M.Carousel.init(elems, {
+document.addEventListener('DOMContentLoaded', function () {
+  // ⬇️ DEBUG: Check for file input
+  const fileInput = document.querySelector('input[type="file"]');
+  console.log("File input detected:", fileInput?.files);
+
+  // 🔁 Carousel
+  const carouselElems = document.querySelectorAll('.carousel');
+  M.Carousel.init(carouselElems, {
     duration: 200,
     dist: -30,
     shift: 0,
     padding: 20
   });
+
+  // 💬 Modals
+  const modalElems = document.querySelectorAll('.modal');
+  M.Modal.init(modalElems);
+
+  // 📅 Datepicker
+  const dateElems = document.querySelectorAll('.datepicker');
+  M.Datepicker.init(dateElems, {
+    format: 'dd/mm/yyyy'
+  });
+
+  // ⬇️ Dropdowns
+  const dropdownElems = document.querySelectorAll('.dropdown-trigger');
+  M.Dropdown.init(dropdownElems);
+
+  // ⬇️ Materialize Selects
+  M.FormSelect.init(document.querySelectorAll('select'));
+
+  // 📝 Update floating labels
+  M.updateTextFields();
+
+  // 🔔 Toasts
+  const toasts = document.querySelectorAll('.toast');
+  toasts.forEach((toast) => {
+    toast.addEventListener("click", () => toast.remove());
+    setTimeout(() => {
+      toast.style.opacity = "0";
+      toast.style.transform = "translateY(-10px)";
+      setTimeout(() => toast.remove(), 300);
+    }, 4000);
+  });
+
+  // 📂 File input filename fix
+  const fileInputs = document.querySelectorAll('.file-field input[type="file"]');
+  fileInputs.forEach(fileInput => {
+    fileInput.addEventListener('change', function () {
+      const filePathInput = fileInput.closest('.file-field').querySelector('.file-path');
+      if (filePathInput && fileInput.files.length > 0) {
+        filePathInput.value = Array.from(fileInput.files).map(f => f.name).join(', ');
+        filePathInput.dispatchEvent(new Event('change'));  // trigger Materialize label update
+        console.log("✅ File selected:", filePathInput.value);
+      }
+    });
+  });
 });
-  document.addEventListener('DOMContentLoaded', function() {
-    var modals = document.querySelectorAll('.modal');
-    M.Modal.init(modals);
-  });
-
-  document.addEventListener('DOMContentLoaded', function() {
-    var elems = document.querySelectorAll('.datepicker');
-    M.Datepicker.init(elems, {
-      format: 'dd/mm/yyyy'
-    });
-  });
-
-  document.addEventListener('DOMContentLoaded', function() {
-    const elems = document.querySelectorAll('.dropdown-trigger');
-    M.Dropdown.init(elems);
-  });
-
-  document.addEventListener("DOMContentLoaded", function() {
-    const toasts = document.querySelectorAll(".toast");
-    toasts.forEach((toast) => {
-      // Click to dismiss
-      toast.addEventListener("click", () => toast.remove());
-
-      // Auto dismiss after 4 seconds
-      setTimeout(() => {
-        toast.style.opacity = "0";
-        toast.style.transform = "translateY(-10px)";
-        setTimeout(() => toast.remove(), 300);
-      }, 4000);
-    });
-  });

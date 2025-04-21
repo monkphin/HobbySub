@@ -49,8 +49,9 @@ def add_box(request):
     - On POST: saves the new box and redirects to its product management page
     - Uses alerts to indicate success or form errors
     """
+    box = None
     if request.method == 'POST':
-        form = BoxForm(request.POST)
+        form = BoxForm(request.POST, request.FILES)
         if form.is_valid():
             new_box = form.save()
             alert(request, "success", "Box successfully created.")
@@ -59,7 +60,7 @@ def add_box(request):
             alert(request, "error", "There was a problem creating the box.")
     else:
         form = BoxForm()
-    return render(request, 'dashboard/box.html', {'form':form})
+    return render(request, 'dashboard/box.html', {'form':form, 'box':box})
 
 
 @staff_member_required
@@ -73,7 +74,7 @@ def edit_box(request, box_id):
     """
     box = get_object_or_404(Box, pk=box_id)
     if request.method == 'POST':
-        form = BoxForm(request.POST, instance=box)
+        form = BoxForm(request.POST, request.FILES, instance=box)
         if form.is_valid():
             form.save()
             alert(request, "success", "Box successfully edited.")
@@ -82,7 +83,7 @@ def edit_box(request, box_id):
             alert(request, "error", "There was a problem editing the box.")
     else:
         form = BoxForm(instance=box)
-    return render(request, 'dashboard/box.html', {'form': form, 'box_id': box_id, 'editing': True})
+    return render(request, 'dashboard/box.html', {'form': form, 'box_id': box_id, 'editing': True, 'box': box})
 
 
 @staff_member_required
@@ -126,7 +127,7 @@ def add_product_to_box(request, box_id):
     """
     box = get_object_or_404(Box, pk=box_id)
     if request.method == 'POST':
-        form = ProductForm(request.POST)
+        form = ProductForm(request.POST, request.FILES)
         if form.is_valid():
             product = form.save(commit=False)
             product.box = box
@@ -150,7 +151,7 @@ def add_products(request):
     - Appears in the orphaned list until assigned to a box
     """
     if request.method == 'POST':
-        form = ProductForm(request.POST)
+        form = ProductForm(request.POST, request.FILES)
         if form.is_valid():
             form.save()
             alert(request, "success", "Product successfully added.")
@@ -172,7 +173,7 @@ def edit_product(request, product_id):
     """
     product = get_object_or_404(BoxProduct, pk=product_id)
     if request.method == 'POST':
-        form = ProductForm(request.POST, instance=product)
+        form = ProductForm(request.POST, request.FILES, instance=product)
         if form.is_valid():
             form.save()
             alert(request, "success", "Products successfully edited.")

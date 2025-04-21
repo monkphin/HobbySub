@@ -9,7 +9,19 @@
     {% csrf_token %}
     <div class="input-field">{{ form.name.label_tag }}{{ form.name }}</div>
     <div class="input-field">{{ form.description.label_tag }}{{ form.description }}</div>
-    <div class="input-field">{{ form.image_url.label_tag }}{{ form.image_url }}</div>
+    <div class="file-field input-field">
+      <div class="btn">
+        <span>Upload Image</span>
+        {{ form.image }}
+      </div>
+      <div class="file-path-wrapper">
+        <input class="file-path validate" type="text" placeholder="Upload an image">
+      </div>
+    </div>
+    {% if editing and product and product.image %}
+      <p>Current Image:</p>
+      <img src="{{ product.image.url }}" alt="{{ product.name }}" class="responsive-img" style="max-height: 200px;">
+    {% endif %}
     <div class="input-field">{{ form.quantity.label_tag }}{{ form.quantity }}</div>
     {% if form.box %}
       <div class="input-field">{{ form.box.label_tag }}{{ form.box }}</div>

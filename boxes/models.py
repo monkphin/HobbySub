@@ -1,5 +1,6 @@
 from django.db import models
 from django.utils.text import slugify
+from cloudinary.models import CloudinaryField
 
 class Box(models.Model):
     """
@@ -11,7 +12,7 @@ class Box(models.Model):
     name = models.CharField(max_length=100)
     slug = models.SlugField(unique=True)
     description = models.TextField()
-    image_url = models.URLField()
+    image = models.ImageField(upload_to='box_images/', null=True, blank=True)
     shipping_date = models.DateField()
     is_archived = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -45,8 +46,11 @@ class BoxProduct(models.Model):
         max_length=100,
         help_text="Name of the included product."
     )
-    image_url = models.URLField(
-        help_text="URL to an image representing the product."
+    image = CloudinaryField(
+        'image',
+        help_text="Upload an image to represent this product.",
+        null=True,
+        blank=True
     )
     description = models.TextField(
         blank=True,
