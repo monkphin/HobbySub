@@ -52,8 +52,8 @@
           </div>
         </div>
         <div class="row">
-          <div class="input-field col s12">
-            {{ form.country.label_tag }}
+          <div class="section col s12">
+            <label for="{{ form.country.id_for_label }}">{{ form.country.label }}</label>
             {{ form.country }}
           </div>
         </div>

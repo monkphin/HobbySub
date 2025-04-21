@@ -50,7 +50,8 @@ INSTALLED_APPS = [
     'orders',
     'dashboard',
     'cloudinary',
-    'cloudinary_storage'
+    'cloudinary_storage',
+    'django_countries',
 ]
 
 MIDDLEWARE = [

@@ -9,6 +9,8 @@ and managing shipping addresses.
 from django import forms
 from django.contrib.auth.models import User
 from django.contrib.auth.forms import UserCreationForm
+from django_countries.widgets import CountrySelectWidget
+
 
 # Local imports. 
 from .models import ShippingAddress
@@ -82,4 +84,8 @@ class AddAddressForm(forms.ModelForm):
                 'town_or_city': 'Town or City',
                 'phone_number': 'Phone Number',
                 'is_default': 'Set as my default shipping address',
+                }
+        widgets = {
+                'country': CountrySelectWidget(attrs={'class': 'browser-default'}),
+                'is_default': forms.CheckboxInput(),
                 }

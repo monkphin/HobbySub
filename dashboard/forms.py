@@ -48,14 +48,17 @@ class ProductForm(forms.ModelForm):
     Supports linking products to a box, and uses Materialize styling
     for improved admin UX. Quantity must be 1 or greater.
     """
-    class Meta: 
+    quantity = forms.ChoiceField(
+                        choices=[(i, str(i)) for i in range(1, 11)],
+                        widget=forms.Select(attrs={'class': 'browser-default'})
+                        )
+    class Meta:
         model = BoxProduct
         fields = ['box', 'name', 'image', 'description', 'quantity']
         widgets = {
             'box': forms.Select(attrs={'class': 'browser-default'}),
             'name': forms.TextInput(attrs={'class': 'validate'}),
             'description': forms.Textarea(attrs={'class': 'materialize-textarea'}),
-            'quantity': forms.NumberInput(attrs={'min': 1}),
         }
 
 class UserEditForm(forms.ModelForm):

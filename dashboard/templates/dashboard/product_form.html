@@ -22,10 +22,16 @@
       <p>Current Image:</p>
       <img src="{{ product.image.url }}" alt="{{ product.name }}" class="responsive-img" style="max-height: 200px;">
     {% endif %}
-    <div class="input-field">{{ form.quantity.label_tag }}{{ form.quantity }}</div>
+    <div class="section">
+      <label for="{{ form.quantity.id_for_label }}">Quantity</label>
+      {{ form.quantity }}
+    </div>
     {% if form.box %}
-      <div class="input-field">{{ form.box.label_tag }}{{ form.box }}</div>
-    {% endif %}
+    <div class="section">
+      <label for="{{ form.box.id_for_label }}">Box</label>
+      {{ form.box }}
+    </div>
+  {% endif %}
 
     <button type="submit" class="btn green">{% if editing %}Update{% else %}Save{% endif %}</button>
     <a href="{% url 'box_admin' %}" class="btn grey">Cancel</a>
