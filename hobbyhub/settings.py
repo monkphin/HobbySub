@@ -47,6 +47,8 @@ INSTALLED_APPS = [
     'users',
     'orders',
     'dashboard',
+    'cloudinary',
+    'cloudinary_storage'
 ]
 
 MIDDLEWARE = [

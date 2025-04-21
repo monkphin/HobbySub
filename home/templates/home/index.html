@@ -8,7 +8,7 @@
 
     <!-- Hero Section -->
     <section class="section center-align">
-      <img src="{% static 'images/hero.png' %}" alt="Your hobby delivered to your door">
+      <img src="https://res.cloudinary.com/dlmbpbtfx/image/upload/w_700,ar_1:1,c_fill,g_auto,e_art:hokusai/v1745248603/hero_wwmnq8.png" alt="Your hobby delivered to your door">
     </section>
 
     <hr>
@@ -59,11 +59,11 @@
       
       <!-- Current Box Content Carousel -->
         <div class="carousel" style="height: 150px;">
-            {% for item in box.contents.all %}
-            <a class="carousel-item" href="#{{ item.id }}">
-                <img src="{{ item.image_url }}" alt="{{ item.name }}">
+            {% for item in box.products.all %}
+              <a class="carousel-item" href="#{{ item.id }}">
+                <img src="{{ item.image_url }}" alt="{{ item.name }}" style="max-height: 150px; object-fit: contain;">
                 <h6>{{ item.name }}</h6>
-            </a>
+              </a>
             {% endfor %}
         </div>
         <br>

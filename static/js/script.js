@@ -1,11 +1,12 @@
 document.addEventListener('DOMContentLoaded', function() {
-    const elems = document.querySelectorAll('.carousel');
-    M.Carousel.init(elems, {
-      fullWidth: true,
-      indicators: true
-    });
+  const elems = document.querySelectorAll('.carousel');
+  M.Carousel.init(elems, {
+    duration: 200,
+    dist: -30,
+    shift: 0,
+    padding: 20
   });
-
+});
   document.addEventListener('DOMContentLoaded', function() {
     var modals = document.querySelectorAll('.modal');
     M.Modal.init(modals);

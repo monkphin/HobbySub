@@ -16,7 +16,7 @@
 <h3>Included Items<h3>
 
   <ul class="collection">
-    {% for product in box.contents.all %}
+    {% for product in box.products.all %}
       <li class="collection-item avatar">
         <img src="{{ product.image_url }}" alt="{{ product.name }}" class="circle">
         <p>{{ product.description }}</p>
