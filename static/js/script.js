@@ -1,9 +1,5 @@
 document.addEventListener('DOMContentLoaded', function () {
-  // ⬇️ DEBUG: Check for file input
-  const fileInput = document.querySelector('input[type="file"]');
-  console.log("File input detected:", fileInput?.files);
-
-  // 🔁 Carousel
+   // Carousel
   const carouselElems = document.querySelectorAll('.carousel');
   M.Carousel.init(carouselElems, {
     duration: 200,
@@ -12,27 +8,27 @@ document.addEventListener('DOMContentLoaded', function () {
     padding: 20
   });
 
-  // 💬 Modals
+  // Modals
   const modalElems = document.querySelectorAll('.modal');
   M.Modal.init(modalElems);
 
-  // 📅 Datepicker
+  // Datepicker
   const dateElems = document.querySelectorAll('.datepicker');
   M.Datepicker.init(dateElems, {
     format: 'dd/mm/yyyy'
   });
 
-  // ⬇️ Dropdowns
+  // Dropdowns
   const dropdownElems = document.querySelectorAll('.dropdown-trigger');
   M.Dropdown.init(dropdownElems);
 
-  // ⬇️ Materialize Selects
+  // Materialize Selects
   M.FormSelect.init(document.querySelectorAll('select'));
 
-  // 📝 Update floating labels
+  // Update floating labels
   M.updateTextFields();
 
-  // 🔔 Toasts
+  // Toasts
   const toasts = document.querySelectorAll('.toast');
   toasts.forEach((toast) => {
     toast.addEventListener("click", () => toast.remove());
@@ -43,7 +39,7 @@ document.addEventListener('DOMContentLoaded', function () {
     }, 4000);
   });
 
-  // 📂 File input filename fix
+  // File input filename fix
   const fileInputs = document.querySelectorAll('.file-field input[type="file"]');
   fileInputs.forEach(fileInput => {
     fileInput.addEventListener('change', function () {
@@ -51,7 +47,6 @@ document.addEventListener('DOMContentLoaded', function () {
       if (filePathInput && fileInput.files.length > 0) {
         filePathInput.value = Array.from(fileInput.files).map(f => f.name).join(', ');
         filePathInput.dispatchEvent(new Event('change'));  // trigger Materialize label update
-        console.log("✅ File selected:", filePathInput.value);
       }
     });
   });
