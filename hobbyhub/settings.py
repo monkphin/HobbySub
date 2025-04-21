@@ -10,33 +10,25 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/3.2/ref/settings/
 """
 
-from dotenv import load_dotenv
 from pathlib import Path
 import os
+from dotenv import load_dotenv
 import dj_database_url
 import cloudinary
 
-
-# Build paths inside the project like this: BASE_DIR / 'subdir'.
+# Load environment variables
 BASE_DIR = Path(__file__).resolve().parent.parent
-
-load_dotenv()
-
-# Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/3.2/howto/deployment/checklist/
+load_dotenv(dotenv_path=BASE_DIR / ".env")
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = os.environ.get("SECRET_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.getenv('DEBUG', 'True') == 'True'
-
+DEBUG = os.getenv("DEBUG", "True") == "True"
 
 ALLOWED_HOSTS = []
 
-
 # Application definition
-
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -84,12 +76,11 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'hobbyhub.wsgi.application'
 
+development_raw = os.getenv("DEVELOPMENT", "missing")
 
 # Database
-# https://docs.djangoproject.com/en/3.2/ref/settings/#databases
-
-# Default to SQLite for local development
-if os.getenv("DEVELOPMENT") == "True":
+# Default to SQLite for local dev, use Postgres in production
+if os.getenv("DEVELOPMENT", "True") == "True":
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.sqlite3',
@@ -97,7 +88,6 @@ if os.getenv("DEVELOPMENT") == "True":
         }
     }
 else:
-    # Use DATABASE_URL in production (e.g. postgres://...)
     DATABASES = {
         'default': dj_database_url.config(
             default=os.getenv('DATABASE_URL'),
@@ -106,96 +96,61 @@ else:
         )
     }
 
-
 # Password validation
-# https://docs.djangoproject.com/en/3.2/ref/settings/#auth-password-validators
-
 AUTH_PASSWORD_VALIDATORS = [
-    {
-        'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
-    },
+    {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'},
+    {'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator'},
+    {'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator'},
+    {'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator'},
 ]
 
-
 # Internationalization
-# https://docs.djangoproject.com/en/3.2/topics/i18n/
-
 LANGUAGE_CODE = 'en-us'
-
 TIME_ZONE = 'UTC'
-
 USE_I18N = True
-
 USE_L10N = True
-
 USE_TZ = True
 
-
-# Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/3.2/howto/static-files/
-
+# Static files
 STATIC_URL = '/static/'
-
 STATICFILES_DIRS = [BASE_DIR / "static"]
 
 # Default primary key field type
-# https://docs.djangoproject.com/en/3.2/ref/settings/#default-auto-field
-
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-
+# Login and Logout redirects
 LOGIN_REDIRECT_URL = 'account'
 LOGOUT_REDIRECT_URL = 'home'
 
-# Stripe API keys (loaded from env for security)
-STRIPE_SECRET_KEY = os.environ.get("STRIPE_SECRET_KEY")
-STRIPE_PUBLISHABLE_KEY = os.environ.get("STRIPE_PUBLISHABLE_KEY")
+# Stripe Config
+STRIPE_SECRET_KEY = os.getenv("STRIPE_SECRET_KEY")
+STRIPE_PUBLISHABLE_KEY = os.getenv("STRIPE_PUBLISHABLE_KEY")
 
-# Stripe price IDs for different subscription tiers and options
-STRIPE_GIFT_PRICE_ID = os.environ.get("STRIPE_GIFT_PRICE_ID")
-STRIPE_ONEOFF_PRICE_ID = os.environ.get("STRIPE_ONEOFF_PRICE_ID")
-STRIPE_MONTHLY_PRICE_ID = os.getenv('STRIPE_MONTHLY_PRICE_ID')
-STRIPE_3MO_PRICE_ID = os.getenv('STRIPE_3MO_PRICE_ID')
-STRIPE_6MO_PRICE_ID = os.getenv('STRIPE_6MO_PRICE_ID')
-STRIPE_12MO_PRICE_ID = os.getenv('STRIPE_12MO_PRICE_ID')
+STRIPE_GIFT_PRICE_ID = os.getenv("STRIPE_GIFT_PRICE_ID")
+STRIPE_ONEOFF_PRICE_ID = os.getenv("STRIPE_ONEOFF_PRICE_ID")
+STRIPE_MONTHLY_PRICE_ID = os.getenv("STRIPE_MONTHLY_PRICE_ID")
+STRIPE_3MO_PRICE_ID = os.getenv("STRIPE_3MO_PRICE_ID")
+STRIPE_6MO_PRICE_ID = os.getenv("STRIPE_6MO_PRICE_ID")
+STRIPE_12MO_PRICE_ID = os.getenv("STRIPE_12MO_PRICE_ID")
+STRIPE_WEBHOOK_SECRET = os.getenv("STRIPE_WEBHOOK_SECRET")
 
-# Stripe webhook secret for event verification
-STRIPE_WEBHOOK_SECRET = os.environ.get("STRIPE_WEBHOOK_SECRET")
-
-# Detect environment (from .env or server config)
-DEVELOPMENT = os.getenv("DEVELOPMENT", "True") == "True"
-
-# Email Config
-if DEVELOPMENT:
-    # Log emails to console for dev
+# Email Configuration
+if os.getenv("DEVELOPMENT", "True") == "True":
     EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
     DEFAULT_FROM_EMAIL = 'noreply@hobbyhub.local'
 else:
-    # Real email sending setup
     EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-    EMAIL_HOST = os.getenv('EMAIL_HOST', 'smtp.sendgrid.net')
+    EMAIL_HOST = os.getenv('EMAIL_HOST', 'smtp.gmail.com')
     EMAIL_PORT = int(os.getenv('EMAIL_PORT', 587))
-    EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER', 'apikey')  # or real user
-    EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD')
     EMAIL_USE_TLS = True
-    DEFAULT_FROM_EMAIL = os.getenv('DEFAULT_FROM_EMAIL', 'noreply@hobbyhub.com')
+    EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER')
+    EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD')
+    DEFAULT_FROM_EMAIL = os.getenv('DEFAULT_FROM_EMAIL', EMAIL_HOST_USER)
 
-DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
-
-
-# Cloudinary Configs
+# Cloudinary Config
 CLOUDINARY_CLOUD_NAME = os.getenv('CLOUDINARY_CLOUD_NAME')
 CLOUDINARY_API_KEY = os.getenv('CLOUDINARY_API_KEY')
-CLOUDINARY_API_SECRET = os.getenv('CLOUDINARY_API_SECRET') 
+CLOUDINARY_API_SECRET = os.getenv('CLOUDINARY_API_SECRET')
 
 CLOUDINARY_STORAGE = {
     'CLOUD_NAME': CLOUDINARY_CLOUD_NAME,
