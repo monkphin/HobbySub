@@ -160,7 +160,7 @@ def add_products(request):
             alert(request, "error", "There was a problem adding the products.")
     else:
         form = ProductForm()
-    return render(request, 'dashboard/box.html', {'form':form})
+    return render(request, 'dashboard/product_form.html', {'form':form,  'editing':False})
 
 
 @staff_member_required

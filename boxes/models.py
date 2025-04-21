@@ -12,7 +12,7 @@ class Box(models.Model):
     name = models.CharField(max_length=100)
     slug = models.SlugField(unique=True)
     description = models.TextField()
-    image = models.ImageField(upload_to='box_images/', null=True, blank=True)
+    image = CloudinaryField('image', null=True, blank=True)
     shipping_date = models.DateField()
     is_archived = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)

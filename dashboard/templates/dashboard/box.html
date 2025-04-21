@@ -28,26 +28,11 @@
         <input class="file-path validate" type="text" placeholder="Upload an image">
       </div>
     </div>
-    
+
     {% if box and box.image %}
       <p>Current Image:</p>
       <img src="{{ box.image.url }}" alt="Current image" class="responsive-img" style="max-height: 200px;">
     {% endif %}
-
-    <script>
-      document.addEventListener('DOMContentLoaded', function () {
-        const fileInputs = document.querySelectorAll('input[type="file"]');
-        fileInputs.forEach(input => {
-          input.addEventListener('change', function () {
-            const filePathInput = input.closest('.file-field').querySelector('.file-path');
-            if (filePathInput && input.files.length > 0) {
-              filePathInput.value = input.files[0].name;
-              console.log("✅ File selected:", input.files[0].name);
-            }
-          });
-        });
-      });
-    </script>
 
     <div class="input-field">
       {{ form.shipping_date.label_tag }}

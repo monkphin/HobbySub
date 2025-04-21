@@ -5,7 +5,7 @@
 <div class="container">
   <h4>{% if editing %}Edit Product{% else %}Add Product{% endif %}</h4>
 
-  <form method="post">
+  <form method="post" enctype="multipart/form-data">
     {% csrf_token %}
     <div class="input-field">{{ form.name.label_tag }}{{ form.name }}</div>
     <div class="input-field">{{ form.description.label_tag }}{{ form.description }}</div>

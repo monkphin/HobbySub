@@ -8,7 +8,7 @@
 
   <!-- Main Content -->
   <h2>{{ box.name }}</h2>
-  <img src="{{ box.image_url}}" alt="{{ box.name }}" class="responsive-img">
+  <img src="{{ box.image.url}}" alt="{{ box.name }}" class="responsive-img">
   <p><strong>Shpping Date:</strong> {{ box.shipping_date }}</p>
   <p>{{ box.description }}</p>
 </div>
@@ -18,7 +18,7 @@
   <ul class="collection">
     {% for product in box.products.all %}
       <li class="collection-item avatar">
-        <img src="{{ product.image_url }}" alt="{{ product.name }}" class="circle">
+        <img src="{{ product.image.url }}" alt="{{ product.name }}" class="circle">
         <p>{{ product.description }}</p>
         <p><strong>Quantity:</strong> {{ product.quantity }}</p>
       </li>

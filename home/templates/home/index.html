@@ -8,7 +8,7 @@
 
     <!-- Hero Section -->
     <section class="section center-align">
-      <img src="https://res.cloudinary.com/dlmbpbtfx/image/upload/w_700,ar_1:1,c_fill,g_auto,e_art:hokusai/v1745248603/hero_wwmnq8.png" alt="Your hobby delivered to your door">
+      <img src="https://res.cloudinary.com/dlmbpbtfx/image/upload/w_700,ar_1:1,c_fill,g_auto,e_art:hokusai/v1745248603/hero_wwmnq8.png" alt="Your hobby delivered to your door">      
     </section>
 
     <hr>
@@ -53,7 +53,7 @@
     {% if box %}
       <section class="section center-align">
         <h2>This Month’s Box</h2>
-        <img src="{{ box.image_url }}" alt="{{ box.name }}" class="responsive-img z-depth-2" style="max-height: 300px;" />
+        <img src="{{ box.image.url }}" alt="{{ box.name }}" class="responsive-img z-depth-2" style="max-height: 300px;" />
         <h5>{{ box.name }}</h5>
         <p class="grey-text text-darken-1">{{ box.description|truncatewords:25 }}</p>
       
@@ -61,7 +61,7 @@
         <div class="carousel" style="height: 150px;">
             {% for item in box.products.all %}
               <a class="carousel-item" href="#{{ item.id }}">
-                <img src="{{ item.image_url }}" alt="{{ item.name }}" style="max-height: 150px; object-fit: contain;">
+                <img src="{{ item.image.url }}" alt="{{ item.name }}" style="max-height: 150px; object-fit: contain;">
                 <h6>{{ item.name }}</h6>
               </a>
             {% endfor %}
