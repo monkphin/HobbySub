@@ -46,6 +46,8 @@ def order_start(request):
     """
     Presents user with choice: Buy for self or gift.
     """
+    # Force address selection due to session caching
+    request.session.pop('checkout_shipping_id', None)  
     return render(request, 'orders/order_start.html')
 
 
@@ -220,6 +222,8 @@ def order_cancel(request):
     """
     Renders the order cancellation page with an info message.
     """
+    # clear cached session to ensure address selection happens
+    request.session.pop('checkout_shipping_id', None)
     alert(request, "info", "Your checkout was cancelled, no payment has been taken")
     return render(request, 'orders/order_cancel.html')
 

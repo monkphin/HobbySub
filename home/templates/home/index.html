@@ -40,8 +40,13 @@
     <section class="section center-align">
       <h1 class="flow-text">Unbox Hobby Joy Monthly</h1>
       <p class="lead">Get curated miniatures, paints, and hobby gear delivered to your door.</p>
+      {% if user.is_authenticated %}
       <a href="{% url 'select_purchase_type' %}?gift=false" class="btn btn-large">Subscribe Now</a>
       <a href="{% url 'select_purchase_type' %}?gift=true" class="btn btn-large">Give as a gift</a>
+      {% else %}
+        <a href="{% url 'register' %}?next={% url 'select_purchase_type' %}?gift=false" class="btn btn-large">Order my Box</a>
+        <a href="{% url 'register' %}?next={% url 'select_purchase_type' %}?gift=true" class="btn btn-large">Give as a gift</a>
+      {% endif %}
     </section>
     
     <!-- Current Box Preview -->
