@@ -66,7 +66,8 @@ def handle_purchase_type(request, plan):
     """
     Routes user to gift message step or checkout based on selection.
     """
-   
+    print("checkout_shipping_id in session:", 'checkout_shipping_id' in request.session)
+
     gift_raw = request.GET.get('gift')
     gift = gift_raw and gift_raw.lower() == 'true'
     print(f"GIFT PARAM: {gift_raw} → Interpreted as gift={gift}")
