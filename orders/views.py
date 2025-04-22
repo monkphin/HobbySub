@@ -66,6 +66,9 @@ def handle_purchase_type(request, plan):
     """
     Routes user to gift message step or checkout based on selection.
     """
+    # Always reset session address cache at start of flow
+    request.session.pop('checkout_shipping_id', None)
+    
     gift_raw = request.GET.get('gift')
     gift = gift_raw and gift_raw.lower() == 'true'
     print(f"GIFT PARAM: {gift_raw} → Interpreted as gift={gift}")
