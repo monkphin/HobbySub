@@ -57,6 +57,8 @@ def select_purchase_type(request):
     User selects one of the 5 purchase types (single, sub, etc.).
     'gift' passed as ?gift=true or false.
     """
+    # clear cached session to ensure address selection happens
+    request.session.pop('checkout_shipping_id', None)
     gift = request.GET.get('gift', 'false').lower() == 'true'
     return render(request, 'orders/select_purchase_type.html', {'gift': gift})
 
@@ -216,6 +218,8 @@ def order_success(request):
     """
     Renders the order success page with a success message.
     """
+    # clear cached session to ensure address selection happens
+    request.session.pop('checkout_shipping_id', None)
     alert(request, "success", "Your order was successfully processed. Thank you!")
     return render(request, 'orders/order_success.html')
 
