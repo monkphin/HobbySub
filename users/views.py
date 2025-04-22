@@ -5,17 +5,20 @@ Handles user registration, authentication, account management,
 shipping address operations, password changes, and Stripe webhooks.
 """
 
-# Django/Remote imports 
+# Django/External imports 
 from django.contrib.auth import login, logout, update_session_auth_hash
 from django.shortcuts import render, redirect, get_object_or_404
 from django.utils.http import url_has_allowed_host_and_scheme
 from django.contrib.auth.decorators import login_required
+from django.views.decorators.http import require_POST
 from django.contrib.auth.forms import UserChangeForm
 from django.views.decorators.csrf import csrf_exempt
 from django.http import HttpResponse, JsonResponse
 from django.conf import settings
 import stripe.error
+import logging
 import stripe
+
 
 # Local imports
 from hobbyhub.mail import (
@@ -34,6 +37,7 @@ from .forms import Register, AddAddressForm, ChangePassword
 from .models import ShippingAddress
 from hobbyhub.utils import alert
 
+logger = logging.getLogger(__name__)
 
 
 def register_user(request):
@@ -48,6 +52,7 @@ def register_user(request):
             # Auto login on registration
             login(request, user) 
             send_registration_email(user)
+            logger.info(f"New user registered and logged in: {user.email}")
             alert(
                 request,
                 "success",
@@ -57,6 +62,8 @@ def register_user(request):
             return redirect('home')
     else:
         form = Register()
+        if request.method == 'POST':
+            logger.warning("Registration form invalid")
         
     return render(request, 'users/register.html', {'form': form})
 
@@ -97,6 +104,7 @@ def change_password(request):
         if form.is_valid():
             form.save(request.user)
             update_session_auth_hash(request, request.user)
+            logger.info(f"{request.user} changed their password")
             alert(
                 request,
                 "success",
@@ -108,7 +116,7 @@ def change_password(request):
 
     return render(request, 'users/change_password.html', {'form': form})
 
-
+@require_POST
 @login_required
 def delete_account(request):
     """
@@ -116,6 +124,7 @@ def delete_account(request):
     Logs them out before deletion.
     """
     user = request.user
+    logger.info(f"Account deletion triggered for {user.email}")
     alert(
         request,
         "info",
@@ -124,6 +133,7 @@ def delete_account(request):
     logout(request)
     send_account_deletion_email(user.email)
     user.delete()
+    logger.warning(f"User account deleted: {user.email}")
     return redirect('account')
 
 
@@ -148,6 +158,7 @@ def add_address(request):
                     is_default=True
                     ).update(is_default=False)
             address.save()
+            logger.info(f"{request.user} added new address — default={address.is_default}")
             send_address_change_email(request.user, change_type="added")
             alert(request, "success", "Address added successfully.")
 
@@ -190,6 +201,7 @@ def edit_address(request, address_id):
                 ShippingAddress.objects.filter(user=request.user, is_default=True).exclude(id=address.id).update(is_default=False)
 
             updated_address.save()
+            logger.info(f"{request.user} updated address {address_id}")
             send_address_change_email(request.user, change_type="updated")
             alert(request, "success", "Address updated successfully.")
             return redirect('account')
@@ -198,7 +210,7 @@ def edit_address(request, address_id):
 
     return render(request, 'users/add_address.html', {'form': form})
 
-
+@require_POST
 @login_required
 def set_default_address(request, address_id):
     """
@@ -214,9 +226,10 @@ def set_default_address(request, address_id):
     address.save()
     send_address_change_email(request.user, change_type="default")
     alert(request, "success", "Default address updated.")
+    logger.info(f"{user} set address {address_id} as default")
     return redirect('account')
 
-
+@require_POST
 @login_required
 def delete_address(request, address_id):
     """
@@ -226,12 +239,13 @@ def delete_address(request, address_id):
     address.delete()
     send_address_change_email(request.user, change_type="deleted")
     alert(request, "info", "Address deleted.")
+    logger.info(f"{request.user} deleted address {address_id}")
     return redirect('account')
 
 
 @csrf_exempt
 def stripe_webhook(request):
-    print("🚀 Stripe webhook received")
+    logger.info("Stripe webhook received")
     payload = request.body
     sig_header = request.META.get('HTTP_STRIPE_SIGNATURE')
     endpoint_secret = settings.STRIPE_WEBHOOK_SECRET
@@ -239,7 +253,7 @@ def stripe_webhook(request):
     try:
         event = stripe.Webhook.construct_event(payload, sig_header, endpoint_secret)
     except (ValueError, stripe.error.SignatureVerificationError):
-        print("Invalid webhook signature or payload")
+        logger.warning("Invalid webhook signature or payload")
         return HttpResponse(status=400)
 
     event_type = event['type']
@@ -254,6 +268,7 @@ def stripe_webhook(request):
     elif event_type == 'invoice.upcoming':
         handle_invoice_upcoming(data)
     else:
-        print(f"Ignored event type: {event_type}")
+        logger.info(f"Ignored event type: {event_type}")
+
 
     return JsonResponse({'status': 'success'})

@@ -13,8 +13,8 @@ from django.shortcuts import render, redirect
 from django.utils import timezone
 from django.conf import settings
 from django.urls import reverse
+import logging
 import stripe 
-
 
 # Local imports
 from .forms import PreCheckoutForm
@@ -40,6 +40,8 @@ STRIPE_3MO_PRICE_ID = settings.STRIPE_3MO_PRICE_ID
 STRIPE_6MO_PRICE_ID = settings.STRIPE_6MO_PRICE_ID
 STRIPE_12MO_PRICE_ID = settings.STRIPE_12MO_PRICE_ID
 
+logger = logging.getLogger(__name__)
+
 
 @login_required
 def order_start(request):
@@ -48,6 +50,7 @@ def order_start(request):
     """
     # Force address selection due to session caching
     request.session.pop('checkout_shipping_id', None)  
+    logger.info(f"{request.user} started an order (fresh session)")
     return render(request, 'orders/order_start.html')
 
 
@@ -60,6 +63,7 @@ def select_purchase_type(request):
     # clear cached session to ensure address selection happens
     request.session.pop('checkout_shipping_id', None)
     gift = request.GET.get('gift', 'false').lower() == 'true'
+    logger.info(f"{request.user} selected purchase type — gift={gift}")
     return render(request, 'orders/select_purchase_type.html', {'gift': gift})
 
 
@@ -68,11 +72,8 @@ def handle_purchase_type(request, plan):
     """
     Routes user to gift message step or checkout based on selection.
     """
-    print("checkout_shipping_id in session:", 'checkout_shipping_id' in request.session)
-
     gift_raw = request.GET.get('gift')
     gift = gift_raw and gift_raw.lower() == 'true'
-    print(f"GIFT PARAM: {gift_raw} → Interpreted as gift={gift}")
 
     plan_map = {
         "oneoff": ONEOFF_PRICE_ID,
@@ -83,11 +84,13 @@ def handle_purchase_type(request, plan):
     }
     price_id = plan_map.get(plan)
     if not price_id:
+        logger.warning(f"Invalid plan selected: {plan}")
         alert(request, "error", "Invalid selection.")
         return redirect('order_start')
 
     # ✅ Force address selection if not already chosen
     if 'checkout_shipping_id' not in request.session:
+        logger.info(f"{request.user} selected plan={plan}, gift={gift}")
         return redirect(f"{reverse('choose_shipping_address', args=[plan])}?gift={'true' if gift else 'false'}")
 
     # ⬇️ Proceed to correct flow based on plan + gift flag
@@ -95,6 +98,7 @@ def handle_purchase_type(request, plan):
         return handle_checkout(request, price_id)
 
     if gift:
+        logger.info(f"{request.user} selected plan={plan}, gift={gift}")
         return redirect('gift_message', plan=plan)
 
     return create_subscription_checkout(request, price_id)
@@ -107,6 +111,7 @@ def gift_message(request, plan):
     Gathers gift message, then sends to checkout with correct price_id.
     If user has no shipping address, redirect before showing form.
     """
+    logger.info(f"{request.user} is entering gift message for {plan} plan")
     shipping_address, redirect_response = get_user_default_shipping_address(request)
     if redirect_response:
         # Include return path so user is redirected back here
@@ -125,6 +130,7 @@ def gift_message(request, plan):
 
     if request.method == 'POST':
         if form.is_valid():
+            logger.info("Gift message valid, creating Stripe session")
             shipping_address, redirect_response = get_user_default_shipping_address(request)
             if redirect_response:
                 return redirect_response
@@ -161,6 +167,7 @@ def handle_checkout(request, price_id):
     Handles checkout for non-gift one-off purchases.
     Goes straight to Stripe without showing a form.
     """
+    logger.info(f"{request.user} proceeding to checkout for one-off order")
     shipping_address, redirect_response = get_user_default_shipping_address(request)
     if redirect_response:
         return redirect_response
@@ -184,6 +191,7 @@ def handle_checkout(request, price_id):
         )
         return redirect(session.url, code=303)
     except stripe.error.StripeError:
+        logger.error("Stripe error during one-off checkout", exc_info=True)
         alert(request, "error", "There was a problem connecting to the payment service. Please try again shortly.")
         return redirect('order_start')
 
@@ -193,6 +201,7 @@ def create_subscription_checkout(request, price_id):
     """
     Handles Stripe checkout session creation for subscription purchases.
     """
+    logger.info(f"{request.user} creating subscription session")
     try:
         checkout_session = stripe.checkout.Session.create(
             customer_email=request.user.email,
@@ -220,6 +229,7 @@ def order_success(request):
     """
     # clear cached session to ensure address selection happens
     request.session.pop('checkout_shipping_id', None)
+    logger.info(f"{request.user} reached success page — session cleared")
     alert(request, "success", "Your order was successfully processed. Thank you!")
     return render(request, 'orders/order_success.html')
 
@@ -230,6 +240,7 @@ def order_cancel(request):
     """
     # clear cached session to ensure address selection happens
     request.session.pop('checkout_shipping_id', None)
+    logger.info(f"{request.user} cancelled checkout — session cleared")
     alert(request, "info", "Your checkout was cancelled, no payment has been taken")
     return render(request, 'orders/order_cancel.html')
 
@@ -262,6 +273,7 @@ def order_history(request):
 
 @login_required
 def cancel_subscription(request):
+    logger.info(f"{request.user} attempting to cancel subscription")
     if request.method == 'POST':
         try:
             sub = StripeSubscriptionMeta.objects.filter(
@@ -286,6 +298,7 @@ def cancel_subscription(request):
             )
             alert(request, "success", "Your subscription will remain active until the end of your current billing period, then it will be cancelled.")
         except StripeSubscriptionMeta.DoesNotExist:
+            logger.warning(f"{request.user} tried to cancel but no active sub found")
             alert(request, "error", "No active subscription found to cancel.")
     return redirect('order_history')
 
@@ -300,23 +313,22 @@ def choose_shipping_address(request, plan):
     addresses = request.user.addresses.all()
 
     if request.method == 'POST':
-        print("RAW POST:", request.body)
-        print("FORM DATA:", request.POST)
+        selected_id = request.POST.get('shipping_address')
         selected_id = request.POST.get('shipping_address')
         if not selected_id:
+            logger.warning(f"{request.user} submitted without selecting a shipping address")
             alert(request, "error", "Please select an address.")
             return redirect('choose_shipping_address', plan=plan)
 
+        logger.info(f"{request.user} selected shipping address ID {selected_id} for plan {plan}, gift={gift}")
         request.session['checkout_shipping_id'] = int(selected_id)
 
         if gift:
             return redirect('gift_message', plan=plan)
         if plan == "oneoff":
             return redirect('handle_purchase_type', plan='oneoff')
-        print("POST DATA:", request.POST)
 
         return redirect('handle_purchase_type', plan=plan)
-    print("POST DATA:", request.POST)
 
     return render(request, 'orders/choose_shipping_address.html', {
         'addresses': addresses,

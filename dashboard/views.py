@@ -11,10 +11,11 @@ All views are protected with @staff_member_required.
 Uses MaterializeCSS-compatible forms and a custom `alert()` utility for messaging.
 """
 
-#Django Imports 
-from django.contrib.auth import get_user_model
-from django.shortcuts import render, redirect, get_object_or_404
+# Django/External Imports
 from django.contrib.admin.views.decorators import staff_member_required
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib.auth import get_user_model
+import logging
 
 # Local Imports
 from hobbyhub.utils import alert
@@ -23,6 +24,7 @@ from .forms import BoxForm, ProductForm, UserEditForm
 from hobbyhub.mail import send_shipping_confirmation_email
 from orders.models import Order, Payment, StripeSubscriptionMeta
 
+logger = logging.getLogger(__name__)
 
 User = get_user_model()
 
@@ -55,9 +57,11 @@ def add_box(request):
         if form.is_valid():
             new_box = form.save()
             alert(request, "success", "Box successfully created.")
+            logger.info(f"Admin {request.user} created box: {new_box.name}")
             return redirect('edit_box_products', box_id=new_box.id)
         else:
             alert(request, "error", "There was a problem creating the box.")
+            logger.info(f"Admin {request.user} error creating box")
     else:
         form = BoxForm()
     return render(request, 'dashboard/box.html', {'form':form, 'box':box})
@@ -77,6 +81,7 @@ def edit_box(request, box_id):
         form = BoxForm(request.POST, request.FILES, instance=box)
         if form.is_valid():
             form.save()
+            logger.info(f"Admin {request.user} edited box: {box.name} (ID: {box.id})")
             alert(request, "success", "Box successfully edited.")
             return redirect('box_admin')
         else:
@@ -98,6 +103,7 @@ def delete_box(request, box_id):
     if request.method == 'POST':
         box.delete()
         alert(request, "success", "Box successfully deleted.")
+        logger.info(f"Admin {request.user} deleted box")
         return redirect('box_admin')
 
     return render(request, 'dashboard/delete_box.html', {'box_id': box_id})
@@ -113,6 +119,7 @@ def edit_box_products(request, box_id):
     """
     box = get_object_or_404(Box, pk=box_id)
     products = box.products.all()
+    logger.info(f"Admin {request.user} is editing products in box '{box.name}' (ID: {box.id})")
     return render(request, 'dashboard/box_products.html', {'box': box, 'products': products})
 
 
@@ -132,6 +139,7 @@ def add_product_to_box(request, box_id):
             product = form.save(commit=False)
             product.box = box
             product.save()
+            logger.info(f"Admin {request.user} added product '{product.name}' to box '{box.name}' (ID: {box.id})")
             alert(request, "success", f"Products were successfully added to the box: {box.name}.")
             return redirect('edit_box_products', box_id=box.id)
         else:
@@ -153,7 +161,8 @@ def add_products(request):
     if request.method == 'POST':
         form = ProductForm(request.POST, request.FILES)
         if form.is_valid():
-            form.save()
+            product = form.save()
+            logger.info(f"Admin {request.user} added orphan product '{product.name}'")
             alert(request, "success", "Product successfully added.")
             return redirect('box_admin')
         else:
@@ -176,6 +185,7 @@ def edit_product(request, product_id):
         form = ProductForm(request.POST, request.FILES, instance=product)
         if form.is_valid():
             form.save()
+            logger.info(f"Admin {request.user} edited product '{product.name}' (ID: {product_id})")
             alert(request, "success", "Products successfully edited.")
             return redirect('edit_box_products', box_id=product.box.id)
         else:
@@ -202,7 +212,7 @@ def delete_product(request, product_id):
             product.delete()
             alert(request, "success", "Product permanently deleted.")
         except Exception as e:
-            print(f"❌ Deletion error: {e}")
+            logger.error(f"Deletion error: {e}")
             alert(request, "error", "There was a problem deleting the product.")
 
         if box_id:
@@ -233,8 +243,10 @@ def remove_product_from_box(request, product_id):
         try:
             product.box = None
             product.save()
+            logger.info(f"Admin {request.user} removed product '{product.name}' from box '{box.name}'")
             alert(request, "success", f"Product successfully removed from box: {box.name}.")
         except Exception as e:
+            logger.error(f"Admin {request.user} failed to remove product '{product.name}' from box '{box.name}': {e}", exc_info=True)
             alert(request, "error", "There was a problem removing the product from the box.")
         return redirect('edit_box_products', box_id=box_id)
 
@@ -270,6 +282,7 @@ def edit_user(request, user_id):
         form = UserEditForm(request.POST, instance=user)
         if form.is_valid():
             form.save()
+            logger.info(f"Admin {request.user} updated user: {user.username} (ID: {user.id})")
             alert(request, "success", f"User '{user.username}' updated successfully.")
             return redirect('user_admin')
         else:
@@ -293,6 +306,7 @@ def delete_user(request, user_id):
     if request.method == 'POST':
         user.is_active = False
         user.save()
+        logger.warning(f"Admin {request.user} deactivated user: {user.username} (ID: {user.id})")
         alert(request, "success", f"User '{user.username}' has been deactivated.")
         return redirect('user_admin')
     else:
@@ -337,7 +351,7 @@ def update_order_status(request, order_id):
             # If marked as shipped, trigger shipping email
             if new_status == "shipped":
                 send_shipping_confirmation_email(order.user, order.box)
-                print(f"Shipping confirmation email sent to {order.user.email}")
+                logger.info(f"Shipping confirmation email sent to {order.user.email} for box {order.box}")
             alert(request, "success", f"Order #{order.id} status updated to {new_status.title()}")
         else:
             alert(request, "error", "Invalid status selected.")

@@ -12,12 +12,15 @@ Includes helpers for:
 Import and use these anywhere you need a reusable function that keeps views clean and DRY.
 """
 
+# Django/External Imports
+from dateutil.relativedelta import relativedelta
+from django.shortcuts import redirect
+from django.contrib import messages
 from django.conf import settings
 from django.urls import reverse
-from django.contrib import messages
-from django.shortcuts import redirect
-from dateutil.relativedelta import relativedelta
+import logging
 
+logger = logging.getLogger(__name__)
 
 PLAN_MAP = {
     settings.STRIPE_MONTHLY_PRICE_ID: (1, "Monthly"),
@@ -46,6 +49,11 @@ def alert(request, level, msg):
         "error": messages.error
     }.get(level, messages.info)
 
+    # Log all alerts with user context (where available)
+    user_info = f"user={request.user}" if request.user.is_authenticated else "anon user"
+    logger.debug(f"Flashing {level} alert to {user_info}: {msg}")
+    
+
     # Call the selected message function with the request and msg
     message_func(request, msg)
 
@@ -58,6 +66,7 @@ def get_user_default_shipping_address(request):
     """
     shipping_address = request.user.addresses.filter(is_default=True).first()
     if not shipping_address:
+        logger.warning(f"{request.user} has no default shipping address — redirecting to add_address")
         alert(request, "error", "You must set a default shipping address before placing an order.")
         return None, redirect(f"{reverse('add_address')}?next={request.path}")
     return shipping_address, None
@@ -90,6 +99,7 @@ def get_gift_metadata(form, user_id):
 def get_subscription_duration_display(subscription):
     months, label = PLAN_MAP.get(subscription.stripe_price_id, (None, None))
     if not months:
+        logger.warning(f"Unknown plan ID: {subscription.stripe_price_id} for user {subscription.user}")
         return "Unknown plan"
     
     end_date = subscription.created_at + relativedelta(months=months)
