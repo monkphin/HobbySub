@@ -66,9 +66,7 @@ def handle_purchase_type(request, plan):
     """
     Routes user to gift message step or checkout based on selection.
     """
-    # Always reset session address cache at start of flow
-    request.session.pop('checkout_shipping_id', None)
-    
+   
     gift_raw = request.GET.get('gift')
     gift = gift_raw and gift_raw.lower() == 'true'
     print(f"GIFT PARAM: {gift_raw} → Interpreted as gift={gift}")
@@ -225,7 +223,8 @@ def order_cancel(request):
     """
     Renders the order cancellation page with an info message.
     """
-
+    # clear cached session to ensure address selection happens
+    request.session.pop('checkout_shipping_id', None)
     alert(request, "info", "Your checkout was cancelled, no payment has been taken")
     return render(request, 'orders/order_cancel.html')
 
