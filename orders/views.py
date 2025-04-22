@@ -308,7 +308,10 @@ def choose_shipping_address(request, plan):
             return redirect('gift_message', plan=plan)
         if plan == "oneoff":
             return redirect('handle_purchase_type', plan='oneoff')
+        print("POST DATA:", request.POST)
+
         return redirect('handle_purchase_type', plan=plan)
+    print("POST DATA:", request.POST)
 
     return render(request, 'orders/choose_shipping_address.html', {
         'addresses': addresses,
