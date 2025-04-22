@@ -225,8 +225,7 @@ def order_cancel(request):
     """
     Renders the order cancellation page with an info message.
     """
-    # clear cached session to ensure address selection happens
-    request.session.pop('checkout_shipping_id', None)
+
     alert(request, "info", "Your checkout was cancelled, no payment has been taken")
     return render(request, 'orders/order_cancel.html')
 
@@ -297,6 +296,8 @@ def choose_shipping_address(request, plan):
     addresses = request.user.addresses.all()
 
     if request.method == 'POST':
+        print("RAW POST:", request.body)
+        print("FORM DATA:", request.POST)
         selected_id = request.POST.get('shipping_address')
         if not selected_id:
             alert(request, "error", "Please select an address.")
