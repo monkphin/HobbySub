@@ -1,0 +1,9 @@
+User-agent: *
+Disallow: /admin/
+Disallow: /accounts/
+Disallow: /orders/
+Disallow: /dashboard/
+Disallow: /static/
+Disallow: /media/
+
+Sitemap: https://hobbyhub-d1fc032e6c82.herokuapp.com/sitemap.xml

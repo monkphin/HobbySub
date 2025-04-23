@@ -10,9 +10,18 @@ Includes app-level URLconfs for:
 
 Admin interface also mounted at /admin/
 """
-
-from django.contrib import admin
+from django.contrib.sitemaps.views import sitemap
+from home.sitemaps import StaticViewSitemap, BoxSitemap
+from django.views.generic import TemplateView
 from django.urls import path, include
+from django.contrib import admin
+
+
+sitemaps = {
+            'static': StaticViewSitemap,
+            'boxes': BoxSitemap,
+            }
+
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -21,4 +30,7 @@ urlpatterns = [
     path('accounts/', include('users.urls')), # Routes to user based URLs in the users app
     path('orders/', include('orders.urls')), # Routes to order based URLs in the orders app
     path('dashboard/', include('dashboard.urls')), # Routes to custom admin UI
+    path('sitemap.xml', sitemap, {'sitemaps': sitemaps}, name='sitemap'), # Routes to site map
+    path("robots.txt", TemplateView.as_view(template_name="robots.txt", content_type="text/plain")), # Routes to  robots.txt
+
     ]
