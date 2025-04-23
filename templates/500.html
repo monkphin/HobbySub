@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container center-align" style="padding: 4rem 2rem;">
+  <h3>Something went wrong (500)</h3>
+  <p>We're experiencing a technical issue. Please try again later.</p>
+  <a href="{% url 'home' %}" class="btn">Return Home</a>
+</div>
+{% endblock %}
