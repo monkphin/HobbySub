@@ -14,7 +14,10 @@ from django.contrib.sitemaps.views import sitemap
 from home.sitemaps import StaticViewSitemap, BoxSitemap
 from django.views.generic import TemplateView
 from django.urls import path, include
+from django.views.static import serve
 from django.contrib import admin
+from django.conf import settings
+from django.urls import re_path
 
 
 sitemaps = {
@@ -31,6 +34,8 @@ urlpatterns = [
     path('orders/', include('orders.urls')), # Routes to order based URLs in the orders app
     path('dashboard/', include('dashboard.urls')), # Routes to custom admin UI
     path('sitemap.xml', sitemap, {'sitemaps': sitemaps}, name='sitemap'), # Routes to site map
-    path("robots.txt", TemplateView.as_view(template_name="robots.txt", content_type="text/plain")), # Routes to  robots.txt
-
+    re_path(r'^robots\.txt$', serve, {
+        'path': 'robots.txt',
+        'document_root': settings.STATIC_ROOT,
+    }),
     ]
