@@ -4,73 +4,59 @@
 {% block title %}My Account{% endblock %}
 
 {% block content %}
-  <section class="section center-align">
-    <h2>My Account</h2>
-    <div class="row">
-      <p><strong>Username:</strong> {{ request.user.username }}</p>
-      <p><strong>Email:</strong> {{ request.user.email }}</p>
-      <p><strong>Name:</strong> {{ request.user.first_name }} {{ request.user.last_name }} </p>
-      <p><strong>Joined:</strong> {{ request.user.date_joined|date:"d M Y" }}</p>
-    </div>
-  </section>
-  <a href="{% url 'order_history' %}" class="btn">View Order History</a>
 
-  <hr>
-
-  <section class="section center-align">
-    <a href="{% url 'change_password' %}" class="btn">Change Password</a>
-    <a href="{% url 'edit_account' %}" class="btn">Edit Account</a>
-    <a href="{% url 'delete_account' %}" class="btn">Delete Account</a>
-  </section>
-
-  <hr>
-
-  <section class="section center-align">
-    <h3>Saved Addresses</h3>
-    <div class="row">
-      {% for address in request.user.addresses.all %}
-        <div class="col s12 m6 l4">
-          <div class="card">
-            <div class="card-content">
-              <span class="card-title">
-                {{ address.recipient_f_name }} {{ address.recipient_l_name }}
-              </span>
-
-              <p>{{ address.address_line_1 }}</p>
-              {% if address.address_line_2 %}
-                <p>{{ address.address_line_2 }}</p>
-              {% endif %}
-              <p>{{ address.town_or_city }}</p>
-              <p>{{ address.county }}</p>
-              <p>{{ address.postcode }}</p>
-              <p>{{ address.country }}</p>
-              <p><em>{{ address.phone_number }}</em></p>
-
-              <div class="chip-container">
-                {% if not address.is_default %}
-                  <form method="post" action="{% url 'set_default_address' address.id %}">
-                    {% csrf_token %}
-                    <button class="btn-small">Set as Default Shipping Address</button>
-                  </form>
-                {% else %}
-                  <span class="new badge blue" data-badge-caption="Default"></span>
-                {% endif %}
-              
-              </div>
-
-            </div>
-            <div class="card-action">
-              <a href="{% url 'edit_address' address.id %}">Edit</a>
-              <a href="{% url 'delete_address' address.id %}" class="red-text">Delete</a>
-            </div>
-          </div>
+<section class="section center-align">
+  <h2>My Account</h2>
+  <div class="row">
+    <div class="col s12 m8 offset-m2">
+      <div class="card">
+        <div class="card-content">
+          <span class="card-title">Your Details</span>
+          <p><strong>Name:</strong> {{ request.user.first_name }} {{ request.user.last_name }}</p>
+          <p><strong>Username:</strong> {{ request.user.username }}</p>
+          <p><strong>Email:</strong> {{ request.user.email }}</p>
+          <p><strong>Joined:</strong> {{ request.user.date_joined|date:"d M Y" }}</p>
         </div>
-      {% empty %}
-        <p>No saved addresses yet.</p>
-        <a href="{% url 'add_address' %}" class="btn">Add Address</a>
-      {% endfor %}
-      <a href="{% url 'add_address' %}" class="btn">Add another Address</a>
+        <div class="card-action">
+          <a href="{% url 'order_history' %}" class="btn green white-text">Order History</a>
+        </div>
+      </div>
     </div>
-  </section>
+  </div>
+</section>
+
+<div class="section-divider"></div>
+
+<section class="section center-align">
+  <div class="chip-container">
+    <a href="{% url 'change_password' %}" class="btn-small blue lighten-1 white-text">Change Password</a>
+    <a href="{% url 'edit_account' %}" class="btn-small green white-text">Edit Account</a>
+    <a href="{% url 'delete_account' %}" class="btn-small red white-text">Delete Account</a>
+  </div>
+</section>
+
+<div class="section-divider"></div>
+
+<section class="section center-align">
+  <h3>Saved Addresses</h3>
+
+  <div class="row" style="justify-content: center; display: flex; flex-wrap: wrap;">
+    {% for address in request.user.addresses.all %}
+      <div class="col s12 m6 l4" style="max-width: 500px; min-width: 300px; flex: 1 1 300px; margin: 1rem;">
+        {% include "users/includes/address_card.html" with address=address %}
+      </div>
+    {% endfor %}
+  </div>
+  
+  
+
+  <div class="row">
+    <div class="col s12 center-align" style="margin-top: 1rem;">
+      <a href="{% url 'add_address' %}" class="btn teal white-text">
+        <i class="fas fa-plus left"></i> Add Another Address
+      </a>
+    </div>
+  </div>
+</section>
 
 {% endblock %}

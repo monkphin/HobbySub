@@ -165,6 +165,10 @@ nav ul li a:hover {
   justify-content: space-between;
 }
 
+.card-content p {
+  text-align: left;
+}
+
 .card-image {
   position: relative;
   overflow: hidden;
