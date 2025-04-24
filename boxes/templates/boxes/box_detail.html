@@ -1,31 +1,44 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}Past Boxes{% endblock %}
+{% block title %}{{ box.name }}{% endblock %}
 
 {% block content %}
 <div class="container">
+  <!-- Box Overview -->
+  <section class="section center-align">
+    <h2 class="green-text text-darken-3">{{ box.name }}</h2>
+    <img src="{{ box.image.url }}" alt="{{ box.name }}" class="responsive-img z-depth-1" style="max-height: 300px; border-radius: 12px;">
+    <p class="grey-text">📦 Shipped: {{ box.shipping_date|date:"F j, Y" }}</p>
+    <p class="flow-text grey-text text-darken-2" style="margin-top: 1rem;">{{ box.description }}</p>
+  </section>
 
-  <!-- Main Content -->
-  <h2>{{ box.name }}</h2>
-  <img src="{{ box.image.url}}" alt="{{ box.name }}" class="responsive-img">
-  <p><strong>Shpping Date:</strong> {{ box.shipping_date }}</p>
-  <p>{{ box.description }}</p>
+  <hr class="section-divider">
+
+  <!-- Product List -->
+  <section class="section">
+    <h4 class="green-text text-darken-3 center-align">Included Items</h4>
+    <div class="row">
+      {% for product in box.products.all %}
+        <div class="col s12 m6 l4">
+          <div class="card z-depth-1" style="border-radius: 10px;">
+            <div class="card-image">
+              <img src="{{ product.image.url }}" alt="{{ product.name }}" class="responsive-img" style="height: 200px; object-fit: contain; padding: 1rem;">
+            </div>
+            <div class="card-content">
+              <h6 class="green-text text-darken-3">{{ product.name }}</h6>
+              <p class="grey-text text-darken-2">{{ product.description }}</p>
+              <p class="grey-text"><strong>Quantity:</strong> {{ product.quantity }}</p>
+            </div>
+          </div>
+        </div>
+      {% empty %}
+        <div class="col s12 center-align">
+          <p class="grey-text">No products listed for this box.</p>
+        </div>
+      {% endfor %}
+    </div>
+  </section>
+  
 </div>
-
-<h3>Included Items<h3>
-
-  <ul class="collection">
-    {% for product in box.products.all %}
-      <li class="collection-item avatar">
-        <img src="{{ product.image.url }}" alt="{{ product.name }}" class="circle">
-        <p>{{ product.description }}</p>
-        <p><strong>Quantity:</strong> {{ product.quantity }}</p>
-      </li>
-    {% empty %}
-      <li class="collection-item">No products listed for this box.</li>
-    {% endfor %}
-  </ul>
-
-
 {% endblock %}

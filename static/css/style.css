@@ -241,3 +241,11 @@ nav ul li a:hover {
   max-width: 100%;
   height: auto;
 }
+
+
+.collection .avatar img.circle {
+  width: 48px;
+  height: 48px;
+  object-fit: cover;
+  margin-top: 6px;
+}
