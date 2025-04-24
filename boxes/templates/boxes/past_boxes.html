@@ -5,26 +5,36 @@
 
 {% block content %}
 <div class="container">
+  <section class="section">
+    <h2 class="center-align green-text text-darken-3">Past Boxes</h2>
+    <p class="center-align grey-text text-darken-1">
+      Explore the kits we've sent out to our subscribers — every box is packed with hobby inspiration.
+    </p>
+  </section>
 
-  <!-- Main Content -->
-  <h2>Past Boxes</h2>
   <div class="row">
     {% for box in past_boxes %}
-        <div class="col s12 m6 l4">
-            <div class="card">
-                <div class="card-image">
-                    <img src="{{ box.image.url }}" alt="{{ box.name }}">
-                    <a href="{% url 'box_detail' box.slug %}">
-                        <span class="card-title">{{ box.name }} - {{ box.shipping_date|date:"m/Y" }}</span>
-                    </a>
-                </div>
-                <div class="card-content">
-                    <p>{{ box.description|truncatewords:25 }}</p>
-                </div>
-            </div>
+      <div class="col s12 m6 l4">
+        <div class="card hoverable z-depth-1">
+          <div class="card-image">
+            <a href="{% url 'box_detail' box.slug %}">
+              <img src="{{ box.image.url }}" alt="{{ box.name }}" style="object-fit: cover; height: 220px;">
+              <span class="card-title">
+                {{ box.name }}<br>
+                <small class="grey-text text-lighten-3">{{ box.shipping_date|date:"F Y" }}</small>
+              </span>
+            </a>
+          </div>
+          <div class="card-content">
+            <p class="grey-text text-darken-2">{{ box.description|truncatewords:25 }}</p>
+          </div>
         </div>
+      </div>
+    {% empty %}
+      <div class="col s12">
+        <p class="center-align grey-text">No past boxes available yet — check back soon!</p>
+      </div>
     {% endfor %}
   </div>
 </div>
-
 {% endblock %}

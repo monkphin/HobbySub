@@ -3,17 +3,20 @@
 <!-- home/templates/home/base.html -->
 <!DOCTYPE html>
 <html lang="en">
-<head>
+  <head>
     <meta charset="UTF-8">
     <title>{% block title %}Hobby Hub{% endblock %}</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
     <!-- Materialize CSS -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
-
+  
+    <!-- FontAwesome (fallback in case JS Kit doesn't load) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  
     <!-- Local Styling -->
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
-
-</head>
+  </head>
 <body>
     <header>
 
@@ -25,27 +28,66 @@
         </div>
       {% endif %}
 
-        <ul id="dropdown1" class="dropdown-content">
-          <li><a href="{% url 'box_admin' %}">Box Admin</a></li>
-          <li><a href="{% url 'user_admin' %}">User Admin</a></li>
-        </ul>
-
-        <nav>
-            <a href="{% url 'home' %}">Home</a>
-            <a href="{% url 'about' %}">About</a>
-            <a href="{% url 'past_boxes' %}">Past Boxes</a>
-            <a href="{% url 'contact' %}">Contact</a> 
+      <nav> <!-- optional: or remove class if using only custom CSS -->
+        <div class="nav-wrapper">
+          <div class="container">
+          <a href="{% url 'home' %}" class="brand-logo">Hobby Hub</a>
+      
+          <!-- Desktop menu -->
+          <ul class="right hide-on-med-and-down">
+            <li><a href="{% url 'about' %}">About</a></li>
+            <li><a href="{% url 'past_boxes' %}">Past Boxes</a></li>
+            <li><a href="{% url 'select_purchase_type' %}?gift=false">Buy for Myself</a></li>
+            <li><a href="{% url 'select_purchase_type' %}?gift=true">Give as a Gift</a></li>
             {% if user.is_authenticated %}
-              <a href="{% url 'account' %}">My Account</a>
-              <a href="{% url 'logout' %}">Logout</a>
+              <li><a href="{% url 'account' %}">My Account</a></li>
+              <li><a href="{% url 'logout' %}">Logout</a></li>
             {% else %}
-              <a href="{% url 'register' %}">Register</a>
-              <a href="{% url 'login' %}">Login</a>
+              <li><a href="{% url 'register' %}">Register</a></li>
+              <li><a href="{% url 'login' %}">Login</a></li>
             {% endif %}
             {% if user.is_staff %}
-              <a class="dropdown-trigger" href="#!" data-target="dropdown1">Administration<i class="material-icons right">arrow_drop_down</i></a>
+              <li class="admin-dropdown-wrapper">
+                <a class="dropdown-trigger" href="#!" data-target="dropdown1">
+                  Administration <i class="fas fa-chevron-down dropdown-icon"></i>
+                </a>
+              </li>
             {% endif %}
-        </nav>
+          </ul>
+        <!-- Burger trigger aligned to screen-right -->
+        <a href="#" data-target="mobile-nav" class="sidenav-trigger right">
+          <i class="fas fa-bars"></i>
+        </a>
+        </div>
+      </div>
+      </nav>
+
+      <ul id="dropdown1" class="dropdown-content">
+        <li><a href="{% url 'box_admin' %}">Box Admin</a></li>
+        <li><a href="{% url 'user_admin' %}">User Admin</a></li>
+      </ul>
+
+      <!-- Mobile menu -->
+      <ul class="sidenav" id="mobile-nav">
+        <li><a href="{% url 'about' %}">About</a></li>
+        <li><a href="{% url 'past_boxes' %}">Past Boxes</a></li>
+        {% if user.is_authenticated %}
+          <li><a href="{% url 'account' %}">My Account</a></li>
+          <li><a href="{% url 'logout' %}">Logout</a></li>
+        {% else %}
+          <li><a href="{% url 'register' %}">Register</a></li>
+          <li><a href="{% url 'login' %}">Login</a></li>
+        {% endif %}
+        <li class="divider"></li>
+        <li><strong class="grey-text text-darken-2" style="padding-left: 16px;">Get a Box</strong></li>
+        <li><a href="{% url 'select_purchase_type' %}?gift=false">Buy for Myself</a></li>
+        <li><a href="{% url 'select_purchase_type' %}?gift=true">Give as a Gift</a></li>
+        {% if user.is_staff %}
+          <li><a href="{% url 'box_admin' %}">Box Admin</a></li>
+          <li><a href="{% url 'user_admin' %}">User Admin</a></li>
+        {% endif %}
+      </ul>
+
     </header>
 
     <main>

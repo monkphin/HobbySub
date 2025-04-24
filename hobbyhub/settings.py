@@ -26,7 +26,7 @@ SECRET_KEY = os.environ.get("SECRET_KEY")
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.getenv("DEBUG", "True") == "True"
 
-ALLOWED_HOSTS = ['hobbyhub-d1fc032e6c82.herokuapp.com', '127.0.0.1']
+ALLOWED_HOSTS = ['hobbyhub-d1fc032e6c82.herokuapp.com']
 
 # Application definition
 INSTALLED_APPS = [

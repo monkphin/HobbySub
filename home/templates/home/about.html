@@ -2,11 +2,28 @@
 {% block title %}About{% endblock %}
 
 {% block content %}
-<div class="container">
-  <h4>About Hobby Hub</h4>
-  <p>Hobby Hub is a subscription box service for miniature painting enthusiasts.</p>
-  <p>Each month, we curate a selection of paints, brushes, tools, and models to inspire your hobby time.</p>
-  <p>Whether you're a new hobbyist or a seasoned pro, our boxes are designed to help you discover new techniques, try new products, and keep your painting queue exciting.</p>
-  <p>Want to get in touch? Head over to our <a href="{% url 'contact' %}">Contact</a> page.</p>
+<div class="container section">
+  <h4 class="green-text text-darken-3">About Hobby Hub</h4>
+
+  <p>Hobby Hub is a subscription box for miniature painters, model builders, and tabletop creatives. Whether you're just starting out or you're already deep in the hobby, our goal is simple:</p>
+
+  <blockquote>
+    <strong>Deliver inspiration to your door, every single month.</strong>
+  </blockquote>
+
+  <p>Each box includes a curated mix of paints, brushes, miniatures, accessories, and surprises — chosen to help you try new things, keep your queue fresh, and rekindle your hobby joy.</p>
+
+  <p>We're hobbyists too. We know what it's like to get stuck in a rut, overwhelmed by your pile of shame, or just unsure what to try next. That’s why each box is built not just for quality, but for creative momentum.</p>
+
+  <p>No algorithms. No excess plastic. Just thoughtful selections, delivered monthly.</p>
+
+  <h5 class="green-text text-darken-2">Who It’s For</h5>
+  <ul class="browser-default">
+    <li>🖌️ New painters looking for guidance and gear</li>
+    <li>🎲 Veterans wanting to shake up their routine</li>
+    <li>🎁 Gift-givers who want to delight a hobbyist in their life</li>
+  </ul>
+
+  <p>Still curious? You can <a href="{% url 'select_purchase_type' %}">start with a single box</a> — no subscription required.</p>
 </div>
 {% endblock %}

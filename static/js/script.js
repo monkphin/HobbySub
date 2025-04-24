@@ -1,5 +1,12 @@
 document.addEventListener('DOMContentLoaded', function () {
-   // Carousel
+  // SideNav
+  const sidenav = document.querySelectorAll('.sidenav');
+  M.Sidenav.init(sidenav, {
+      edge: 'right'
+  });
+
+
+  // Carousel
   const carouselElems = document.querySelectorAll('.carousel');
   M.Carousel.init(carouselElems, {
     duration: 200,
@@ -19,8 +26,11 @@ document.addEventListener('DOMContentLoaded', function () {
   });
 
   // Dropdowns
-  const dropdownElems = document.querySelectorAll('.dropdown-trigger');
-  M.Dropdown.init(dropdownElems);
+  const dropdowns = document.querySelectorAll('.dropdown-trigger');
+  M.Dropdown.init(dropdowns, {
+    coverTrigger: false,
+    constrainWidth: false
+  });
 
   // Materialize Selects
   M.FormSelect.init(document.querySelectorAll('select'));
@@ -46,7 +56,7 @@ document.addEventListener('DOMContentLoaded', function () {
       const filePathInput = fileInput.closest('.file-field').querySelector('.file-path');
       if (filePathInput && fileInput.files.length > 0) {
         filePathInput.value = Array.from(fileInput.files).map(f => f.name).join(', ');
-        filePathInput.dispatchEvent(new Event('change'));  // trigger Materialize label update
+        filePathInput.dispatchEvent(new Event('change'));
       }
     });
   });
