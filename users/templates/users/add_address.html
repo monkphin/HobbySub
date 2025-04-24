@@ -4,12 +4,12 @@
 {% block title %}Add Shipping Address{% endblock %}
 
 {% block content %}
-  <section class="section center-align">
-    <h2>{% if form.instance.pk %}Edit Address{% else %}Add Address{% endif %}</h2>
-    <div class="row">
-      <form class="col s12" method="post">
-        {% csrf_token %}
-        <input type="hidden" name="next" value="{{ next }}">
+<section class="section center-align">
+  <h2>{% if form.instance.pk %}Edit Address{% else %}Add Address{% endif %}</h2>
+  <div class="row" style="max-width: 700px; margin: 0 auto;">
+    <form class="col s12" method="post">
+      {% csrf_token %}
+      <input type="hidden" name="next" value="{{ next }}">
         <div class="row">
           <div class="input-field col s6">
             {{ form.recipient_f_name.label_tag }}
