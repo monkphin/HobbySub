@@ -6,38 +6,46 @@
   <h4>Contents of "{{ box.name }}"</h4>
 
   <div class="right-align">
-    <a href="{% url 'add_product_to_box' box.id %}" class="btn green">➕ Add Product</a>
-    <a href="{% url 'box_admin' %}" class="btn grey">Back to Boxes</a>
+    <a href="{% url 'add_product_to_box' box.id %}" class="btn green">
+      <i class="fas fa-plus"></i> Add Product
+    </a>
+    <a href="{% url 'box_admin' %}" class="btn grey">
+      <i class="fas fa-arrow-left"></i> Back to Boxes
+    </a>
   </div>
 
-  {% if products %}
-    <div class="row">
+  <div class="row product-list">
+    {% if products %}
       {% for product in products %}
         <div class="col s12 m6 l4">
-          <div class="card small">
-            {% if product.image %}
-              <div class="card-image">
+          <div class="card">
+            <div class="card-image">
+              {% if product.image %}
                 <img src="{{ product.image.url }}" alt="{{ product.name }}">
-              </div>
-            {% endif %}
+              {% endif %}
+            </div>
             <div class="card-content">
-              <span class="card-title">{{ product.name }}</span>
+              <h5>{{ product.name }}</h5>
               <p>{{ product.description|default:"No description" }}</p>
               <p><strong>Quantity:</strong> {{ product.quantity }}</p>
             </div>
             <div class="card-action">
-              <a href="{% url 'edit_product' product.id %}" class="btn-small">Edit</a>
-              <a href="{% url 'remove_product_from_box' product.id %}?box_id={{ box.id }}" class="btn-small orange">Remove</a>
-              <a href="{% url 'delete_product' product.id %}" class="btn-small red">Delete</a>
+              <a href="{% url 'edit_product' product.id %}" class="btn-small green">
+                <i class="fas fa-edit"></i> Edit
+              </a>
+              <a href="{% url 'remove_product_from_box' product.id %}?box_id={{ box.id }}" class="btn-small orange">
+                <i class="fas fa-trash-alt"></i> Remove
+              </a>
+              <a href="{% url 'delete_product' product.id %}" class="btn-small red">
+                <i class="fas fa-times"></i> Delete
+              </a>
             </div>
           </div>
         </div>
       {% endfor %}
-    </div>
-  {% else %}
-    <p>No products in this box yet.</p>
-  {% endif %}
+    {% else %}
+      <p>No products in this box yet.</p>
+    {% endif %}
+  </div>
 </div>
 {% endblock %}
-
-
