@@ -8,8 +8,8 @@
 <section class="section center-align">
   <h2>My Account</h2>
   <div class="row">
-    <div class="col s12 m8 offset-m2">
-      <div class="card">
+    <div class="details-wrapper">
+      <div class="card details-card">
         <div class="card-content">
           <span class="card-title">Your Details</span>
           <p><strong>Name:</strong> {{ request.user.first_name }} {{ request.user.last_name }}</p>
@@ -40,14 +40,15 @@
 <section class="section center-align">
   <h3>Saved Addresses</h3>
 
-  <div class="row" style="justify-content: center; display: flex; flex-wrap: wrap;">
+  <div class="address-grid">
     {% for address in request.user.addresses.all %}
-      <div class="col s12 m6 l4" style="max-width: 500px; min-width: 300px; flex: 1 1 300px; margin: 1rem;">
+      <div class="col">
         {% include "users/includes/address_card.html" with address=address %}
       </div>
     {% endfor %}
   </div>
-  
+
+
   
 
   <div class="row">

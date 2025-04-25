@@ -246,10 +246,40 @@ nav ul li a:hover {
   height: auto;
 }
 
-
 .collection .avatar img.circle {
   width: 48px;
   height: 48px;
   object-fit: cover;
   margin-top: 6px;
+}
+
+.details-wrapper {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 2rem;
+}
+
+.details-card {
+  max-width: 500px;
+  width: 100%;
+}
+
+.address-grid {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.address-grid .col {
+  flex: 0 1 300px;
+  max-width: 100%;
+}
+
+@media (min-width: 1200px) {
+  .address-grid .col {
+    flex: 0 0 calc(33.333% - 2rem); /* 3 columns with gap */
+  }
 }
