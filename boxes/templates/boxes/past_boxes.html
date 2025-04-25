@@ -12,19 +12,20 @@
     </p>
   </section>
 
-  <div class="row">
+  <div class="past-boxes-grid row">
     {% for box in past_boxes %}
       <div class="col s12 m6 l4">
         <div class="card hoverable z-depth-1">
           <div class="card-image">
+            <img src="{{ box.image.url }}" alt="{{ box.name }}" class="responsive-img box-card-image">
             <a href="{% url 'box_detail' box.slug %}">
-              <img src="{{ box.image.url }}" alt="{{ box.name }}" style="object-fit: cover; height: 220px;">
               <span class="card-title">
                 {{ box.name }}<br>
                 <small class="grey-text text-lighten-3">{{ box.shipping_date|date:"F Y" }}</small>
               </span>
             </a>
           </div>
+          
           <div class="card-content">
             <p class="grey-text text-darken-2">{{ box.description|truncatewords:25 }}</p>
           </div>
