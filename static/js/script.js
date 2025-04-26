@@ -61,3 +61,61 @@ document.addEventListener('DOMContentLoaded', function () {
     });
   });
 });
+
+
+let deleteType = null;
+let deleteId = null;
+
+function openDeleteModal(type, id = null) {
+  deleteType = type;
+  deleteId = id;
+  const modal = document.getElementById('delete-modal');
+  document.getElementById('delete-password').value = '';
+  document.getElementById('delete-error').innerText = '';
+  document.getElementById('delete-modal-title').innerText =
+    type === 'account' ? 'Confirm Account Deletion' : 'Confirm Address Deletion';
+  const instance = M.Modal.getInstance(modal) || M.Modal.init(modal);
+  instance.open();
+}
+
+function closeDeleteModal() {
+  const modal = document.getElementById('delete-modal');
+  const instance = M.Modal.getInstance(modal);
+  instance.close();
+}
+
+function submitDelete() {
+  const password = document.getElementById('delete-password').value;
+  let url = '';
+
+  if (deleteType === 'account') {
+    url = GLOBALS.urls.deleteAccount;
+  } else if (deleteType === 'address') {
+    url = GLOBALS.urls.deleteAddressBase + deleteId + '/';
+  }
+
+  fetch(url, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-CSRFToken': GLOBALS.csrfToken,
+    },
+    body: JSON.stringify({ password: password }),
+  })
+    .then(response => response.json())
+    .then(data => {
+      if (data.success) {
+        if (deleteType === 'account') {
+          window.location.href = '/'; // Redirect home
+        } else {
+          window.location.reload(); // Reload page
+        }
+      } else {
+        document.getElementById('delete-error').innerText = data.error;
+      }
+    })
+    .catch(error => {
+      console.error('Error:', error);
+      document.getElementById('delete-error').innerText = "Something went wrong.";
+    });
+}

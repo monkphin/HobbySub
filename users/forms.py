@@ -12,6 +12,7 @@ from django.contrib.auth.forms import UserCreationForm
 from django_countries.widgets import CountrySelectWidget
 
 
+
 # Local imports. 
 from .models import ShippingAddress
 
@@ -32,33 +33,46 @@ class ChangePassword(forms.Form):
     """
     Custom form for setting a new password with confirmation.
     """
+    current_password = forms.CharField(
+            widget=forms.PasswordInput(attrs={'class': 'validate'}),
+            help_text="Enter your current password."
+        )
     password1 = forms.CharField(
-                                widget=forms.PasswordInput(attrs={'class': 'validate'}),
-                                help_text="Confirm Password."
-                                )
+        widget=forms.PasswordInput(attrs={'class': 'validate'}),
+        help_text="Enter your new password."
+    )
     password2 = forms.CharField(
-                                widget=forms.PasswordInput(attrs={'class': 'validate'}),
-                                help_text="Re-enter your new password."
-                                )
+        widget=forms.PasswordInput(attrs={'class': 'validate'}),
+        help_text="Re-enter your new password."
+    )
+
+    def __init__(self, *args, **kwargs):
+        self.user = kwargs.pop('user', None)  # Pass user in view
+        super().__init__(*args, **kwargs)
 
     def clean(self):
-        """
-        Validates that both entered passwords match.
-        """
         cleaned_data = super().clean()
+        current_password = cleaned_data.get("current_password")
         pw1 = cleaned_data.get("password1")
         pw2 = cleaned_data.get("password2")
 
+        if self.user and not self.user.check_password(current_password):
+            self.add_error('current_password', "Current password is incorrect.")
+
         if pw1 and pw2 and pw1 != pw2:
-            self.add_error('password2', "Passwords do not match.")
+            self.add_error('password2', "New passwords do not match.")
+
         return cleaned_data
-    
-    def save(self, user):
-        """
-        Applies the new password to the user instance.
-        """
-        user.set_password(self.cleaned_data["password1"])
-        user.save()
+
+    def save(self):
+        self.user.set_password(self.cleaned_data["password1"])
+        self.user.save()
+
+class UserEditForm(forms.ModelForm):
+    class Meta:
+        model = User
+        fields = ['username', 'email', 'first_name', 'last_name']  # Only the editable ones
+
 
 class AddAddressForm(forms.ModelForm):
     """

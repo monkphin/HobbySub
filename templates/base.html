@@ -104,7 +104,15 @@
     <!-- FontAWesome JS Kit -->
     <script src="https://kit.fontawesome.com/f862737888.js" crossorigin="anonymous"></script>
     <!-- Local JS -->
-    <script src="{% static 'js/script.js' %}"></script>
-
+    <script>
+      const GLOBALS = {
+        csrfToken: '{{ csrf_token }}',
+        urls: {
+          deleteAccount: '{% url "secure_delete_account" %}',
+          deleteAddressBase: '/accounts/secure_delete_address/', // id gets added dynamically
+        }
+      }
+    </script>
+    <script src="{% static 'js/script.js' %}"></script>   
 </body>
 </html>

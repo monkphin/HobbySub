@@ -7,6 +7,7 @@
 
 <section class="section center-align">
   <h2>My Account</h2>
+  {% include "partials/form_errors.html" %}
   <div class="row">
     <div class="details-wrapper">
       <div class="card details-card">
@@ -30,8 +31,9 @@
   <div class="chip-container">
     <a href="{% url 'change_password' %}" class="btn-small blue lighten-1 white-text">Change Password</a>
     <a href="{% url 'edit_account' %}" class="btn-small green white-text">Edit Account</a>
-    <a href="{% url 'delete_account' %}" class="btn-small red white-text">Delete Account</a>
-  </div>
+    <button class="btn-small red white-text" onclick="openDeleteModal('account')">
+      Delete Account
+    </button>  </div>
 </section>
 
 <div class="section-divider"></div>
@@ -40,7 +42,7 @@
   <h3>Saved Addresses</h3>
 
   <div class="address-grid">
-    {% for address in request.user.addresses.all %}
+    {% for address in request.user.addresses.all|dictsortreversed:"is_default" %}
       <div class="col">
         {% include "users/includes/address_card.html" with address=address %}
       </div>
@@ -58,5 +60,5 @@
     </div>
   </div>
 </section>
-
+{% include "partials/delete_confirmation_modal.html" %}
 {% endblock %}

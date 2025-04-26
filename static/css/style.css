@@ -552,3 +552,11 @@ h4 {
 .collection .collection-item {
   margin-bottom: 1rem;
 }
+
+.card-panel.red.lighten-4.red-text.text-darken-4 {
+  padding: 0.75rem 1rem;
+  border-left: 5px solid #d32f2f;
+  font-weight: 500;
+  font-size: 0.95rem;
+  margin-bottom: 2rem;
+}

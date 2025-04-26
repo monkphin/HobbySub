@@ -51,7 +51,7 @@
   </div>
 
   <div class="section center-align">
-    <a href="{% url 'order_start' %}" class="btn-flat grey-text text-darken-2">
+    <a href="{{ request.META.HTTP_REFERER|default:'/' }}" class="btn-flat grey-text text-darken-2">
       <i class="fas fa-arrow-left left"></i> Back
     </a>
   </div>

@@ -6,7 +6,7 @@ shipping address operations, password changes, and Stripe webhooks.
 """
 
 # Django/External imports 
-from django.contrib.auth import login, logout, update_session_auth_hash
+from django.contrib.auth import login, logout, update_session_auth_hash, authenticate
 from django.shortcuts import render, redirect, get_object_or_404
 from django.utils.http import url_has_allowed_host_and_scheme
 from django.contrib.auth.decorators import login_required
@@ -18,6 +18,7 @@ from django.conf import settings
 import stripe.error
 import logging
 import stripe
+import json
 
 
 # Local imports
@@ -33,7 +34,7 @@ from hobbyhub.stripe_handlers import (
     handle_invoice_payment_failed,
     handle_invoice_upcoming,
 )
-from .forms import Register, AddAddressForm, ChangePassword
+from .forms import Register, AddAddressForm, ChangePassword, UserEditForm
 from .models import ShippingAddress
 from hobbyhub.utils import alert
 
@@ -78,63 +79,48 @@ def account_view(request):
 
 @login_required
 def edit_account(request):
-    """
-    Allows the user to update their account information.
-    """
     if request.method == 'POST':
-        form = UserChangeForm(request.POST, instance=request.user)
+        form = UserEditForm(request.POST, instance=request.user)
         if form.is_valid():
             form.save()
             send_account_update_email(request.user)
             alert(request, "success", "Your account details have been updated.")
             return redirect('account')
     else:
-        form = UserChangeForm(instance=request.user)
-    
-    return render(request, 'users/edit_account.html', {'form':form})
+        form = UserEditForm(instance=request.user)
+
+    return render(request, 'users/edit_account.html', {'form': form})
 
 
 @login_required
 def change_password(request):
-    """
-    Lets the user change their password securely.
-    """
     if request.method == 'POST':
-        form = ChangePassword(request.POST)
+        form = ChangePassword(request.POST, user=request.user)
         if form.is_valid():
-            form.save(request.user)
+            form.save()
             update_session_auth_hash(request, request.user)
-            logger.info(f"{request.user} changed their password")
-            alert(
-                request,
-                "success",
-                "Your password has been changed successfully."
-                )
+            alert(request, "success", "Your password has been changed successfully.")
             return redirect('account')
     else:
-        form = ChangePassword()
+        form = ChangePassword(user=request.user)
 
     return render(request, 'users/change_password.html', {'form': form})
 
+
 @require_POST
 @login_required
-def delete_account(request):
-    """
-    Deletes the currently logged-in user’s account.
-    Logs them out before deletion.
-    """
-    user = request.user
-    logger.info(f"Account deletion triggered for {user.email}")
-    alert(
-        request,
-        "info",
-        "Your account has been deleted. We're sorry to see you go!"
-        )
-    logout(request)
-    send_account_deletion_email(user.email)
-    user.delete()
-    logger.warning(f"User account deleted: {user.email}")
-    return redirect('account')
+@csrf_exempt  # fetch() sometimes needs this if CSRF breaks
+def secure_delete_account(request):
+    data = json.loads(request.body)
+    password = data.get('password')
+
+    if authenticate(username=request.user.username, password=password):
+        user = request.user
+        logout(request)
+        user.delete()
+        return JsonResponse({'success': True})
+    else:
+        return JsonResponse({'success': False, 'error': 'Incorrect password'})
 
 
 @login_required
@@ -231,16 +217,17 @@ def set_default_address(request, address_id):
 
 @require_POST
 @login_required
-def delete_address(request, address_id):
-    """
-    Deletes a user's shipping address.
-    """
-    address = get_object_or_404(ShippingAddress, id=address_id, user=request.user)
-    address.delete()
-    send_address_change_email(request.user, change_type="deleted")
-    alert(request, "info", "Address deleted.")
-    logger.info(f"{request.user} deleted address {address_id}")
-    return redirect('account')
+@csrf_exempt
+def secure_delete_address(request, address_id):
+    data = json.loads(request.body)
+    password = data.get('password')
+
+    if authenticate(username=request.user.username, password=password):
+        address = get_object_or_404(ShippingAddress, id=address_id, user=request.user)
+        address.delete()
+        return JsonResponse({'success': True})
+    else:
+        return JsonResponse({'success': False, 'error': 'Incorrect password'})
 
 
 @csrf_exempt
