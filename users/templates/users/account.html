@@ -10,14 +10,13 @@
   <div class="row">
     <div class="details-wrapper">
       <div class="card details-card">
-        <div class="card-content">
-          <span class="card-title">Your Details</span>
+        <div class="card-content padded-card-content">
           <p><strong>Name:</strong> {{ request.user.first_name }} {{ request.user.last_name }}</p>
           <p><strong>Username:</strong> {{ request.user.username }}</p>
           <p><strong>Email:</strong> {{ request.user.email }}</p>
           <p><strong>Joined:</strong> {{ request.user.date_joined|date:"d M Y" }}</p>
         </div>
-        <div class="card-action">
+        <div class="card-action center-btn">
           <a href="{% url 'order_history' %}" class="btn green white-text">Order History</a>
         </div>
       </div>
@@ -52,7 +51,7 @@
   
 
   <div class="row">
-    <div class="col s12 center-align" style="margin-top: 1rem;">
+    <div class="col s12 center-align button-row">
       <a href="{% url 'add_address' %}" class="btn teal white-text">
         <i class="fas fa-plus left"></i> Add Another Address
       </a>

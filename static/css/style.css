@@ -307,13 +307,6 @@ ul li i.left {
   }
 }
 
-.button-row {
-  display: flex;
-  gap: 1rem;
-  justify-content: center;
-  margin-bottom: 2rem;
-}
-
 .btn-group {
   display: flex;
   gap: 0.5rem;
@@ -500,4 +493,35 @@ h4 {
   background: linear-gradient(to top, rgba(0, 0, 0, 0.6), transparent);
   z-index: 1;
   pointer-events: none;
+}
+
+.form-wrapper {
+  max-width: 700px;
+  margin: 0 auto;
+}
+
+.address-card {
+  min-height: 320px;
+}
+
+.button-row {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  margin-top: 2rem;
+  flex-wrap: wrap;
+}
+
+.padded-card-content {
+  padding-bottom: 2rem;
+}
+
+.card-action.centered-action {
+  text-align: center;
+}
+
+.center-btn {
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }

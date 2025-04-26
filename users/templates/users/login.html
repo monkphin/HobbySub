@@ -7,10 +7,17 @@
   <section class="section center-align">
     <section class="section center-align">
       <h3>Login</h3>
-      <div class="row" style="max-width: 700px; margin: 0 auto;">
+      <div class="row form-wrapper">
         <form method="post">
           {% csrf_token %}
-          {{ form.as_p }}
+          <div class="input-field col s12">
+            {{ form.username.label_tag }}
+            {{ form.username }}
+          </div>
+          <div class="input-field col s12">
+            {{ form.password.label_tag }}
+            {{ form.password }}
+          </div>
           <button type="submit" class="btn">Log In</button>
         </form>
       </div>
