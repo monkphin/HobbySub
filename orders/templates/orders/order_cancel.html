@@ -9,7 +9,13 @@
   <p>Your payment process was cancelled. No charges have been made.</p>
   <p>If this was a mistake, you can try again below.</p>
   <br>
-  <a href="{% url 'order_start' %}" class="btn">Try Again</a>
-  <a href="{% url 'home' %}" class="btn-flat">Return Home</a>
+  <div class="button-row center-align">
+    <a href="{% url 'order_start' %}" class="btn">
+      <i class="fas fa-undo left"></i> Try Again
+    </a>
+    <a href="{% url 'home' %}" class="btn-flat">
+      <i class="fas fa-home left"></i> Return Home
+    </a>
+  </div>
 </section>
 {% endblock %}

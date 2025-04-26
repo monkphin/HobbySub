@@ -27,7 +27,7 @@
             <p>{{ address.postcode }}</p>
             <p>{{ address.country }}</p>
           
-            <p class="grey-text small"><i class="material-icons tiny">phone</i> {{ address.phone_number }}</p>
+            <i class="fas fa-phone-alt left"></i> {{ address.phone_number }}
           </div>
         <div class="card-action">
           <form method="POST" action="">
@@ -46,13 +46,13 @@
 
   <div class="section center-align">
     <a href="{% url 'add_address' %}?next={{ request.path }}" class="btn-flat">
-      <i class="material-icons left">add</i>Add a New Address
+      <i class="fas fa-plus left"></i> Add a New Address
     </a>
   </div>
 
   <div class="section center-align">
     <a href="{% url 'order_start' %}" class="btn-flat grey-text text-darken-2">
-      <i class="material-icons left">arrow_back</i>Back
+      <i class="fas fa-arrow-left left"></i> Back
     </a>
   </div>
 </section>

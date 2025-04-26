@@ -2,19 +2,17 @@
 {% block title %}Order History{% endblock %}
 
 {% block content %}
-<section class="section">
+<section class="section container">
 
   {% with subscriptions|length as subs_count %}
   {% with orders|length as orders_count %}
     {% with subs_count|add:orders_count as total_orders %}
       {% if total_orders >= 4 %}
-        <div class="row" style="margin-bottom: 2rem;">
-          <div class="col s12 center-align">
-            <a href="{% url 'account' %}" class="btn grey lighten-1 black-text">
-              <i class="fas fa-arrow-left left"></i> Back
-            </a>
-          </div>
-        </div>
+        <div class="row button-row center-align">
+          <a href="{% url 'account' %}" class="btn grey lighten-1 black-text">
+            <i class="fas fa-arrow-left left"></i> Back
+          </a>
+        </div>     
       {% endif %}
     {% endwith %}
   {% endwith %}
@@ -42,12 +40,10 @@
     <p>You haven’t placed any one-off orders yet.</p>
   {% endif %}
 
-  <div class="row" style="margin-top: 2rem;">
-    <div class="col s12 center-align">
-      <a href="{% url 'account' %}" class="btn grey lighten-1 black-text">
-        <i class="fas fa-arrow-left left"></i> Back
-      </a>
-    </div>
+  <div class="row button-row center-align">
+    <a href="{% url 'account' %}" class="btn grey lighten-1 black-text">
+      <i class="fas fa-arrow-left left"></i> Back
+    </a>
   </div>
 
 </section>

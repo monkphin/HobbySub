@@ -14,7 +14,13 @@
   {% endif %}
  
   <br>
-  <a href="{% url 'account' %}" class="btn">Go to My Account</a>
-  <a href="{% url 'home' %}" class="btn-flat">Return Home</a>
+  <div class="row button-row center-align">
+    <a href="{% url 'account' %}" class="btn">
+      <i class="fas fa-user left"></i> Go to My Account
+    </a>
+    <a href="{% url 'home' %}" class="btn-flat">
+      <i class="fas fa-home left"></i> Return Home
+    </a>
+  </div>
 </section>
 {% endblock %}

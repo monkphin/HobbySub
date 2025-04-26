@@ -190,6 +190,12 @@ nav ul li a:hover {
   z-index: 2;
 }
 
+.card-heading {
+  font-size: 1.2rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  color: #263238;
+}
 
 .card-subtitle {
   position: absolute;
@@ -541,4 +547,8 @@ h4 {
 
 .select-auto-width {
   width: auto;
+}
+
+.collection .collection-item {
+  margin-bottom: 1rem;
 }
