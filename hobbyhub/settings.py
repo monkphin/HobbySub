@@ -43,7 +43,6 @@ INSTALLED_APPS = [
     'cloudinary_storage',
     'django_countries',
     'django.contrib.sitemaps',
-    'phonenumber_field',
 ]
 
 MIDDLEWARE = [
