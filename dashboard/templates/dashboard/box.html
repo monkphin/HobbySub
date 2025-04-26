@@ -31,7 +31,7 @@
 
     {% if box and box.image %}
       <p>Current Image:</p>
-      <img src="{{ box.image.url }}" alt="Current image" class="responsive-img" style="max-height: 200px;">
+      <img src="{{ box.image.url }}" alt="Current image" class="responsive-img small-preview">
     {% endif %}
 
     <div class="input-field">
@@ -59,15 +59,17 @@
       </ul>
     </div>
   {% endif %}
-  
 
+  <div class="button-row">
     <button class="btn green" type="submit">
       {% if editing %}Update{% else %}Save{% endif %}
     </button>
     <a href="{% url 'box_admin' %}" class="btn grey">Cancel</a>
     {% if box %}
-    <a href="{% url 'edit_box_products' box.id %}">Manage Products</a>
+      <a href="{% url 'edit_box_products' box.id %}" class="btn blue white-text">Manage Products</a>
     {% endif %}
+  </div>
+  
   </form>
 </div>
 {% endblock %}

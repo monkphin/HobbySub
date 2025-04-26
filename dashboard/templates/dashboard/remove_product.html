@@ -7,9 +7,11 @@
   <p>This will keep the product in the system, but unlink it from the current box.</p>
 
   <form method="post">
-    {% csrf_token %}
-    <button type="submit" class="btn orange">Remove</button>
-    <a href="{% url 'edit_box_products' product.box.id %}" class="btn grey">Cancel</a>
+    <div class="button-row">
+      {% csrf_token %}
+      <button type="submit" class="btn orange">Remove</button>
+      <a href="{% url 'edit_box_products' product.box.id %}" class="btn grey">Cancel</a>
+    </div>
   </form>
 </div>
 {% endblock %}

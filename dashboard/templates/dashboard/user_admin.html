@@ -29,11 +29,13 @@
             {% endif %}
           </td>
           <td>
-            <a href="{% url 'edit_user' user.id %}" class="btn-small blue">Edit</a>
-            <a href="{% url 'user_orders' user.id %}" class="btn-small green">Orders</a>
-            {% if not user.is_superuser %}
-              <a href="{% url 'delete_user' user.id %}" class="btn-small red">Delete</a>
-            {% endif %}
+            <div class="btn-group">
+              <a href="{% url 'edit_user' user.id %}" class="btn-small blue">Edit</a>
+              <a href="{% url 'user_orders' user.id %}" class="btn-small green">Orders</a>
+              {% if not user.is_superuser %}
+                <a href="{% url 'delete_user' user.id %}" class="btn-small red">Delete</a>
+              {% endif %}
+            </div>
           </td>
         </tr>
       {% empty %}

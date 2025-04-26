@@ -5,7 +5,7 @@
 <div class="container">
   <h4>Contents of "{{ box.name }}"</h4>
 
-  <div class="right-align">
+  <div class="row button-row center-align">
     <a href="{% url 'add_product_to_box' box.id %}" class="btn green">
       <i class="fas fa-plus"></i> Add Product
     </a>
@@ -14,14 +14,14 @@
     </a>
   </div>
 
-  <div class="row product-list">
+  <div class="product-grid">
     {% if products %}
       {% for product in products %}
-        <div class="col s12 m6 l4">
+        <div class="col">
           <div class="card">
             <div class="card-image">
               {% if product.image %}
-                <img src="{{ product.image.url }}" alt="{{ product.name }}">
+              <img src="{{ product.image.url }}" alt="{{ product.name }}" class="responsive-img product-card-image">
               {% endif %}
             </div>
             <div class="card-content">
@@ -29,7 +29,7 @@
               <p>{{ product.description|default:"No description" }}</p>
               <p><strong>Quantity:</strong> {{ product.quantity }}</p>
             </div>
-            <div class="card-action">
+            <div class="card-action btn-group">
               <a href="{% url 'edit_product' product.id %}" class="btn-small green">
                 <i class="fas fa-edit"></i> Edit
               </a>

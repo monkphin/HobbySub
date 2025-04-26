@@ -6,12 +6,15 @@
   <h5>Are you sure you want to permanently delete <strong>{{ product.name }}</strong>?</h5>
 
   <form method="post">
-    {% csrf_token %}
-    <button type="submit" class="btn red">Yes, Delete</button>
-    {% if product.box %}
-      <a href="{% url 'edit_box_products' product.box.id %}" class="btn grey">Cancel</a>
-    {% else %}
-      <a href="{% url 'box_admin' %}" class="btn grey">Cancel</a>
-    {% endif %}  </form>
+    <div class="button-row">
+      {% csrf_token %}
+      <button type="submit" class="btn red">Yes, Delete</button>
+      {% if product.box %}
+        <a href="{% url 'edit_box_products' product.box.id %}" class="btn grey">Cancel</a>
+      {% else %}
+        <a href="{% url 'box_admin' %}" class="btn grey">Cancel</a>
+      {% endif %}
+    </div>
+  </form>
 </div>
 {% endblock %}

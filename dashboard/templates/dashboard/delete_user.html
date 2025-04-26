@@ -13,8 +13,10 @@
 
   <form method="post" class="center-align">
     {% csrf_token %}
-    <a href="{% url 'user_admin' %}" class="btn grey">Cancel</a>
-    <button type="submit" class="btn red">Deactivate</button>
+    <div class="button-row">
+      <a href="{% url 'user_admin' %}" class="btn grey">Cancel</a>
+      <button type="submit" class="btn red">Deactivate</button>
+    </div>
   </form>
 </div>
 {% endblock %}

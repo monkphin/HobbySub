@@ -4,7 +4,11 @@
 {% block content %}
 <div class="container">
   <h3>{{ user.username }}’s Orders</h3>
-
+  <div class="row button-row center-align" style="margin-bottom: 2rem;">
+    <a href="{% url 'user_admin' %}" class="btn grey">
+      <i class="fas fa-arrow-left left"></i> Back to Users
+    </a>
+  </div>
   {% if orders %}
     <table class="highlight">
       <thead>
@@ -31,8 +35,8 @@
           <td>
             <form method="post" action="{% url 'update_order_status' order.id %}">
               {% csrf_token %}
-              <div class="input-field inline" style="margin:0">
-                <select name="status" class="browser-default" style="width: auto;">
+              <div class="inline-form">
+                <select name="status" class="browser-default select-auto-width">
                   {% for key, label in order.STATUS_CHOICES %}
                     <option value="{{ key }}" {% if order.status == key %}selected{% endif %}>{{ label }}</option>
                   {% endfor %}

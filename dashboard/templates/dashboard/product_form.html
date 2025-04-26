@@ -20,7 +20,7 @@
     </div>
     {% if editing and product and product.image %}
       <p>Current Image:</p>
-      <img src="{{ product.image.url }}" alt="{{ product.name }}" class="responsive-img" style="max-height: 200px;">
+      <img src="{{ product.image.url }}" alt="{{ product.name }}" class="responsive-img small-preview">
     {% endif %}
     <div class="section">
       <label for="{{ form.quantity.id_for_label }}">Quantity</label>
@@ -32,9 +32,10 @@
       {{ form.box }}
     </div>
   {% endif %}
-
+  <div class="button-row">
     <button type="submit" class="btn green">{% if editing %}Update{% else %}Save{% endif %}</button>
     <a href="{% url 'box_admin' %}" class="btn grey">Cancel</a>
+  </div>
   </form>
 </div>
 {% endblock %}
