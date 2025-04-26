@@ -9,12 +9,18 @@ Handles order and checkout flows including:
 """
 # Django/External Imports
 from django.contrib.auth.decorators import login_required
+from django.views.decorators.http import require_POST
+from django.views.decorators.csrf import csrf_exempt
 from django.shortcuts import render, redirect
+from django.contrib.auth import authenticate
+from django.http import JsonResponse
 from django.utils import timezone
 from django.conf import settings
 from django.urls import reverse
 import logging
-import stripe 
+import stripe
+import json
+
 
 # Local imports
 from .forms import PreCheckoutForm
@@ -271,18 +277,25 @@ def order_history(request):
     })
 
 
+@require_POST
 @login_required
-def cancel_subscription(request):
-    logger.info(f"{request.user} attempting to cancel subscription")
-    if request.method == 'POST':
+@csrf_exempt
+def secure_cancel_subscription(request):
+    """
+    Cancels the user's subscription securely after password confirmation.
+    """
+    data = json.loads(request.body)
+    password = data.get('password')
+
+    if authenticate(username=request.user.username, password=password):
         try:
             sub = StripeSubscriptionMeta.objects.filter(
                 user=request.user,
                 cancelled_at__isnull=True
             ).latest('created_at')
+
             if not sub.stripe_subscription_id:
-                alert(request, "error", "No Stripe subscription found.")
-                return redirect('order_history')
+                return JsonResponse({'success': False, 'error': 'No Stripe subscription found.'})
 
             stripe.Subscription.modify(
                 sub.stripe_subscription_id,
@@ -291,16 +304,22 @@ def cancel_subscription(request):
 
             sub.cancelled_at = timezone.now()
             sub.save()
+
             send_subscription_cancelled_email(
                 request.user,
                 plan_id=sub.stripe_price_id,
                 start_date=sub.created_at
             )
-            alert(request, "success", "Your subscription will remain active until the end of your current billing period, then it will be cancelled.")
+
+            logger.info(f"Subscription cancelled for user {request.user.email}")
+            return JsonResponse({'success': True, 'message': 'Subscription will cancel at period end.'})
+
         except StripeSubscriptionMeta.DoesNotExist:
-            logger.warning(f"{request.user} tried to cancel but no active sub found")
-            alert(request, "error", "No active subscription found to cancel.")
-    return redirect('order_history')
+            logger.warning(f"{request.user} tried to cancel but no active subscription found")
+            return JsonResponse({'success': False, 'error': 'No active subscription found to cancel.'})
+
+    else:
+        return JsonResponse({'success': False, 'error': 'Incorrect password'})
 
 
 @login_required

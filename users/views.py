@@ -144,6 +144,11 @@ def add_address(request):
                     is_default=True
                     ).update(is_default=False)
             address.save()
+
+            if ShippingAddress.objects.filter(user=request.user).count() == 1:
+                address.is_default = True
+                address.save()
+            
             logger.info(f"{request.user} added new address — default={address.is_default}")
             send_address_change_email(request.user, change_type="added")
             alert(request, "success", "Address added successfully.")

@@ -19,7 +19,7 @@ urlpatterns = [
     path('gift/message/<str:plan>/', views.gift_message, name='gift_message'),
 
     # Subscription Cancellation
-    path('cancel-subscription/', views.cancel_subscription, name='cancel_subscription'),
+    path('secure_cancel_subscription/', views.secure_cancel_subscription, name='secure_cancel_subscription'),
 
     # Checkout outcomes'
     path('success/', views.order_success, name='order_success'),

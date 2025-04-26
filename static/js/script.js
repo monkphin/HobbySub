@@ -72,8 +72,13 @@ function openDeleteModal(type, id = null) {
   const modal = document.getElementById('delete-modal');
   document.getElementById('delete-password').value = '';
   document.getElementById('delete-error').innerText = '';
-  document.getElementById('delete-modal-title').innerText =
-    type === 'account' ? 'Confirm Account Deletion' : 'Confirm Address Deletion';
+  if (type === 'account') {
+    document.getElementById('delete-modal-title').innerText = 'Confirm Account Deletion';
+  } else if (type === 'address') {
+    document.getElementById('delete-modal-title').innerText = 'Confirm Address Deletion';
+  } else if (type === 'subscription') {
+    document.getElementById('delete-modal-title').innerText = 'Confirm Subscription Cancellation';
+  }
   const instance = M.Modal.getInstance(modal) || M.Modal.init(modal);
   instance.open();
 }
@@ -92,6 +97,8 @@ function submitDelete() {
     url = GLOBALS.urls.deleteAccount;
   } else if (deleteType === 'address') {
     url = GLOBALS.urls.deleteAddressBase + deleteId + '/';
+  } else if (deleteType === 'subscription') {
+    url = GLOBALS.urls.cancelSubscription;
   }
 
   fetch(url, {
