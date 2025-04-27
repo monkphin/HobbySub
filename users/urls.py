@@ -5,11 +5,11 @@ Defines URL patterns for user account management, authentication,
 address handling, and webhook interactions.
 """
 
-# DJango/remote imports 
+# DJango/remote imports
 from django.contrib.auth import views as auth_views
 from django.urls import path
 
-# Local imports. 
+# Local imports
 from .views import secure_delete_account, secure_delete_address
 from . import views
 
@@ -21,7 +21,7 @@ urlpatterns = [
             'login/',
             auth_views.LoginView.as_view(
                 template_name='users/login.html'
-        ), name='login'),
+            ), name='login'),
         path('logout/', auth_views.LogoutView.as_view(), name='logout'),
 
         # Account Management
