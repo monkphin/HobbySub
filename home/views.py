@@ -1,6 +1,4 @@
 """
-home/views.py
-
 Contains view logic for public-facing pages:
  - Homepage with current and upcoming box info
  - Subscription options
@@ -24,7 +22,11 @@ def home(request):
     today = date.today()
 
     # Current box if it has already shipped
-    box = Box.objects.filter(is_archived=False, shipping_date__lte=today).order_by('-shipping_date').first()
+    box = Box.objects.filter(
+        is_archived=False,
+        shipping_date__lte=today
+        ).order_by('-shipping_date').first()
+    
     box_contents = box.products.all() if box else []
 
     # Determine the next month and year
