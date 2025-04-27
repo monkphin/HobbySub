@@ -1,3 +1,19 @@
+"""
+stripe_handlers.py
+
+Handles Stripe webhook events and checkout session completions.
+
+Main responsibilities:
+- Create subscriptions and orders based on Stripe session data.
+- Handle invoice payment successes, failures, and upcoming renewals.
+- Send appropriate confirmation or failure emails to users.
+- Sync Stripe customer and subscription data with local database models.
+
+Relies on:
+- Stripe API
+- Django ORM (orders, users, subscriptions)
+- HobbyHub custom mailers
+"""
 import stripe
 import logging
 from django.utils import timezone
@@ -6,7 +22,13 @@ from django.contrib.auth.models import User
 from dateutil.relativedelta import relativedelta
 
 
-from orders.models import Order, Payment, StripeSubscriptionMeta, ShippingAddress, Box
+from orders.models import (
+    Order,
+    Payment,
+    StripeSubscriptionMeta,
+    ShippingAddress,
+    Box
+)
 from hobbyhub.mail import (
     send_gift_notification_to_recipient,
     send_gift_confirmation_to_sender,
@@ -20,10 +42,25 @@ logger = logging.getLogger(__name__)
 
 
 def handle_checkout_session_completed(session):
+    """
+    Handle Stripe Checkout session completion.
+
+    Args:
+        session (dict): The Stripe session object.
+
+    - If mode is 'subscription', create a subscription record and send
+      a welcome email.
+    - If mode is 'payment', create a one-off order and send confirmation
+      or gift emails.
+    - Handles missing user ID or session metadata gracefully.
+    - Logs success and error events.
+    """
     mode = session.get('mode')
     metadata = session.get('metadata', {})
     user_id = metadata.get('user_id')
-    logger.info(f"Checkout session completed — mode: {mode}, user_id: {user_id}")
+    logger.info(
+        f"Checkout session completed — mode: {mode}, user_id: {user_id}"
+    )
 
     if not user_id:
         logger.error("No user ID in session metadata")
@@ -50,8 +87,13 @@ def handle_checkout_session_completed(session):
                 is_gift=False,
             )
 
-            send_subscription_confirmation_email(user, plan_name="Subscription Box")
-            logger.info(f"Subscription created and email sent for {user.username}")
+            send_subscription_confirmation_email(
+                user,
+                plan_name="Subscription Box"
+            )
+            logger.info(
+                f"Subscription created and email sent for {user.username}"
+            )
 
         except Exception as e:
             logger.error(f"Error handling subscription checkout: {e}")
@@ -103,7 +145,11 @@ def handle_checkout_session_completed(session):
             )
 
             if recipient_email:
-                send_gift_notification_to_recipient(recipient_email, sender_name, gift_message)
+                send_gift_notification_to_recipient(
+                    recipient_email,
+                    sender_name,
+                    gift_message
+                )
                 send_gift_confirmation_to_sender(user, recipient_email)
                 logger.info(f"Gift confirmation sent to {recipient_email}")
             else:
@@ -117,8 +163,17 @@ def handle_checkout_session_completed(session):
         logger.error(f"Unhandled checkout mode: {mode}")
 
 
-
 def handle_invoice_payment_succeeded(invoice):
+    """
+    Handle successful Stripe subscription invoice payment.
+
+    Args:
+        invoice (dict): The Stripe invoice object.
+
+    - Creates a new Order and Payment record.
+    - Links orders to the latest available Box if one exists.
+    - Logs success or error.
+    """
     subscription_id = invoice.get('subscription')
     customer_id = invoice.get('customer')
     amount_paid = invoice['amount_paid'] / 100
@@ -132,9 +187,17 @@ def handle_invoice_payment_succeeded(invoice):
             user=user, stripe_subscription_id=subscription_id
         ).first()
 
-        shipping = sub_meta.shipping_address if sub_meta else user.addresses.filter(is_default=True).first()
+        shipping = (
+            sub_meta.shipping_address
+            if sub_meta else user.addresses
+            .filter(is_default=True).first()
+        )
 
-        box = Box.objects.filter(is_archived=False).order_by('-shipping_date').first()
+        box = (
+            Box.objects.filter(is_archived=False)
+            .order_by('-shipping_date')
+            .first()
+        )
 
         order = Order.objects.create(
             user=user,
@@ -160,6 +223,15 @@ def handle_invoice_payment_succeeded(invoice):
 
 
 def handle_invoice_payment_failed(invoice):
+    """
+    Handle failed Stripe invoice payment.
+
+    Args:
+        invoice (dict): The Stripe invoice object.
+
+    - Sends a payment failure notification email to the user.
+    - Logs error if user lookup fails.
+    """
     try:
         customer = stripe.Customer.retrieve(invoice.get('customer'))
         user = User.objects.get(email=customer.get('email'))
@@ -169,12 +241,25 @@ def handle_invoice_payment_failed(invoice):
 
 
 def handle_invoice_upcoming(invoice):
+    """
+    Handle upcoming Stripe invoice renewal.
+
+    Args:
+        invoice (dict): The Stripe invoice object.
+
+    - Sends a notification to the user reminding them of the upcoming charge.
+    - Only sends if `next_payment_attempt` is available.
+    - Logs error if user lookup fails.
+    """
     next_renewal_ts = invoice.get('next_payment_attempt')
     if not next_renewal_ts:
         logger.info("No next_payment_attempt found.")
         return
 
-    next_renewal = timezone.datetime.fromtimestamp(next_renewal_ts, tz=timezone.utc)
+    next_renewal = timezone.datetime.fromtimestamp(
+        next_renewal_ts,
+        tz=timezone.utc
+    )
 
     try:
         customer = stripe.Customer.retrieve(invoice.get('customer'))
