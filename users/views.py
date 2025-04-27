@@ -1,12 +1,17 @@
 """
 users/views.py
 
-Handles user registration, authentication, account management, 
+Handles user registration, authentication, account management,
 shipping address operations, password changes, and Stripe webhooks.
 """
 
-# Django/External imports 
-from django.contrib.auth import login, logout, update_session_auth_hash, authenticate
+# Django/External imports
+from django.contrib.auth import (
+    login,
+    logout,
+    update_session_auth_hash,
+    authenticate
+)
 from django.shortcuts import render, redirect, get_object_or_404
 from django.utils.http import url_has_allowed_host_and_scheme
 from django.contrib.auth.decorators import login_required
@@ -26,7 +31,7 @@ from hobbyhub.mail import (
     send_registration_email,
     send_account_update_email,
     send_address_change_email,
-    send_account_deletion_email    
+    send_account_deletion_email
     )
 from hobbyhub.stripe_handlers import (
     handle_checkout_session_completed,
@@ -51,7 +56,7 @@ def register_user(request):
         if form.is_valid():
             user = form.save()
             # Auto login on registration
-            login(request, user) 
+            login(request, user)
             send_registration_email(user)
             logger.info(f"New user registered and logged in: {user.email}")
             alert(
@@ -61,11 +66,11 @@ def register_user(request):
                 )
 
             return redirect('home')
+        else:
+            logger.warning("Registration form invalid")
     else:
         form = Register()
-        if request.method == 'POST':
-            logger.warning("Registration form invalid")
-        
+
     return render(request, 'users/register.html', {'form': form})
 
 
@@ -84,7 +89,11 @@ def edit_account(request):
         if form.is_valid():
             form.save()
             send_account_update_email(request.user)
-            alert(request, "success", "Your account details have been updated.")
+            alert(
+                request,
+                "success",
+                "Your account details have been updated."
+            )
             return redirect('account')
     else:
         form = UserEditForm(instance=request.user)
@@ -99,7 +108,11 @@ def change_password(request):
         if form.is_valid():
             form.save()
             update_session_auth_hash(request, request.user)
-            alert(request, "success", "Your password has been changed successfully.")
+            alert(
+                request,
+                "success",
+                "Your password has been changed successfully."
+            )
             return redirect('account')
     else:
         form = ChangePassword(user=request.user)
@@ -148,8 +161,10 @@ def add_address(request):
             if ShippingAddress.objects.filter(user=request.user).count() == 1:
                 address.is_default = True
                 address.save()
-            
-            logger.info(f"{request.user} added new address — default={address.is_default}")
+
+            logger.info(
+                f"{request.user} added new address — "
+                f"default={address.is_default}")
             send_address_change_email(request.user, change_type="added")
             alert(request, "success", "Address added successfully.")
 
@@ -159,7 +174,9 @@ def add_address(request):
                 return redirect('gift_message', plan=plan)
 
             # Otherwise, follow next_url if safe
-            if url_has_allowed_host_and_scheme(next_url, allowed_hosts={request.get_host()}):
+            if url_has_allowed_host_and_scheme(
+                next_url, allowed_hosts={request.get_host()}
+            ):
                 return redirect(next_url)
 
             return redirect('account')  # fallback
@@ -175,13 +192,18 @@ def add_address(request):
         'next': next_url  # pass this to the template
     })
 
+
 @login_required
 def edit_address(request, address_id):
     """
     Edits an existing shipping address for the user.
     Updates default address status if necessary.
     """
-    address = get_object_or_404(ShippingAddress, id=address_id, user=request.user)
+    address = get_object_or_404(
+        ShippingAddress,
+        id=address_id,
+        user=request.user
+    )
 
     if request.method == 'POST':
         form = AddAddressForm(request.POST, instance=address)
@@ -189,7 +211,10 @@ def edit_address(request, address_id):
             updated_address = form.save(commit=False)
 
             if updated_address.is_default:
-                ShippingAddress.objects.filter(user=request.user, is_default=True).exclude(id=address.id).update(is_default=False)
+                ShippingAddress.objects.filter(
+                    user=request.user,
+                    is_default=True
+                    ).exclude(id=address.id).update(is_default=False)
 
             updated_address.save()
             logger.info(f"{request.user} updated address {address_id}")
@@ -201,6 +226,7 @@ def edit_address(request, address_id):
 
     return render(request, 'users/add_address.html', {'form': form})
 
+
 @require_POST
 @login_required
 def set_default_address(request, address_id):
@@ -211,14 +237,18 @@ def set_default_address(request, address_id):
     user = request.user
     address = get_object_or_404(ShippingAddress, id=address_id, user=user)
     # Unset existing default
-    ShippingAddress.objects.filter(user=user, is_default=True).update(is_default=False)
+    ShippingAddress.objects.filter(
+        user=user,
+        is_default=True
+    ).update(is_default=False)
     # Set the new default address
-    address.is_default=True
+    address.is_default = True
     address.save()
     send_address_change_email(request.user, change_type="default")
     alert(request, "success", "Default address updated.")
     logger.info(f"{user} set address {address_id} as default")
     return redirect('account')
+
 
 @require_POST
 @login_required
@@ -228,7 +258,11 @@ def secure_delete_address(request, address_id):
     password = data.get('password')
 
     if authenticate(username=request.user.username, password=password):
-        address = get_object_or_404(ShippingAddress, id=address_id, user=request.user)
+        address = get_object_or_404(
+            ShippingAddress,
+            id=address_id,
+            user=request.user
+        )
         address.delete()
         return JsonResponse({'success': True})
     else:
@@ -243,7 +277,11 @@ def stripe_webhook(request):
     endpoint_secret = settings.STRIPE_WEBHOOK_SECRET
 
     try:
-        event = stripe.Webhook.construct_event(payload, sig_header, endpoint_secret)
+        event = stripe.Webhook.construct_event(
+            payload,
+            sig_header,
+            endpoint_secret
+        )
     except (ValueError, stripe.error.SignatureVerificationError):
         logger.warning("Invalid webhook signature or payload")
         return HttpResponse(status=400)
@@ -261,6 +299,5 @@ def stripe_webhook(request):
         handle_invoice_upcoming(data)
     else:
         logger.info(f"Ignored event type: {event_type}")
-
 
     return JsonResponse({'status': 'success'})

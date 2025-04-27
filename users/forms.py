@@ -5,16 +5,16 @@ Form classes related to user registration, password changes,
 and managing shipping addresses.
 """
 
-# Django/Remote imports. 
+# Django/Remote imports
 from django import forms
 from django.contrib.auth.models import User
 from django.contrib.auth.forms import UserCreationForm
 from django_countries.widgets import CountrySelectWidget
 
 
-
-# Local imports. 
+# Local imports
 from .models import ShippingAddress
+
 
 class Register(UserCreationForm):
     """
@@ -27,7 +27,15 @@ class Register(UserCreationForm):
 
     class Meta:
         model = User
-        fields = ('username', 'email', 'first_name', 'last_name', 'password1', 'password2')
+        fields = (
+            'username',
+            'email',
+            'first_name',
+            'last_name',
+            'password1',
+            'password2'
+        )
+
 
 class ChangePassword(forms.Form):
     """
@@ -57,7 +65,10 @@ class ChangePassword(forms.Form):
         pw2 = cleaned_data.get("password2")
 
         if self.user and not self.user.check_password(current_password):
-            self.add_error('current_password', "Current password is incorrect.")
+            self.add_error(
+                'current_password',
+                "Current password is incorrect."
+            )
 
         if pw1 and pw2 and pw1 != pw2:
             self.add_error('password2', "New passwords do not match.")
@@ -68,10 +79,16 @@ class ChangePassword(forms.Form):
         self.user.set_password(self.cleaned_data["password1"])
         self.user.save()
 
+
 class UserEditForm(forms.ModelForm):
     class Meta:
         model = User
-        fields = ['username', 'email', 'first_name', 'last_name']  # Only the editable ones
+        fields = [
+            'username',
+            'email',
+            'first_name',
+            'last_name'
+        ]
 
 
 class AddAddressForm(forms.ModelForm):
@@ -100,6 +117,8 @@ class AddAddressForm(forms.ModelForm):
                 'is_default': 'Set as my default shipping address',
                 }
         widgets = {
-                'country': CountrySelectWidget(attrs={'class': 'browser-default'}),
+                'country': CountrySelectWidget(
+                    attrs={'class': 'browser-default'}
+                ),
                 'is_default': forms.CheckboxInput(),
                 }

@@ -11,7 +11,6 @@ from django.urls import path
 from . import views
 
 urlpatterns = [
-
     # Unified entry point for orders
     path('start/', views.order_start, name='order_start'),
     path('select/', views.select_purchase_type, name='select_purchase_type'),
@@ -26,5 +25,4 @@ urlpatterns = [
     path('cancel/', views.order_cancel, name='order_cancel'),
     path('history/', views.order_history, name='order_history'),
     path('shipping/select/<str:plan>/', views.choose_shipping_address, name='choose_shipping_address'),
-
 ]
