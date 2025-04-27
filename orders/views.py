@@ -46,6 +46,15 @@ STRIPE_3MO_PRICE_ID = settings.STRIPE_3MO_PRICE_ID
 STRIPE_6MO_PRICE_ID = settings.STRIPE_6MO_PRICE_ID
 STRIPE_12MO_PRICE_ID = settings.STRIPE_12MO_PRICE_ID
 
+
+PLAN_MAP = {
+    "oneoff": ONEOFF_PRICE_ID,
+    "monthly": STRIPE_MONTHLY_PRICE_ID,
+    "3mo": STRIPE_3MO_PRICE_ID,
+    "6mo": STRIPE_6MO_PRICE_ID,
+    "12mo": STRIPE_12MO_PRICE_ID,
+}
+
 logger = logging.getLogger(__name__)
 
 
@@ -55,7 +64,7 @@ def order_start(request):
     Presents user with choice: Buy for self or gift.
     """
     # Force address selection due to session caching
-    request.session.pop('checkout_shipping_id', None)  
+    request.session.pop('checkout_shipping_id', None)
     logger.info(f"{request.user} started an order (fresh session)")
     return render(request, 'orders/order_start.html')
 
@@ -81,14 +90,7 @@ def handle_purchase_type(request, plan):
     gift_raw = request.GET.get('gift')
     gift = gift_raw and gift_raw.lower() == 'true'
 
-    plan_map = {
-        "oneoff": ONEOFF_PRICE_ID,
-        "monthly": STRIPE_MONTHLY_PRICE_ID,
-        "3mo": STRIPE_3MO_PRICE_ID,
-        "6mo": STRIPE_6MO_PRICE_ID,
-        "12mo": STRIPE_12MO_PRICE_ID,
-    }
-    price_id = plan_map.get(plan)
+    price_id = PLAN_MAP.get(plan)
     if not price_id:
         logger.warning(f"Invalid plan selected: {plan}")
         alert(request, "error", "Invalid selection.")
@@ -97,7 +99,9 @@ def handle_purchase_type(request, plan):
     # ✅ Force address selection if not already chosen
     if 'checkout_shipping_id' not in request.session:
         logger.info(f"{request.user} selected plan={plan}, gift={gift}")
-        return redirect(f"{reverse('choose_shipping_address', args=[plan])}?gift={'true' if gift else 'false'}")
+        url = reverse('choose_shipping_address', args=[plan])
+        gift_param = 'true' if gift else 'false'
+        return redirect(f"{url}?gift={gift_param}")
 
     # ⬇️ Proceed to correct flow based on plan + gift flag
     if plan == "oneoff" and not gift:
@@ -110,7 +114,6 @@ def handle_purchase_type(request, plan):
     return create_subscription_checkout(request, price_id)
 
 
-
 @login_required
 def gift_message(request, plan):
     """
@@ -118,26 +121,28 @@ def gift_message(request, plan):
     If user has no shipping address, redirect before showing form.
     """
     logger.info(f"{request.user} is entering gift message for {plan} plan")
-    shipping_address, redirect_response = get_user_default_shipping_address(request)
+    shipping_address, redirect_response = get_user_default_shipping_address(
+        request
+    )
     if redirect_response:
         # Include return path so user is redirected back here
         request.session['return_to_gift'] = plan
-        alert(request, "info", "Before continuing with your gift, we need a shipping address on file for you.")
+        alert(
+            request,
+            "info",
+            "Before continuing with your gift,"
+            "we need a shipping address on file for you."
+        )
         return redirect('add_shipping_address')
     form = PreCheckoutForm(request.POST or None)
-    plan_map = {
-        "oneoff": GIFT_PRICE_ID,
-        "monthly": STRIPE_MONTHLY_PRICE_ID,
-        "3mo": STRIPE_3MO_PRICE_ID,
-        "6mo": STRIPE_6MO_PRICE_ID,
-        "12mo": STRIPE_12MO_PRICE_ID,
-    }
-    price_id = plan_map.get(plan)
+
+    price_id = PLAN_MAP.get(plan)
 
     if request.method == 'POST':
         if form.is_valid():
             logger.info("Gift message valid, creating Stripe session")
-            shipping_address, redirect_response = get_user_default_shipping_address(request)
+            shipping_address_data = get_user_default_shipping_address(request)
+            shipping_address, redirect_response = shipping_address_data
             if redirect_response:
                 return redirect_response
 
@@ -145,10 +150,7 @@ def gift_message(request, plan):
                 session = stripe.checkout.Session.create(
                     payment_method_types=['card'],
                     mode='payment' if plan == 'oneoff' else 'subscription',
-                    line_items=[{
-                        'price': price_id,
-                        'quantity': 1,
-                    }],
+                    line_items=[{'price': price_id, 'quantity': 1, }],
                     metadata=get_gift_metadata(form, request.user.id),
                     payment_intent_data={
                         'metadata': get_gift_metadata(form, request.user.id),
@@ -159,8 +161,19 @@ def gift_message(request, plan):
                     cancel_url=request.build_absolute_uri('/orders/cancel/'),
                 )
                 return redirect(session.url, code=303)
+
+            except stripe.error.CardError:
+                logger.error("Stripe CardError", exc_info=True)
+                alert(request, "error", "Your card was declined.")
+
             except stripe.error.StripeError:
-                alert(request, "error", "There was a problem with the payment service.")
+                logger.error("General Stripe error", exc_info=True)
+                alert(
+                    request,
+                    "error",
+                    "There was a problem with the payment service."
+                )
+
         else:
             alert(request, "error", "Please correct the errors in the form.")
 
@@ -174,7 +187,9 @@ def handle_checkout(request, price_id):
     Goes straight to Stripe without showing a form.
     """
     logger.info(f"{request.user} proceeding to checkout for one-off order")
-    shipping_address, redirect_response = get_user_default_shipping_address(request)
+    shipping_address, redirect_response = get_user_default_shipping_address(
+        request
+    )
     if redirect_response:
         return redirect_response
 
@@ -198,7 +213,12 @@ def handle_checkout(request, price_id):
         return redirect(session.url, code=303)
     except stripe.error.StripeError:
         logger.error("Stripe error during one-off checkout", exc_info=True)
-        alert(request, "error", "There was a problem connecting to the payment service. Please try again shortly.")
+        alert(
+            request,
+            "error",
+            "There was a problem connecting to the payment service."
+            "Please try again shortly."
+        )
         return redirect('order_start')
 
 
@@ -220,12 +240,19 @@ def create_subscription_checkout(request, price_id):
             metadata={
                 'user_id': request.user.id,
             },
-            success_url=request.build_absolute_uri('/orders/success/?sub=monthly'),
+            success_url=request.build_absolute_uri(
+                '/orders/success/?sub=monthly'
+            ),
             cancel_url=request.build_absolute_uri('/orders/cancel/'),
         )
         return redirect(checkout_session.url, code=303)
     except stripe.error.StripeError:
-        alert(request, "error", "There was a problem connecting to the payment service. Please try again shortly.")
+        alert(
+            request,
+            "error",
+            "There was a problem connecting to the payment service."
+            "Please try again shortly."
+        )
     return redirect('subscribe_options')
 
 
@@ -236,7 +263,11 @@ def order_success(request):
     # clear cached session to ensure address selection happens
     request.session.pop('checkout_shipping_id', None)
     logger.info(f"{request.user} reached success page — session cleared")
-    alert(request, "success", "Your order was successfully processed. Thank you!")
+    alert(
+        request,
+        "success",
+        "Your order was successfully processed. Thank you!"
+    )
     return render(request, 'orders/order_success.html')
 
 
@@ -247,13 +278,19 @@ def order_cancel(request):
     # clear cached session to ensure address selection happens
     request.session.pop('checkout_shipping_id', None)
     logger.info(f"{request.user} cancelled checkout — session cleared")
-    alert(request, "info", "Your checkout was cancelled, no payment has been taken")
+    alert(
+        request,
+        "info",
+        "Your checkout was cancelled, no payment has been taken"
+    )
     return render(request, 'orders/order_cancel.html')
 
 
 @login_required
 def order_history(request):
-    all_orders = Order.objects.filter(user=request.user).order_by('-order_date')
+    all_orders = Order.objects.filter(
+        user=request.user
+    ).order_by('-order_date')
     payments = Payment.objects.filter(order__in=all_orders)
     subscriptions = StripeSubscriptionMeta.objects.filter(user=request.user)
     sub_map = {
@@ -295,7 +332,9 @@ def secure_cancel_subscription(request):
             ).latest('created_at')
 
             if not sub.stripe_subscription_id:
-                return JsonResponse({'success': False, 'error': 'No Stripe subscription found.'})
+                return JsonResponse({
+                    'success': False, 'error': 'No Stripe subscription found.'
+                })
 
             stripe.Subscription.modify(
                 sub.stripe_subscription_id,
@@ -311,15 +350,29 @@ def secure_cancel_subscription(request):
                 start_date=sub.created_at
             )
 
-            logger.info(f"Subscription cancelled for user {request.user.email}")
-            return JsonResponse({'success': True, 'message': 'Subscription will cancel at period end.'})
+            logger.info(
+                f"Subscription cancelled for user {request.user}"
+            )
+            return JsonResponse({
+                'success': True,
+                'message': 'Subscription will cancel at period end.'
+            })
 
         except StripeSubscriptionMeta.DoesNotExist:
-            logger.warning(f"{request.user} tried to cancel but no active subscription found")
-            return JsonResponse({'success': False, 'error': 'No active subscription found to cancel.'})
+            logger.warning(
+                f"{request.user} "
+                f"tried to cancel but no active subscription found"
+            )
+            return JsonResponse({
+                'success': False,
+                'error': 'No active subscription found to cancel.'
+            })
 
     else:
-        return JsonResponse({'success': False, 'error': 'Incorrect password'})
+        return JsonResponse({
+            'success': False,
+            'error': 'Incorrect password'
+        })
 
 
 @login_required
@@ -333,13 +386,18 @@ def choose_shipping_address(request, plan):
 
     if request.method == 'POST':
         selected_id = request.POST.get('shipping_address')
-        selected_id = request.POST.get('shipping_address')
         if not selected_id:
-            logger.warning(f"{request.user} submitted without selecting a shipping address")
+            logger.warning(
+                f"{request.user} "
+                f"submitted without selecting a shipping address"
+            )
             alert(request, "error", "Please select an address.")
             return redirect('choose_shipping_address', plan=plan)
 
-        logger.info(f"{request.user} selected shipping address ID {selected_id} for plan {plan}, gift={gift}")
+        logger.info(
+            f"{request.user} selected shipping address ID "
+            f"{selected_id} for plan {plan}, gift={gift}"
+        )
         request.session['checkout_shipping_id'] = int(selected_id)
 
         if gift:

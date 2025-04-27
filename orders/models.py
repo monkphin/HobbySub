@@ -11,24 +11,37 @@ from users.models import ShippingAddress
 from boxes.models import Box
 
 
-
 class StripeSubscriptionMeta(models.Model):
     """
-    Stores Stripe subscription metadata for a user, including the selected pricing tier,
-    shipping address, and gift status.
+    Stores Stripe subscription metadata for a user, including the selected
+    pricing tier, shipping address, and gift status.
     """
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='subscriptions')
-    stripe_subscription_id = models.CharField(max_length=100, blank=True, null=True)
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='subscriptions'
+    )
+    stripe_subscription_id = models.CharField(
+        max_length=100,
+        blank=True,
+        null=True
+    )
     stripe_price_id = models.CharField(max_length=100)
-    shipping_address = models.ForeignKey(ShippingAddress, on_delete=models.SET_NULL, null=True)
+    shipping_address = models.ForeignKey(
+        ShippingAddress,
+        on_delete=models.SET_NULL,
+        blank=True,
+        null=True
+    )
     is_gift = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     cancelled_at = models.DateTimeField(null=True, blank=True)
 
     def __str__(self):
-        return f"{self.user.username} - {self.stripe_subscription_id or 'No Sub ID'}"
-
-
+        return (
+            f"{self.user.username} - "
+            f"{self.stripe_subscription_id or 'No Sub ID'}"
+        )
 
 
 class Order(models.Model):
@@ -42,14 +55,26 @@ class Order(models.Model):
         ('shipped', 'Shipped'),
         ('cancelled', 'Cancelled'),
     ]
-
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-    shipping_address = models.ForeignKey(ShippingAddress, on_delete=models.SET_NULL, null=True)
+    shipping_address = models.ForeignKey(
+        ShippingAddress,
+        on_delete=models.SET_NULL,
+        blank=True,
+        null=True
+        )
     box = models.ForeignKey(Box, on_delete=models.SET_NULL, null=True)
-    stripe_subscription_id = models.CharField(max_length=100, blank=True, null=True)
+    stripe_subscription_id = models.CharField(
+        max_length=100,
+        blank=True,
+        null=True
+    )
     order_date = models.DateField(auto_now_add=True)
     scheduled_shipping_date = models.DateField(null=True, blank=True)
-    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
+    status = models.CharField(
+        max_length=20,
+        choices=STATUS_CHOICES,
+        default='pending'
+    )
 
     def __str__(self):
         return f"Order #{self.id} - {self.user.username}"
@@ -57,7 +82,8 @@ class Order(models.Model):
 
 class Payment(models.Model):
     """
-    Records payments made against orders, including amount, method, and payment status.
+    Records payments made against orders, including amount, method,
+    and payment status.
     """
     PAYMENT_STATUS = [
         ('paid', 'Paid'),
