@@ -13,11 +13,11 @@
         <div class="row">
           <div class="input-field col s6">
             {{ form.recipient_f_name.label_tag }}
-            {{ form.recipient_f_name }}
+            {{ form.recipient_f_name|add_class:"validate"|attr:"required"|attr:"type:text" }}
           </div>
           <div class="input-field col s6">
             {{ form.recipient_l_name.label_tag }}
-            {{ form.recipient_l_name }}
+            {{ form.recipient_l_name|add_class:"validate"|attr:"required"|attr:"type:text" }}
           </div>
           <div class="col s12">
             <span class="helper-text">First and last name are pre-filled from your account, please edit these if this is intended to be a gift</span>
@@ -26,7 +26,7 @@
         <div class="row">
           <div class="input-field col s6">
             {{ form.address_line_1.label_tag }}
-            {{ form.address_line_1 }}
+            {{ form.address_line_1|add_class:"validate"|attr:"required"|attr:"type:text" }}
           </div>
           <div class="input-field col s6">
             {{ form.address_line_2.label_tag }}
@@ -36,7 +36,7 @@
         <div class="row">
           <div class="input-field col s12">
             {{ form.town_or_city.label_tag }}
-            {{ form.town_or_city }}
+            {{ form.town_or_city|add_class:"validate"|attr:"required"|attr:"type:text" }}
           </div>
         </div>
         <div class="row">
@@ -48,19 +48,19 @@
         <div class="row">
           <div class="input-field col s12">
             {{ form.postcode.label_tag }}
-            {{ form.postcode }}
+            {{ form.postcode|add_class:"validate"|attr:"required"|attr:"type:text" }}
           </div>
         </div>
         <div class="row">
           <div class="section col s12">
             <label for="{{ form.country.id_for_label }}">{{ form.country.label }}</label>
-            {{ form.country }}
+            {{ form.country|add_class:"validate"|attr:"required"|attr:"type:text" }}
           </div>
         </div>
         <div class="row">
           <div class="input-field col s12">
             {{ form.phone_number.label_tag }}
-            {{ form.phone_number }}
+            {{ form.phone_number|add_class:"validate"|attr:"required"|attr:"type:text" }}
           </div>
         </div>
         <div class="row">

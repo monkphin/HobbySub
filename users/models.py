@@ -35,11 +35,11 @@ class ShippingAddress(models.Model):
         help_text="The user this address belongs to."
     )
     recipient_f_name = models.CharField(
-        max_length=100,
+        max_length=50,
         help_text="First name of the recipient."
     )
     recipient_l_name = models.CharField(
-        max_length=100,
+        max_length=50,
         help_text="Last name of the recipient."
     )
     address_line_1 = models.CharField(
@@ -57,12 +57,12 @@ class ShippingAddress(models.Model):
         help_text="City or town name."
     )
     county = models.CharField(
-        max_length=80,
+        max_length=50,
         blank=True,
         help_text="County, region or administrative area."
     )
     postcode = models.CharField(
-        max_length=20,
+        max_length=12,
         help_text="Postal code or ZIP."
     )
     country = CountryField(
@@ -70,7 +70,7 @@ class ShippingAddress(models.Model):
         help_text="Select your country from the list."
     )
     phone_number = models.CharField(
-        max_length=20,
+        max_length=15,
         help_text="Contact number for delivery issues."
     )
     is_default = models.BooleanField(
