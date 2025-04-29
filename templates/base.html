@@ -54,7 +54,7 @@
               </li>
             {% endif %}
           </ul>
-        <!-- Burger trigger aligned to screen-right -->
+        <!-- Burger menu aligned to screen-right -->
         <a href="#" data-target="mobile-nav" class="sidenav-trigger right">
           <i class="fas fa-bars"></i>
         </a>
@@ -97,7 +97,11 @@
     </main>
 
     <footer>
-        <p>&copy; 2025 Hobby Hub</p>
+      <div class="container center-align">
+        <p class="white-text">&copy; 2025 Hobby Hub</p>
+      </div>
+    </footer>
+
     </footer>
     <!-- Materialize JS -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
@@ -109,8 +113,8 @@
         csrfToken: '{{ csrf_token }}',
         urls: {
           deleteAccount: '{% url "secure_delete_account" %}',
-          deleteAddressBase: '/accounts/secure_delete_address/', // id gets added dynamically
-          cancelSubscription: '{% url "secure_cancel_subscription" %}' // 👈 ADD THIS LINE
+          deleteAddressBase: '/accounts/secure_delete_address/', //
+          cancelSubscription: '{% url "secure_cancel_subscription" %}' //
         }
       }
     </script>
