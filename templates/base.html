@@ -41,10 +41,10 @@
             <li><a href="{% url 'select_purchase_type' %}?gift=true">Give as a Gift</a></li>
             {% if user.is_authenticated %}
               <li><a href="{% url 'account' %}">My Account</a></li>
-              <li><a href="{% url 'logout' %}">Logout</a></li>
+              <li><a href="{% url 'account_logout' %}">Logout</a></li>
             {% else %}
-              <li><a href="{% url 'register' %}">Register</a></li>
-              <li><a href="{% url 'login' %}">Login</a></li>
+              <li><a href="{% url 'account_signup' %}">Register</a></li>
+              <li><a href="{% url 'account_login' %}">Login</a></li>
             {% endif %}
             {% if user.is_staff %}
               <li class="admin-dropdown-wrapper">
@@ -73,10 +73,10 @@
         <li><a href="{% url 'past_boxes' %}">Past Boxes</a></li>
         {% if user.is_authenticated %}
           <li><a href="{% url 'account' %}">My Account</a></li>
-          <li><a href="{% url 'logout' %}">Logout</a></li>
+          <li><a href="{% url 'account_logout' %}">Logout</a></li>
         {% else %}
-          <li><a href="{% url 'register' %}">Register</a></li>
-          <li><a href="{% url 'login' %}">Login</a></li>
+          <li><a href="{% url 'account_signup' %}">Register</a></li>
+          <li><a href="{% url 'account_login' %}">Login</a></li>
         {% endif %}
         <li class="divider"></li>
         <li><strong class="grey-text text-darken-2" style="padding-left: 16px;">Get a Box</strong></li>

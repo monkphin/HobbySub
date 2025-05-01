@@ -12,12 +12,13 @@ Admin interface also mounted at /admin/
 """
 from django.contrib.sitemaps.views import sitemap
 from home.sitemaps import StaticViewSitemap, BoxSitemap
-from django.views.generic import TemplateView
+from allauth.account.views import LogoutView
 from django.urls import path, include
 from django.views.static import serve
 from django.contrib import admin
 from django.conf import settings
 from django.urls import re_path
+
 
 
 sitemaps = {
@@ -30,7 +31,8 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include('home.urls')),
     path('past_boxes/', include('boxes.urls')),
-    path('accounts/', include('users.urls')),
+    path('accounts/', include('allauth.urls')),
+    path('users/', include('users.urls')),
     path('orders/', include('orders.urls')),
     path('dashboard/', include('dashboard.urls')),
     path('sitemap.xml', sitemap, {'sitemaps': sitemaps}, name='sitemap'),

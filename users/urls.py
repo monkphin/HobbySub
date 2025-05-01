@@ -15,15 +15,6 @@ from . import views
 
 
 urlpatterns = [
-        # Authentication
-        path('register/', views.register_user, name='register'),
-        path(
-            'login/',
-            auth_views.LoginView.as_view(
-                template_name='users/login.html'
-            ), name='login'),
-        path('logout/', auth_views.LogoutView.as_view(), name='logout'),
-
         # Account Management
         path('account/', views.account_view, name='account'),
         path('edit/', views.edit_account, name='edit_account'),

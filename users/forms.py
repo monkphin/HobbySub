@@ -16,25 +16,15 @@ from django_countries.widgets import CountrySelectWidget
 from .models import ShippingAddress
 
 
-class Register(UserCreationForm):
-    """
-    Extends Django's built-in UserCreationForm to include
-    email, first name, and last name fields.
-    """
-    email = forms.EmailField(required=True)
-    first_name = forms.CharField(required=False)
-    last_name = forms.CharField(required=False)
+class CustomSignupForm(forms.Form):
+    first_name = forms.CharField(max_length=30, label="First Name", required=False)
+    last_name = forms.CharField(max_length=30, label="Last Name", required=False)
 
-    class Meta:
-        model = User
-        fields = (
-            'username',
-            'email',
-            'first_name',
-            'last_name',
-            'password1',
-            'password2'
-        )
+    def signup(self, request, user):
+        user.first_name = self.cleaned_data.get('first_name')
+        user.last_name = self.cleaned_data.get('last_name')
+        user.save()
+        return user
 
 
 class ChangePassword(forms.Form):

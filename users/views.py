@@ -39,7 +39,7 @@ from hobbyhub.stripe_handlers import (
     handle_invoice_payment_failed,
     handle_invoice_upcoming,
 )
-from .forms import Register, AddAddressForm, ChangePassword, UserEditForm
+from .forms import AddAddressForm, ChangePassword, UserEditForm
 from .models import ShippingAddress
 from hobbyhub.utils import alert
 

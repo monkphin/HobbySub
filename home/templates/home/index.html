@@ -46,8 +46,8 @@
         <a href="{% url 'select_purchase_type' %}?gift=false" class="btn btn-large green">Pick a Plan</a>
         <a href="{% url 'select_purchase_type' %}?gift=true" class="btn btn-large teal lighten-2 black-text">Give as a Gift</a>
       {% else %}
-        <a href="{% url 'register' %}?next={% url 'select_purchase_type' %}?gift=false" class="btn btn-large green">Pick a Plan</a>
-        <a href="{% url 'register' %}?next={% url 'select_purchase_type' %}?gift=true" class="btn btn-large teal lighten-2 black-text">Give as a Gift</a>
+        <a href="{% url 'account_signup' %}?next={% url 'select_purchase_type' %}?gift=false" class="btn btn-large green">Pick a Plan</a>
+        <a href="{% url 'account_signup' %}?next={% url 'select_purchase_type' %}?gift=true" class="btn btn-large teal lighten-2 black-text">Give as a Gift</a>
       {% endif %}
     </section>
 

@@ -13,7 +13,6 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 load_dotenv(dotenv_path=BASE_DIR / ".env")
 
 # Environment flags
-DEVELOPMENT = os.getenv("DEVELOPMENT", "False").lower() == "true"
 DEBUG = os.getenv("DEBUG", "False").lower() == "true"
 
 # Secret Key
@@ -43,7 +42,16 @@ INSTALLED_APPS = [
     'cloudinary_storage',
     'django_countries',
     'django.contrib.sitemaps',
+    'django.contrib.sites',
+    'allauth',
+    'allauth.account',
 ]
+
+AUTHENTICATION_BACKENDS = [
+    'django.contrib.auth.backends.ModelBackend',
+    'allauth.account.auth_backends.AuthenticationBackend',
+]
+
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -52,9 +60,11 @@ MIDDLEWARE = [
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'allauth.account.middleware.AccountMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
+
 
 ROOT_URLCONF = 'hobbyhub.urls'
 
@@ -77,21 +87,21 @@ TEMPLATES = [
 WSGI_APPLICATION = 'hobbyhub.wsgi.application'
 
 # Database
-if DEVELOPMENT:
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.sqlite3',
-            'NAME': BASE_DIR / 'db.sqlite3',
-        }
-    }
-else:
-    DATABASES = {
-        'default': dj_database_url.config(
-            default=os.getenv('DATABASE_URL'),
-            conn_max_age=600,
-            ssl_require=True
-        )
-    }
+# if DEBUG:
+#     DATABASES = {
+#         'default': {
+#             'ENGINE': 'django.db.backends.sqlite3',
+#             'NAME': BASE_DIR / 'db.sqlite3',
+#        }
+#     }
+# else:
+DATABASES = {
+    'default': dj_database_url.config(
+        default=os.getenv('DATABASE_URL'),
+        conn_max_age=600,
+        ssl_require=True
+    )
+}
 
 # Password validation
 AUTH_PASSWORD_VALIDATORS = [
@@ -158,7 +168,12 @@ STRIPE_12MO_PRICE_ID = os.getenv("STRIPE_12MO_PRICE_ID")
 STRIPE_WEBHOOK_SECRET = os.getenv("STRIPE_WEBHOOK_SECRET")
 
 # Email
-if DEVELOPMENT:
+ACCOUNT_LOGIN_METHODS = {"username", "email"}
+ACCOUNT_SIGNUP_FIELDS = ["email*", "first_name", "last_name", "password1*", "password2*"]
+ACCOUNT_EMAIL_VERIFICATION = "mandatory"
+ACCOUNT_CONFIRM_EMAIL_ON_GET = True
+
+if DEBUG:
     EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
     DEFAULT_FROM_EMAIL = 'noreply@hobbyhub.local'
 else:
@@ -171,13 +186,22 @@ else:
     DEFAULT_FROM_EMAIL = os.getenv('DEFAULT_FROM_EMAIL', EMAIL_HOST_USER)
 
 # Login redirects
-LOGIN_REDIRECT_URL = 'account'
-LOGOUT_REDIRECT_URL = 'home'
+LOGIN_REDIRECT_URL = '/users/account/'
+# Use to force registration when buying a box. 
+ACCOUNT_LOGIN_REDIRECT_URL = '/users/account/'
+ACCOUNT_LOGOUT_REDIRECT_URL = 'home'
+ACCOUNT_LOGOUT_ON_GET = True
+
+ACCOUNT_SIGNUP_FORM_CLASS = "users.forms.CustomSignupForm"
+ACCOUNT_FORMS = {
+    'signup': 'users.forms.CustomSignupForm',
+}
+
 
 # Security
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
-SESSION_COOKIE_SECURE = not DEVELOPMENT
-CSRF_COOKIE_SECURE = not DEVELOPMENT
+SESSION_COOKIE_SECURE = not DEBUG
+CSRF_COOKIE_SECURE = not DEBUG
 
 # Logging
 LOG_LEVEL = 'DEBUG' if DEBUG else 'INFO'
