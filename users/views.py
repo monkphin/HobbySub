@@ -7,23 +7,26 @@ shipping address operations, password changes, and Stripe webhooks.
 
 # Django/External imports
 from django.contrib.auth import (
-    login,
     logout,
     update_session_auth_hash,
-    authenticate
+    authenticate,
+    get_user_model,
+    login
 )
 from django.shortcuts import render, redirect, get_object_or_404
 from django.utils.http import url_has_allowed_host_and_scheme
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_POST
-from django.contrib.auth.forms import UserChangeForm
 from django.views.decorators.csrf import csrf_exempt
 from django.http import HttpResponse, JsonResponse
+from django.core.signing import BadSignature
 from django.conf import settings
 import stripe.error
 import logging
 import stripe
 import json
+
+
 
 
 # Local imports
@@ -44,34 +47,67 @@ from .models import ShippingAddress
 from hobbyhub.utils import alert
 
 logger = logging.getLogger(__name__)
+User = get_user_model()
 
+
+from django.core.signing import Signer
+from django.core.mail import send_mail
+from django.conf import settings
+from django.urls import reverse
+from .forms import Register
+from django.contrib import messages
+import logging
+
+logger = logging.getLogger(__name__)
+signer = Signer()
 
 def register_user(request):
-    """
-    Registers a new user and logs them in immediately.
-    Renders the registration form and handles POST submissions.
-    """
+    next_url = request.GET.get('next')  # get ?next param
     if request.method == 'POST':
         form = Register(request.POST)
         if form.is_valid():
-            user = form.save()
-            # Auto login on registration
-            login(request, user)
-            send_registration_email(user)
-            logger.info(f"New user registered and logged in: {user.email}")
-            alert(
-                request,
-                "success",
-                "Your account has been created and you're now logged in."
-                )
-
-            return redirect('home')
-        else:
-            logger.warning("Registration form invalid")
+            user = form.save(commit=False)
+            user.is_active = False
+            user.save()
+            send_registration_email(user, next_url)
+            request.session['post_confirm_redirect'] = next_url  # store it
+            logger.info(f"Registration successful for {user.email}, confirmation sent")
+            messages.success(request, "Check your email to confirm your account.")
+            return redirect('home')  # could redirect to a "check email" page if you want
     else:
         form = Register()
 
-    return render(request, 'users/register.html', {'form': form})
+    return render(request, 'users/register.html', {
+        'form': form,
+        'next': next_url  # pass this into hidden input if you want to preserve it across POST
+    })
+
+
+def confirm_email(request, token):
+    try:
+        user_id = signer.unsign(token)
+        user = User.objects.get(pk=user_id)
+        user.is_active = True
+        user.save()
+        login(request, user)
+
+        # First try session-based redirect
+        next_url = request.session.pop('post_confirm_redirect', None)
+
+        # If not found in session, fall back to query param
+        if not next_url:
+            next_url = request.GET.get('next')
+
+        messages.success(request, "Email confirmed! You're now logged in.")
+
+        if next_url and url_has_allowed_host_and_scheme(next_url, {request.get_host()}):
+            return redirect(next_url)
+
+        return redirect('home')
+
+    except (BadSignature, User.DoesNotExist):
+        messages.error(request, "Invalid or expired confirmation link.")
+        return redirect('home')
 
 
 @login_required

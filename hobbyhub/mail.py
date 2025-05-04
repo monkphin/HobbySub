@@ -3,10 +3,17 @@ Handles plain text emailing for sending to users.
 """
 
 from dateutil.relativedelta import relativedelta
+from django.core.signing import Signer
 from django.core.mail import send_mail
+from urllib.parse import urlencode
 from django.conf import settings
+from django.urls import reverse
+
 
 from .utils import PLAN_MAP
+
+signer = Signer()
+
 
 
 def send_user_email(subject, message, recipient_email):
@@ -24,17 +31,23 @@ def send_user_email(subject, message, recipient_email):
 
 
 # Registration
-def send_registration_email(user):
-    """Send welcome email after user registration."""
-    send_mail(
-        subject="Welcome to Hobby Hub!",
-        message=(
-            "Thanks for registering with Hobby Hub.\n"
-            "We're excited to have you!"
-        ),
-        from_email=settings.DEFAULT_FROM_EMAIL,
-        recipient_list=[user.email],
-        fail_silently=False,
+def send_registration_email(user, next_url=None):
+    """Send welcome + confirmation email after registration."""
+    token = signer.sign(user.pk)
+    base_url = settings.SITE_URL + reverse('confirm_email', args=[token])
+    confirmation_url = f"{base_url}?{urlencode({'next': next_url})}" if next_url else base_url
+
+    message = (
+        f"Hi {user.username},\n\n"
+        "Thanks for registering with Hobby Hub!\n\n"
+        f"Please confirm your email by clicking the link below:\n\n{confirmation_url}\n\n"
+        "If you did not create this account, you can ignore this message."
+    )
+
+    send_user_email(
+        subject="Confirm your Hobby Hub account",
+        message=message,
+        recipient_email=user.email
     )
 
 

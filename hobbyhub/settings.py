@@ -8,25 +8,21 @@ from dotenv import load_dotenv
 import dj_database_url
 import cloudinary
 
-# Load environment variables
+# === Base Directory & Environment ===
 BASE_DIR = Path(__file__).resolve().parent.parent
 load_dotenv(dotenv_path=BASE_DIR / ".env")
 
-# Environment flags
-DEVELOPMENT = os.getenv("DEVELOPMENT", "False").lower() == "true"
 DEBUG = os.getenv("DEBUG", "False").lower() == "true"
-
-# Secret Key
 SECRET_KEY = os.environ.get("SECRET_KEY")
 
-# Allowed Hosts
-ALLOWED_HOSTS = [
-    'hobbyhub-d1fc032e6c82.herokuapp.com',
-    'localhost',
-    '127.0.0.1'
-]
+# === Hosts & Site URL ===
+ALLOWED_HOSTS = ['localhost', '127.0.0.1']
+if not DEBUG:
+    ALLOWED_HOSTS.append('hobbyhub-d1fc032e6c82.herokuapp.com')
 
-# Application definition
+SITE_URL = "http://127.0.0.1:8000" if DEBUG else "https://hobbyhub-d1fc032e6c82.herokuapp.com"
+
+# === Installed Apps ===
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -34,17 +30,20 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+
     'home',
     'boxes',
     'users',
     'orders',
     'dashboard',
+
     'cloudinary',
     'cloudinary_storage',
     'django_countries',
     'django.contrib.sitemaps',
 ]
 
+# === Middleware ===
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
@@ -56,6 +55,7 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
+# === Templates ===
 ROOT_URLCONF = 'hobbyhub.urls'
 
 TEMPLATES = [
@@ -76,58 +76,31 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'hobbyhub.wsgi.application'
 
-# Database
-if DEVELOPMENT:
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.sqlite3',
-            'NAME': BASE_DIR / 'db.sqlite3',
-        }
-    }
-else:
-    DATABASES = {
-        'default': dj_database_url.config(
-            default=os.getenv('DATABASE_URL'),
-            conn_max_age=600,
-            ssl_require=True
-        )
-    }
+# === Database ===
+DATABASES = {
+    'default': dj_database_url.config(
+        default=os.getenv('DATABASE_URL'),
+        conn_max_age=600,
+        ssl_require=not DEBUG
+    )
+}
 
-# Password validation
+# === Password Validation ===
 AUTH_PASSWORD_VALIDATORS = [
-    {
-        'NAME': (
-            'django.contrib.auth.password_validation.'
-            'UserAttributeSimilarityValidator'
-        )
-    },
-    {
-        'NAME': (
-            'django.contrib.auth.password_validation.'
-            'MinimumLengthValidator'
-        )
-    },
-    {
-        'NAME': (
-            'django.contrib.auth.password_validation.'
-            'CommonPasswordValidator'
-        )
-    },
-    {
-        'NAME': (
-            'django.contrib.auth.password_validation.'
-            'NumericPasswordValidator'
-        )
-    },
+    {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'},
+    {'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator'},
+    {'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator'},
+    {'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator'},
 ]
-# Internationalization
+
+# === Internationalization ===
 LANGUAGE_CODE = 'en-us'
 TIME_ZONE = 'UTC'
 USE_I18N = True
 USE_L10N = True
 USE_TZ = True
 
-# Static and Media files
+# === Static / Media ===
 STATIC_URL = '/static/'
 STATICFILES_DIRS = [BASE_DIR / "static"]
 STATIC_ROOT = BASE_DIR / 'staticfiles'
@@ -135,7 +108,7 @@ STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
 
-# Cloudinary config
+# === Cloudinary ===
 CLOUDINARY_CLOUD_NAME = os.getenv('CLOUDINARY_CLOUD_NAME')
 CLOUDINARY_API_KEY = os.getenv('CLOUDINARY_API_KEY')
 CLOUDINARY_API_SECRET = os.getenv('CLOUDINARY_API_SECRET')
@@ -146,7 +119,7 @@ cloudinary.config(
     api_secret=CLOUDINARY_API_SECRET,
 )
 
-# Stripe
+# === Stripe ===
 STRIPE_SECRET_KEY = os.getenv("STRIPE_SECRET_KEY")
 STRIPE_PUBLISHABLE_KEY = os.getenv("STRIPE_PUBLISHABLE_KEY")
 STRIPE_GIFT_PRICE_ID = os.getenv("STRIPE_GIFT_PRICE_ID")
@@ -157,8 +130,8 @@ STRIPE_6MO_PRICE_ID = os.getenv("STRIPE_6MO_PRICE_ID")
 STRIPE_12MO_PRICE_ID = os.getenv("STRIPE_12MO_PRICE_ID")
 STRIPE_WEBHOOK_SECRET = os.getenv("STRIPE_WEBHOOK_SECRET")
 
-# Email
-if DEVELOPMENT:
+# === Email (always console for now) ===
+if DEBUG:
     EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
     DEFAULT_FROM_EMAIL = 'noreply@hobbyhub.local'
 else:
@@ -170,16 +143,16 @@ else:
     EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD')
     DEFAULT_FROM_EMAIL = os.getenv('DEFAULT_FROM_EMAIL', EMAIL_HOST_USER)
 
-# Login redirects
+# === Auth Redirects ===
 LOGIN_REDIRECT_URL = 'account'
 LOGOUT_REDIRECT_URL = 'home'
 
-# Security
+# === Security ===
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
-SESSION_COOKIE_SECURE = not DEVELOPMENT
-CSRF_COOKIE_SECURE = not DEVELOPMENT
+SESSION_COOKIE_SECURE = not DEBUG
+CSRF_COOKIE_SECURE = not DEBUG
 
-# Logging
+# === Logging ===
 LOG_LEVEL = 'DEBUG' if DEBUG else 'INFO'
 
 LOGGING = {
@@ -194,5 +167,5 @@ LOGGING = {
     },
 }
 
-# Default primary key field type
+# === Misc ===
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'

@@ -8,6 +8,7 @@
   <h2>{% if form.instance.pk %}Edit Address{% else %}Add Address{% endif %}</h2>
   <div class="row form-wrapper">
     <form class="col s12" method="post">
+      {% include 'partials/form_errors.html' %}
       {% csrf_token %}
       <input type="hidden" name="next" value="{{ next }}">
         <div class="row">
