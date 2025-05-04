@@ -1,5 +1,6 @@
 {% extends 'base.html' %}
 {% load static %}
+{% load widget_tweaks %}
 
 {% block title %}Register{% endblock %}
 
@@ -11,8 +12,8 @@
         {% csrf_token %}
         <div class="row">
           <div class="input-field col s6">
-            {{ form.username.label_tag }}
-            {{ form.username }}
+            {{ form.username|add_class:"validate" }}
+            <label for="{{ form.username.id_for_label }}">{{ form.username.label }}</label>            
           </div>
           <div class="input-field col s6">
             {{ form.email.label_tag }}

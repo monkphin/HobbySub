@@ -30,7 +30,10 @@ def send_registration_email(user):
         subject="Welcome to Hobby Hub!",
         message=(
             "Thanks for registering with Hobby Hub.\n"
-            "We're excited to have you!"
+            "We're excited to have you!\n\n"
+            "Please confirm your email using the link we've just sent you. "
+            "Once confirmed, you can continue your order here:\n"
+            "http://127.0.0.1:8000/accounts/confirm-email/{{ token }}?next=/orders/select/?gift=true"
         ),
         from_email=settings.DEFAULT_FROM_EMAIL,
         recipient_list=[user.email],

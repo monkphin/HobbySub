@@ -1,0 +1,114 @@
+./orders/templates/orders/order_history.html:        {% include "orders/order_list_item.html" %}
+./orders/templates/orders/order_history.html:        {% include "orders/order_list_item.html" %}
+./orders/templates/orders/order_history.html:{% include "partials/delete_confirmation_modal.html" %}
+./users/templates/users/account.html:  {% include "partials/form_errors.html" %}
+./users/templates/users/account.html:        {% include "users/includes/address_card.html" with address=address %}
+./users/templates/users/account.html:{% include "partials/delete_confirmation_modal.html" %}
+./users/templates/users/change_password.html:      {% include "partials/form_errors.html" %}
+./users/templates/users/edit_account.html:    {% include "partials/form_errors.html" %}
+./venv/Lib/site-packages/allauth/templates/account/email.html:        {% include "account/snippets/warn_no_email.html" %}
+./venv/Lib/site-packages/allauth/templates/account/email_change.html:        {% include "account/snippets/warn_no_email.html" %}
+./venv/Lib/site-packages/allauth/templates/account/login.html:        {% include "socialaccount/snippets/login.html" with page_layout="entrance" %}
+./venv/Lib/site-packages/allauth/templates/account/login.html:        {% include "mfa/webauthn/snippets/login_script.html" with button_id="passkey_login" %}
+./venv/Lib/site-packages/allauth/templates/account/password_reset.html:        {% include "account/snippets/already_logged_in.html" %}
+./venv/Lib/site-packages/allauth/templates/account/password_reset_done.html:        {% include "account/snippets/already_logged_in.html" %}
+./venv/Lib/site-packages/allauth/templates/account/signup.html:        {% include "socialaccount/snippets/login.html" with page_layout="entrance" %}
+./venv/Lib/site-packages/allauth/templates/mfa/authenticate.html:            {% include "mfa/webauthn/snippets/scripts.html" %}
+./venv/Lib/site-packages/allauth/templates/mfa/webauthn/add_form.html:    {% include "mfa/webauthn/snippets/scripts.html" %}
+./venv/Lib/site-packages/allauth/templates/mfa/webauthn/reauthenticate.html:    {% include "mfa/webauthn/snippets/scripts.html" %}
+./venv/Lib/site-packages/allauth/templates/mfa/webauthn/signup_form.html:    {% include "mfa/webauthn/snippets/scripts.html" %}
+./venv/Lib/site-packages/allauth/templates/mfa/webauthn/snippets/login_script.html:{% include "mfa/webauthn/snippets/scripts.html" %}
+./venv/Lib/site-packages/allauth/templates/socialaccount/connections.html:    {% include "socialaccount/snippets/provider_list.html" with process="connect" %}
+./venv/Lib/site-packages/allauth/templates/socialaccount/connections.html:    {% include "socialaccount/snippets/login_extra.html" %}
+./venv/Lib/site-packages/allauth/templates/socialaccount/snippets/login.html:    {% include "socialaccount/snippets/provider_list.html" with process="login" %}
+./venv/Lib/site-packages/allauth/templates/socialaccount/snippets/login.html:    {% include "socialaccount/snippets/login_extra.html" %}
+./venv/Lib/site-packages/django/contrib/admin/templates/admin/base.html:                {% include "admin/color_theme_toggle.html" %}
+./venv/Lib/site-packages/django/contrib/admin/templates/admin/base.html:          {% include "admin/nav_sidebar.html" %}
+./venv/Lib/site-packages/django/contrib/admin/templates/admin/base_site.html:  {% include "admin/color_theme_toggle.html" %}
+./venv/Lib/site-packages/django/contrib/admin/templates/admin/change_form.html:  {% include "admin/includes/fieldset.html" %}
+./venv/Lib/site-packages/django/contrib/admin/templates/admin/change_form.html:    {% include inline_admin_formset.opts.template %}
+./venv/Lib/site-packages/django/contrib/admin/templates/admin/delete_confirmation.html:    {% include "admin/includes/object_delete_summary.html" %}
+./venv/Lib/site-packages/django/contrib/admin/templates/admin/delete_selected_confirmation.html:    {% include "admin/includes/object_delete_summary.html" %}
+./venv/Lib/site-packages/django/contrib/admin/templates/admin/edit_inline/stacked.html:    {% include "admin/includes/fieldset.html" %}
+./venv/Lib/site-packages/django/contrib/admin/templates/admin/index.html:  {% include "admin/app_list.html" with app_list=app_list show_changelinks=True %}
+./venv/Lib/site-packages/django/contrib/admin/templates/admin/nav_sidebar.html:  {% include 'admin/app_list.html' with app_list=available_apps show_changelinks=False %}
+./venv/Lib/site-packages/django/contrib/admin/templates/admin/widgets/clearable_file_input.html:<input type="{{ widget.type }}" name="{{ widget.name }}"{% include "django/forms/widgets/attrs.html" %}>{% if widget.is_initial %}</p>{% endif %}
+./venv/Lib/site-packages/django/contrib/admin/templates/admin/widgets/date.html:  {% include "django/forms/widgets/date.html" %}
+./venv/Lib/site-packages/django/contrib/admin/templates/admin/widgets/foreign_key_raw_id.html:{% include 'django/forms/widgets/input.html' %}{% if related_url %}<a href="{{ related_url }}" class="related-lookup" id="lookup_id_{{ widget.name }}" title="{{ link_title }}"></a>{% endif %}{% if link_label %}
+./venv/Lib/site-packages/django/contrib/admin/templates/admin/widgets/many_to_many_raw_id.html:{% include 'admin/widgets/foreign_key_raw_id.html' %}
+./venv/Lib/site-packages/django/contrib/admin/templates/admin/widgets/radio.html:{% include "django/forms/widgets/multiple_input.html" %}
+./venv/Lib/site-packages/django/contrib/admin/templates/admin/widgets/split_datetime.html:  {{ date_label }} {% with widget=widget.subwidgets.0 %}{% include widget.template_name %}{% endwith %}<br>
+./venv/Lib/site-packages/django/contrib/admin/templates/admin/widgets/split_datetime.html:  {{ time_label }} {% with widget=widget.subwidgets.1 %}{% include widget.template_name %}{% endwith %}
+./venv/Lib/site-packages/django/contrib/admin/templates/admin/widgets/time.html:  {% include "django/forms/widgets/time.html" %}
+./venv/Lib/site-packages/django/contrib/admin/templates/admin/widgets/url.html:{% if url_valid %}<p class="url">{{ current_label }} <a href="{{ widget.href }}">{{ widget.value }}</a><br>{{ change_label }} {% endif %}{% include "django/forms/widgets/input.html" %}{% if url_valid %}</p>{% endif %}
+./venv/Lib/site-packages/django/contrib/admin/templates/registration/password_change_done.html:  {% include "admin/color_theme_toggle.html" %}
+./venv/Lib/site-packages/django/contrib/admin/templates/registration/password_change_form.html:  {% include "admin/color_theme_toggle.html" %}
+./venv/Lib/site-packages/django/contrib/auth/templates/auth/widgets/read_only_password_hash.html:<div{% include 'django/forms/widgets/attrs.html' %}>
+./venv/Lib/site-packages/django/contrib/gis/templates/gis/admin/openlayers.html:{% block openlayers %}{% include "gis/admin/openlayers.js" %}{% endblock %}
+./venv/Lib/site-packages/django/contrib/gis/templates/gis/admin/osm.html:{% block openlayers %}{% include "gis/admin/osm.js" %}{% endblock %}
+./venv/Lib/site-packages/django/contrib/postgres/jinja2/postgres/widgets/split_array.html:{% include 'django/forms/widgets/multiwidget.html' %}
+./venv/Lib/site-packages/django/contrib/postgres/templates/postgres/widgets/split_array.html:{% include 'django/forms/widgets/multiwidget.html' %}
+./venv/Lib/site-packages/django/forms/jinja2/django/forms/default.html:{% include "django/forms/table.html" %}
+./venv/Lib/site-packages/django/forms/jinja2/django/forms/errors/dict/default.html:{% include "django/forms/errors/dict/ul.html" %}
+./venv/Lib/site-packages/django/forms/jinja2/django/forms/errors/list/default.html:{% include "django/forms/errors/list/ul.html" %}
+./venv/Lib/site-packages/django/forms/jinja2/django/forms/label.html:{% if use_tag %}<{{ tag }}{% if attrs %}{% include 'django/forms/attrs.html' %}{% endif %}>{{ label }}</{{ tag }}>{% else %}{{ label }}{% endif %}
+./venv/Lib/site-packages/django/forms/jinja2/django/forms/widgets/checkbox.html:{% include "django/forms/widgets/input.html" %}
+./venv/Lib/site-packages/django/forms/jinja2/django/forms/widgets/checkbox_option.html:{% include "django/forms/widgets/input_option.html" %}
+./venv/Lib/site-packages/django/forms/jinja2/django/forms/widgets/checkbox_select.html:{% include "django/forms/widgets/multiple_input.html" %}
+./venv/Lib/site-packages/django/forms/jinja2/django/forms/widgets/clearable_file_input.html:<input type="{{ widget.type }}" name="{{ widget.name }}"{% include "django/forms/widgets/attrs.html" %}>
+./venv/Lib/site-packages/django/forms/jinja2/django/forms/widgets/date.html:{% include "django/forms/widgets/input.html" %}
+./venv/Lib/site-packages/django/forms/jinja2/django/forms/widgets/datetime.html:{% include "django/forms/widgets/input.html" %}
+./venv/Lib/site-packages/django/forms/jinja2/django/forms/widgets/email.html:{% include "django/forms/widgets/input.html" %}
+./venv/Lib/site-packages/django/forms/jinja2/django/forms/widgets/file.html:{% include "django/forms/widgets/input.html" %}
+./venv/Lib/site-packages/django/forms/jinja2/django/forms/widgets/hidden.html:{% include "django/forms/widgets/input.html" %}
+./venv/Lib/site-packages/django/forms/jinja2/django/forms/widgets/input.html:<input type="{{ widget.type }}" name="{{ widget.name }}"{% if widget.value != None %} value="{{ widget.value }}"{% endif %}{% include "django/forms/widgets/attrs.html" %}>
+./venv/Lib/site-packages/django/forms/jinja2/django/forms/widgets/input_option.html:{% if widget.wrap_label %}<label{% if widget.attrs.id %} for="{{ widget.attrs.id }}"{% endif %}>{% endif %}{% include "django/forms/widgets/input.html" %}{% if widget.wrap_label %} {{ widget.label }}</label>{% endif %}
+./venv/Lib/site-packages/django/forms/jinja2/django/forms/widgets/multiple_hidden.html:{% include "django/forms/widgets/multiwidget.html" %}
+./venv/Lib/site-packages/django/forms/jinja2/django/forms/widgets/multiple_input.html:    {% include widget.template_name %}</div>{% endfor %}{% if group %}
+./venv/Lib/site-packages/django/forms/jinja2/django/forms/widgets/multiwidget.html:{% for widget in widget.subwidgets -%}{% include widget.template_name %}{%- endfor %}
+./venv/Lib/site-packages/django/forms/jinja2/django/forms/widgets/number.html:{% include "django/forms/widgets/input.html" %}
+./venv/Lib/site-packages/django/forms/jinja2/django/forms/widgets/password.html:{% include "django/forms/widgets/input.html" %}
+./venv/Lib/site-packages/django/forms/jinja2/django/forms/widgets/radio.html:{% include "django/forms/widgets/multiple_input.html" %}
+./venv/Lib/site-packages/django/forms/jinja2/django/forms/widgets/radio_option.html:{% include "django/forms/widgets/input_option.html" %}
+./venv/Lib/site-packages/django/forms/jinja2/django/forms/widgets/select.html:<select name="{{ widget.name }}"{% include "django/forms/widgets/attrs.html" %}>{% for group_name, group_choices, group_index in widget.optgroups %}{% if group_name %}
+./venv/Lib/site-packages/django/forms/jinja2/django/forms/widgets/select.html:  {% include widget.template_name %}{% endfor %}{% if group_name %}
+./venv/Lib/site-packages/django/forms/jinja2/django/forms/widgets/select_date.html:{% include 'django/forms/widgets/multiwidget.html' %}
+./venv/Lib/site-packages/django/forms/jinja2/django/forms/widgets/select_option.html:<option value="{{ widget.value }}"{% include "django/forms/widgets/attrs.html" %}>{{ widget.label }}</option>
+./venv/Lib/site-packages/django/forms/jinja2/django/forms/widgets/splitdatetime.html:{% include 'django/forms/widgets/multiwidget.html' %}
+./venv/Lib/site-packages/django/forms/jinja2/django/forms/widgets/splithiddendatetime.html:{% include 'django/forms/widgets/multiwidget.html' %}
+./venv/Lib/site-packages/django/forms/jinja2/django/forms/widgets/text.html:{% include "django/forms/widgets/input.html" %}
+./venv/Lib/site-packages/django/forms/jinja2/django/forms/widgets/textarea.html:<textarea name="{{ widget.name }}"{% include "django/forms/widgets/attrs.html" %}>
+./venv/Lib/site-packages/django/forms/jinja2/django/forms/widgets/time.html:{% include "django/forms/widgets/input.html" %}
+./venv/Lib/site-packages/django/forms/jinja2/django/forms/widgets/url.html:{% include "django/forms/widgets/input.html" %}
+./venv/Lib/site-packages/django/forms/templates/django/forms/default.html:{% include "django/forms/table.html" %}
+./venv/Lib/site-packages/django/forms/templates/django/forms/errors/dict/default.html:{% include "django/forms/errors/dict/ul.html" %}
+./venv/Lib/site-packages/django/forms/templates/django/forms/errors/list/default.html:{% include "django/forms/errors/list/ul.html" %}
+./venv/Lib/site-packages/django/forms/templates/django/forms/label.html:{% if use_tag %}<{{ tag }}{% include 'django/forms/attrs.html' %}>{{ label }}</{{ tag }}>{% else %}{{ label }}{% endif %}
+./venv/Lib/site-packages/django/forms/templates/django/forms/widgets/checkbox.html:{% include "django/forms/widgets/input.html" %}
+./venv/Lib/site-packages/django/forms/templates/django/forms/widgets/checkbox_option.html:{% include "django/forms/widgets/input_option.html" %}
+./venv/Lib/site-packages/django/forms/templates/django/forms/widgets/checkbox_select.html:{% include "django/forms/widgets/multiple_input.html" %}
+./venv/Lib/site-packages/django/forms/templates/django/forms/widgets/clearable_file_input.html:<input type="{{ widget.type }}" name="{{ widget.name }}"{% include "django/forms/widgets/attrs.html" %}>
+./venv/Lib/site-packages/django/forms/templates/django/forms/widgets/date.html:{% include "django/forms/widgets/input.html" %}
+./venv/Lib/site-packages/django/forms/templates/django/forms/widgets/datetime.html:{% include "django/forms/widgets/input.html" %}
+./venv/Lib/site-packages/django/forms/templates/django/forms/widgets/email.html:{% include "django/forms/widgets/input.html" %}
+./venv/Lib/site-packages/django/forms/templates/django/forms/widgets/file.html:{% include "django/forms/widgets/input.html" %}
+./venv/Lib/site-packages/django/forms/templates/django/forms/widgets/hidden.html:{% include "django/forms/widgets/input.html" %}
+./venv/Lib/site-packages/django/forms/templates/django/forms/widgets/input.html:<input type="{{ widget.type }}" name="{{ widget.name }}"{% if widget.value != None %} value="{{ widget.value|stringformat:'s' }}"{% endif %}{% include "django/forms/widgets/attrs.html" %}>
+./venv/Lib/site-packages/django/forms/templates/django/forms/widgets/input_option.html:{% if widget.wrap_label %}<label{% if widget.attrs.id %} for="{{ widget.attrs.id }}"{% endif %}>{% endif %}{% include "django/forms/widgets/input.html" %}{% if widget.wrap_label %} {{ widget.label }}</label>{% endif %}
+./venv/Lib/site-packages/django/forms/templates/django/forms/widgets/multiple_hidden.html:{% include "django/forms/widgets/multiwidget.html" %}
+./venv/Lib/site-packages/django/forms/templates/django/forms/widgets/multiple_input.html:    {% include option.template_name with widget=option %}</div>{% endfor %}{% if group %}
+./venv/Lib/site-packages/django/forms/templates/django/forms/widgets/multiwidget.html:{% spaceless %}{% for widget in widget.subwidgets %}{% include widget.template_name %}{% endfor %}{% endspaceless %}
+./venv/Lib/site-packages/django/forms/templates/django/forms/widgets/number.html:{% include "django/forms/widgets/input.html" %}
+./venv/Lib/site-packages/django/forms/templates/django/forms/widgets/password.html:{% include "django/forms/widgets/input.html" %}
+./venv/Lib/site-packages/django/forms/templates/django/forms/widgets/radio.html:{% include "django/forms/widgets/multiple_input.html" %}
+./venv/Lib/site-packages/django/forms/templates/django/forms/widgets/radio_option.html:{% include "django/forms/widgets/input_option.html" %}
+./venv/Lib/site-packages/django/forms/templates/django/forms/widgets/select.html:<select name="{{ widget.name }}"{% include "django/forms/widgets/attrs.html" %}>{% for group_name, group_choices, group_index in widget.optgroups %}{% if group_name %}
+./venv/Lib/site-packages/django/forms/templates/django/forms/widgets/select.html:  {% include option.template_name with widget=option %}{% endfor %}{% if group_name %}
+./venv/Lib/site-packages/django/forms/templates/django/forms/widgets/select_date.html:{% include 'django/forms/widgets/multiwidget.html' %}
+./venv/Lib/site-packages/django/forms/templates/django/forms/widgets/select_option.html:<option value="{{ widget.value|stringformat:'s' }}"{% include "django/forms/widgets/attrs.html" %}>{{ widget.label }}</option>
+./venv/Lib/site-packages/django/forms/templates/django/forms/widgets/splitdatetime.html:{% include 'django/forms/widgets/multiwidget.html' %}
+./venv/Lib/site-packages/django/forms/templates/django/forms/widgets/splithiddendatetime.html:{% include 'django/forms/widgets/multiwidget.html' %}
+./venv/Lib/site-packages/django/forms/templates/django/forms/widgets/text.html:{% include "django/forms/widgets/input.html" %}
+./venv/Lib/site-packages/django/forms/templates/django/forms/widgets/textarea.html:<textarea name="{{ widget.name }}"{% include "django/forms/widgets/attrs.html" %}>
+./venv/Lib/site-packages/django/forms/templates/django/forms/widgets/time.html:{% include "django/forms/widgets/input.html" %}
+./venv/Lib/site-packages/django/forms/templates/django/forms/widgets/url.html:{% include "django/forms/widgets/input.html" %}

@@ -37,13 +37,12 @@
           <ul class="right hide-on-med-and-down">
             <li><a href="{% url 'about' %}">About</a></li>
             <li><a href="{% url 'past_boxes' %}">Past Boxes</a></li>
-            <li><a href="{% url 'select_purchase_type' %}?gift=false">Buy for Myself</a></li>
-            <li><a href="{% url 'select_purchase_type' %}?gift=true">Give as a Gift</a></li>
+            <li><a href="{% url 'start_subscription' %}">Pick a Plan</a></li>
+            <li><a href="{% url 'start_gift' %}">Give as a Gift</a></li>    
             {% if user.is_authenticated %}
               <li><a href="{% url 'account' %}">My Account</a></li>
               <li><a href="{% url 'account_logout' %}">Logout</a></li>
             {% else %}
-              <li><a href="{% url 'account_signup' %}">Register</a></li>
               <li><a href="{% url 'account_login' %}">Login</a></li>
             {% endif %}
             {% if user.is_staff %}
@@ -75,7 +74,6 @@
           <li><a href="{% url 'account' %}">My Account</a></li>
           <li><a href="{% url 'account_logout' %}">Logout</a></li>
         {% else %}
-          <li><a href="{% url 'account_signup' %}">Register</a></li>
           <li><a href="{% url 'account_login' %}">Login</a></li>
         {% endif %}
         <li class="divider"></li>
@@ -112,12 +110,15 @@
       const GLOBALS = {
         csrfToken: '{{ csrf_token }}',
         urls: {
-          deleteAccount: '{% url "secure_delete_account" %}',
-          deleteAddressBase: '/accounts/secure_delete_address/', //
-          cancelSubscription: '{% url "secure_cancel_subscription" %}' //
+          deleteAccount: "{% url 'secure_delete_account' %}",
+          deleteAddressBase: "{% url 'secure_delete_address' 0 %}".replace('0/', ''),
+          cancelSubscription: "{% url 'secure_cancel_subscription' %}",
+          changeEmail: "{% url 'change_email' %}"
         }
-      }
+      };
+      
     </script>
     <script src="{% static 'js/script.js' %}"></script>   
+    {% include "partials/confirmation_modal.html" %}
 </body>
 </html>

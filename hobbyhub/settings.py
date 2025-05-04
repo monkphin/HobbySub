@@ -45,6 +45,7 @@ INSTALLED_APPS = [
     'django.contrib.sites',
     'allauth',
     'allauth.account',
+    'widget_tweaks',
 ]
 
 AUTHENTICATION_BACKENDS = [
@@ -169,9 +170,11 @@ STRIPE_WEBHOOK_SECRET = os.getenv("STRIPE_WEBHOOK_SECRET")
 
 # Email
 ACCOUNT_LOGIN_METHODS = {"username", "email"}
-ACCOUNT_SIGNUP_FIELDS = ["email*", "first_name", "last_name", "password1*", "password2*"]
 ACCOUNT_EMAIL_VERIFICATION = "mandatory"
 ACCOUNT_CONFIRM_EMAIL_ON_GET = True
+ACCOUNT_EMAIL_CONFIRMATION_HMAC = True
+ACCOUNT_EMAIL_CONFIRMATION_EXPIRE_DAYS = 3
+
 
 if DEBUG:
     EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
@@ -192,11 +195,20 @@ ACCOUNT_LOGIN_REDIRECT_URL = '/users/account/'
 ACCOUNT_LOGOUT_REDIRECT_URL = 'home'
 ACCOUNT_LOGOUT_ON_GET = True
 
-ACCOUNT_SIGNUP_FORM_CLASS = "users.forms.CustomSignupForm"
 ACCOUNT_FORMS = {
     'signup': 'users.forms.CustomSignupForm',
 }
 
+ACCOUNT_SIGNUP_FIELDS = [
+    'username*',
+    'email*',
+    'first_name',
+    'last_name',
+    'password1*',
+    'password2*'
+]
+
+ACCOUNT_EMAIL_CONFIRMATION_ANCHOR = None
 
 # Security
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
@@ -218,5 +230,9 @@ LOGGING = {
     },
 }
 
+ACCOUNT_SIGNUP_VIEW = 'users.views.CustomSignupView'
+
+
 # Default primary key field type
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+ACCOUNT_ADAPTER = "users.adapter.CustomAccountAdapter"

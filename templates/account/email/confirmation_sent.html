@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container">
+    <div class="card-panel white z-depth-2">
+        <h4 class="center-align green-text text-darken-2">📧 Check Your Email</h4>
+        <p class="flow-text">
+            We've sent a verification email to <strong>{{ email }}</strong>. Please check your inbox and click the link to verify your account.
+        </p>
+        <p>If you don't see it soon, check your spam folder.</p>
+        <p>
+          {% if is_authenticated %}
+            <a href="{% url 'account_email' %}" class="btn-flat green-text">Resend email</a>
+          {% else %}
+            <form method="post" action="{% url 'resend_email_guest' %}">
+              {% csrf_token %}
+              <input type="hidden" name="email" value="{{ email }}">
+              <button type="submit" class="btn-flat green-text">Resend email</button>
+            </form>
+          {% endif %}
+          or <a href="{% url 'account_logout' %}">log out</a> and try again.
+        </p>
+    </div>
+</div>
+{% endblock %}

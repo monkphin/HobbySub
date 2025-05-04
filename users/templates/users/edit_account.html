@@ -1,44 +1,58 @@
 {% extends 'base.html' %}
 {% load static %}
+{% load widget_tweaks %}
 
 {% block title %}Edit Account{% endblock %}
 
 {% block content %}
-  <section class="section center-align">
-    <h2>Edit Your Account</h2>
-    {% include "partials/form_errors.html" %}
-    <div class="row form-wrapper">
-      <form class="col s12" method="post">
-        {% csrf_token %}
+<section class="section center-align">
+  <h2>Edit Your Account</h2>
+  {% include "partials/form_errors.html" %}
+
+  <form method="post" class="form-wrapper">
+    {% csrf_token %}
+    
+    <!-- Email row: disabled field, change via modal -->
+    <div class="card red lighten-5 z-depth-1 mb-4">
+      <div class="card-content">
+        <div class="row valign-wrapper">
+          <div class="input-field col s10">
+            {{ form.email.label_tag }}
+            {{ form.email|add_class:"browser-default" }}
+          </div>
+          <div class="col s2 right-align">
+            <button type="button" class="btn red" onclick="openChangeEmailModal()">Change Email</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Other fields -->
+    <div class="card z-depth-1">
+      <div class="card-content">
+        <h5 class="center-align">Account Details</h5>
         <div class="row">
           <div class="input-field col s6">
             {{ form.username.label_tag }}
             {{ form.username }}
           </div>
           <div class="input-field col s6">
-            {{ form.email.label_tag }}
-            {{ form.email }}
-          </div>
-        </div>
-        <div class="row">
-          <div class="input-field col s6">
             {{ form.first_name.label_tag }}
             {{ form.first_name }}
           </div>
-          <div class="input-field col s6">
+        </div>
+        <div class="row">
+          <div class="input-field col s12">
             {{ form.last_name.label_tag }}
             {{ form.last_name }}
           </div>
         </div>
-        <div class="row button-row center-align">
-          <a href="{% url 'account' %}" class="btn grey lighten-1 black-text">
-            <i class="fas fa-arrow-left left"></i> Back
-          </a>
-          <button type="submit" class="btn green white-text">
-            Save
-          </button>
-        </div>
-      </form>
+      </div>
+      <div class="card-action center-align">
+        <a href="{% url 'account' %}" class="btn grey lighten-1 black-text">Back</a>
+        <button type="submit" class="btn green white-text">Save</button>
+      </div>
     </div>
-  </section>
+  </form>
+</section>
 {% endblock %}

@@ -1,0 +1,7 @@
+Hello {{ user.username }},
+
+Please confirm your email address by clicking the link below:
+
+{{ activate_url }}?next=/orders/select/?gift=true
+
+If you did not sign up, you can ignore this message.
