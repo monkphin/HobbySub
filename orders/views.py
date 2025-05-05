@@ -429,8 +429,14 @@ def choose_shipping_address(request, plan):
 
         return redirect('handle_purchase_type', plan=plan)
 
+    if gift:
+        back_url = reverse('select_purchase_type') + '?gift=true'
+    else:
+        back_url = reverse('select_purchase_type') + '?gift=false'
+
     return render(request, 'orders/choose_shipping_address.html', {
         'addresses': addresses,
         'plan': plan,
         'gift': gift,
+        'back_url': back_url,
     })

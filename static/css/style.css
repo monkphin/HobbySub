@@ -79,6 +79,11 @@ nav ul li a:hover {
   color: #ffffff !important;
 }
 
+.sidenav strong {
+  padding-left: 16px;
+}
+
+
 /* === Dropdowns === */
 .admin-dropdown-wrapper,
 .admin-trigger {
@@ -216,6 +221,17 @@ nav ul li a:hover {
   padding: 1rem;
 }
 
+.card-action.flex-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.card-action.flex-actions form {
+  margin: 0;
+}
 
 /* === Toasts === */
 #toast-container {
@@ -559,4 +575,50 @@ h4 {
   font-weight: 500;
   font-size: 0.95rem;
   margin-bottom: 2rem;
+}
+
+
+/* === Utility Spacing === */
+.mt-1r { margin-top: 1rem; }
+.margin-top-10 { margin-top: 10px; }
+.margin-bottom-2 { margin-bottom: 2rem; }
+.pl-16 { padding-left: 16px; }
+.ml-05r { margin-left: 0.5rem; }
+.row-no-margin { margin: 0; }
+
+/* === Layout and Display Helpers === */
+.flex-center-wrap {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* === Image Utilities === */
+.product-img {
+  max-height: 150px;
+  object-fit: contain;
+}
+
+/* === Forms === */
+.form-no-margin {
+  margin: 0;
+}
+
+/* === Error/Page Containers === */
+.error-container {
+  padding: 4rem 2rem;
+}
+
+/* === SR Classes === */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  border: 0;
 }

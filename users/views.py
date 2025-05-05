@@ -150,7 +150,6 @@ def edit_account(request):
 @require_POST
 def change_email(request):
     try:
-        print("Raw request body:", request.body)
 
         if request.content_type != 'application/json':
             return JsonResponse({'success': False, 'error': 'Invalid content type: ' + request.content_type})
@@ -158,9 +157,6 @@ def change_email(request):
         data = json.loads(request.body)
         new_email = data.get('new_email')
         password = data.get('password')
-
-        print("Parsed email:", new_email)
-        print("Parsed password:", password)
 
         if not new_email or not password:
             return JsonResponse({'success': False, 'error': 'Missing email or password.'})

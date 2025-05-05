@@ -16,7 +16,7 @@
     <ul class="collection">
       {% for box in boxes %}
         <li class="collection-item">
-          <div class="row" style="margin: 0;">
+          <div class="row row-no-margin">
             <div class="col s12 m6">
               <strong>{{ box.name }}</strong> — {{ box.shipping_date|date:"d M Y" }}
             </div>
@@ -47,7 +47,7 @@
       <ul class="collection">
         {% for product in orphaned_products %}
           <li class="collection-item">
-            <div class="row" style="margin: 0;">
+            <div class="row row-no-margin">
               <div class="col s12 m6">
                 <strong>{{ product.name }}</strong> (x{{ product.quantity }})
               </div>

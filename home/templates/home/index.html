@@ -9,7 +9,7 @@
     <!-- Hero Section -->
     <section class="section center-align">
       <img src="https://res.cloudinary.com/dlmbpbtfx/image/upload/w_700,ar_1:1,c_fill,g_auto,e_art:hokusai/v1745248603/hero_wwmnq8.png" 
-           alt="Your hobby delivered to your door" class="responsive-img z-depth-1 hero-image" ">
+           alt="Your hobby delivered to your door" class="responsive-img z-depth-1 hero-image">
     </section>
 
     <div class="section-divider"></div>
@@ -61,17 +61,15 @@
         <h5>{{ box.name }}</h5>
         <p class="grey-text text-darken-1">{{ box.description|truncatewords:25 }}</p>
 
+        <h6>Box Contents</h6>
         <div class="carousel">
           {% for item in box.products.all %}
             <a class="carousel-item" href="#{{ item.id }}">
-              <img src="{{ item.image.url }}" alt="{{ item.name }}" style="max-height: 150px; object-fit: contain;">
+              <img src="{{ item.image.url }}" alt="{{ item.name }}">
               <h6>{{ item.name }}</h6>
             </a>
           {% endfor %}
         </div>
-
-        <br>
-        <a href="" class="btn green">Get This Box</a>
       </section>
     {% endif %}
 
