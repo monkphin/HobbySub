@@ -146,7 +146,6 @@ def edit_account(request):
     return render(request, 'users/edit_account.html', {'form': form})
 
 
-@csrf_exempt  # REMOVE THIS after debugging, only use it temporarily to isolate CSRF issues
 @login_required
 @require_POST
 def change_email(request):

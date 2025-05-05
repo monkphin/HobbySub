@@ -167,12 +167,6 @@ function submitModalAction() {
     payload.new_email = modalContext.newEmail;
   }
 
-  console.log("Submitting modal action:", {
-    action,
-    url,
-    payload
-  });
-
   fetch(url, {
     method: 'POST',
     headers: {
@@ -194,7 +188,6 @@ function submitModalAction() {
       }
     })
     .catch(err => {
-      console.error('Request failed:', err);
-      errorEl.innerText = 'Something went wrong.';
+      errorEl.innerText = 'Sorry — there was a problem completing your request.';
     });
 }
