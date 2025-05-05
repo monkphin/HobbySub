@@ -1,4 +1,4 @@
-<div class="card z-depth-1 address-card">
+<div class="card z-depth-1 address-card {% if address.is_gift_address %}gift-address{% else %}personal-address{% endif %}">
   <div class="card-content left-align">
       {% if address.label %}
         <span class="grey-text text-darken-1">({{ address.label }})</span>

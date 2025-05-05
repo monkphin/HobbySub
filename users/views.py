@@ -349,6 +349,8 @@ def secure_delete_address(request, address_id):
                 new_default = remaining.first()
                 new_default.is_default = True
                 new_default.save()
+                messages.info(request, "Your remaining address has been set as default.")
+
 
         return JsonResponse({'success': True})
     else:
