@@ -17,9 +17,9 @@
       <a href="{% url 'edit_address' address.id %}" class="btn-small teal lighten-1 white-text">
         <i class="fas fa-edit left"></i> Edit
       </a>
-      <button class="btn-small red white-text" onclick="openDeleteModal('address', '{{ address.id }}')">
+      <button class="btn-small red white-text delete-address-btn" data-id="{{ address.id }}">
         Delete Address
-      </button>     
+      </button>  
   
       {% if address.is_default %}
         <span class="grey-text text-darken-1" style="margin-left: 0.5rem;">(Default Address)</span>

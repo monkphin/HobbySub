@@ -110,11 +110,12 @@
         urls: {
           deleteAccount: '{% url "secure_delete_account" %}',
           deleteAddressBase: '/accounts/secure_delete_address/', // id gets added dynamically
-          cancelSubscription: '{% url "secure_cancel_subscription" %}' // 👈 ADD THIS LINE
+          cancelSubscription: '{% url "secure_cancel_subscription" %}',
+          changeEmail: '{% url "change_email" %}'
         }
       }
     </script>
     <script src="{% static 'js/script.js' %}"></script>   
-    {% include 'partials/delete_confirmation_modal.html' %}
+    {% include 'partials/confirmation_modal.html' %}
 </body>
 </html>

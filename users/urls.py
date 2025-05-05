@@ -10,7 +10,7 @@ from django.contrib.auth import views as auth_views
 from django.urls import path
 
 # Local imports
-from .views import secure_delete_account, secure_delete_address
+from .views import secure_delete_account, secure_delete_address, change_email
 from . import views
 
 
@@ -28,6 +28,7 @@ urlpatterns = [
         # Account Management
         path('account/', views.account_view, name='account'),
         path('edit/', views.edit_account, name='edit_account'),
+        path('change-email/', change_email, name='change_email'),
         path(
             'secure_delete_account/',
             secure_delete_account,

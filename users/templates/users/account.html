@@ -31,9 +31,10 @@
   <div class="chip-container">
     <a href="{% url 'change_password' %}" class="btn-small blue lighten-1 white-text">Change Password</a>
     <a href="{% url 'edit_account' %}" class="btn-small green white-text">Edit Account</a>
-    <button class="btn-small red white-text" onclick="openDeleteModal('account')">
+    <button id="delete-account-btn" class="btn-small red white-text">
       Delete Account
-    </button>  </div>
+    </button>
+  </div>
 </section>
 
 <div class="section-divider"></div>
@@ -82,5 +83,4 @@
 
 </section>
 
-{% include "partials/delete_confirmation_modal.html" %}
 {% endblock %}

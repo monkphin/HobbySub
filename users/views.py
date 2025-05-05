@@ -20,13 +20,13 @@ from django.views.decorators.http import require_POST
 from django.views.decorators.csrf import csrf_exempt
 from django.http import HttpResponse, JsonResponse
 from django.core.signing import BadSignature
+from django.contrib.auth.models import User
 from urllib.parse import urlparse, parse_qs
 from django.conf import settings
 import stripe.error
 import logging
 import stripe
 import json
-
 
 # Local imports
 from hobbyhub.mail import (
@@ -144,6 +144,39 @@ def edit_account(request):
         form = UserEditForm(instance=request.user)
 
     return render(request, 'users/edit_account.html', {'form': form})
+
+
+@csrf_exempt  # REMOVE THIS after debugging, only use it temporarily to isolate CSRF issues
+@login_required
+@require_POST
+def change_email(request):
+    try:
+        print("Raw request body:", request.body)
+
+        if request.content_type != 'application/json':
+            return JsonResponse({'success': False, 'error': 'Invalid content type: ' + request.content_type})
+
+        data = json.loads(request.body)
+        new_email = data.get('new_email')
+        password = data.get('password')
+
+        print("Parsed email:", new_email)
+        print("Parsed password:", password)
+
+        if not new_email or not password:
+            return JsonResponse({'success': False, 'error': 'Missing email or password.'})
+
+        user = authenticate(request, username=request.user.username, password=password)
+        if user is None:
+            return JsonResponse({'success': False, 'error': 'Incorrect password.'})
+
+        user.email = new_email
+        user.save()
+
+        return JsonResponse({'success': True})
+    
+    except json.JSONDecodeError as e:
+        return JsonResponse({'success': False, 'error': f'JSON error: {str(e)}'})
 
 
 @login_required

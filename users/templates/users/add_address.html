@@ -11,6 +11,18 @@
     <form method="post" action="{% if next or gift %}?{% if next %}next={{ next|urlencode }}{% endif %}{% if next and gift %}&{% endif %}{% if gift %}gift=true{% endif %}{% else %}#{% endif %}">
       {% include 'partials/form_errors.html' %}
       {% csrf_token %}
+      
+      {% if form.instance.pk %}
+      {% if gift %}
+        <p class="orange-text text-darken-2 center-align">
+          You're editing a <strong>gift address</strong>. It will only appear during gift checkout.
+        </p>
+      {% else %}
+        <p class="green-text text-darken-2 center-align">
+          You're editing a <strong>personal address</strong>. It will be available for normal purchases.
+        </p>
+      {% endif %}
+    {% else %}
       {% if gift %}
         <p class="orange-text text-darken-2 center-align">
           You're adding a <strong>gift address</strong>. It will only appear during gift checkout.
@@ -20,6 +32,9 @@
           You're adding a <strong>personal address</strong>. It will be available for normal purchases.
         </p>
       {% endif %}
+    {% endif %}
+
+
       <input type="hidden" name="next" value="{{ next }}">
 
       <div class="input-field">

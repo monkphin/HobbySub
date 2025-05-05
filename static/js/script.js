@@ -1,46 +1,15 @@
 document.addEventListener('DOMContentLoaded', function () {
-  // SideNav
-  const sidenav = document.querySelectorAll('.sidenav');
-  M.Sidenav.init(sidenav, {
-      edge: 'right'
-  });
-
-
-  // Carousel
-  const carouselElems = document.querySelectorAll('.carousel');
-  M.Carousel.init(carouselElems, {
-    duration: 200,
-    dist: -30,
-    shift: 0,
-    padding: 20
-  });
-
-  // Modals
-  const modalElems = document.querySelectorAll('.modal');
-  M.Modal.init(modalElems);
-
-  // Datepicker
-  const dateElems = document.querySelectorAll('.datepicker');
-  M.Datepicker.init(dateElems, {
-    format: 'dd/mm/yyyy'
-  });
-
-  // Dropdowns
-  const dropdowns = document.querySelectorAll('.dropdown-trigger');
-  M.Dropdown.init(dropdowns, {
-    coverTrigger: false,
-    constrainWidth: false
-  });
-
-  // Materialize Selects
+  // === Materialize Component Initializations ===
+  M.Sidenav.init(document.querySelectorAll('.sidenav'), { edge: 'right' });
+  M.Carousel.init(document.querySelectorAll('.carousel'), { duration: 200, dist: -30, shift: 0, padding: 20 });
+  M.Modal.init(document.querySelectorAll('.modal'));
+  M.Datepicker.init(document.querySelectorAll('.datepicker'), { format: 'dd/mm/yyyy' });
+  M.Dropdown.init(document.querySelectorAll('.dropdown-trigger'), { coverTrigger: false, constrainWidth: false });
   M.FormSelect.init(document.querySelectorAll('select'));
-
-  // Update floating labels
   M.updateTextFields();
 
   // Toasts
-  const toasts = document.querySelectorAll('.toast');
-  toasts.forEach((toast) => {
+  document.querySelectorAll('.toast').forEach((toast) => {
     toast.addEventListener("click", () => toast.remove());
     setTimeout(() => {
       toast.style.opacity = "0";
@@ -49,9 +18,8 @@ document.addEventListener('DOMContentLoaded', function () {
     }, 4000);
   });
 
-  // File input filename fix
-  const fileInputs = document.querySelectorAll('.file-field input[type="file"]');
-  fileInputs.forEach(fileInput => {
+  // File input display
+  document.querySelectorAll('.file-field input[type="file"]').forEach(fileInput => {
     fileInput.addEventListener('change', function () {
       const filePathInput = fileInput.closest('.file-field').querySelector('.file-path');
       if (filePathInput && fileInput.files.length > 0) {
@@ -60,66 +28,150 @@ document.addEventListener('DOMContentLoaded', function () {
       }
     });
   });
+
+  // Modal trigger bindings
+  document.querySelectorAll('.delete-address-btn').forEach(button => {
+    button.addEventListener('click', () => {
+      openModal('delete_address', button.dataset.id);
+    });
+  });
+
+  const modalCancelBtn = document.getElementById('modal-cancel-btn');
+  const modalConfirmBtn = document.getElementById('modal-confirm-btn');
+  if (modalCancelBtn) modalCancelBtn.addEventListener('click', closeModal);
+  if (modalConfirmBtn) modalConfirmBtn.addEventListener('click', submitModalAction);
+
+  const accountDeleteBtn = document.getElementById('delete-account-btn');
+  if (accountDeleteBtn) {
+    accountDeleteBtn.addEventListener('click', () => openModal('delete_account'));
+  }
+
+  document.querySelectorAll('.cancel-subscription-btn').forEach(button => {
+    button.addEventListener('click', () => openModal('cancel_subscription'));
+  });
+
+  const emailChangeBtn = document.getElementById('change-email-btn');
+  if (emailChangeBtn) {
+    emailChangeBtn.addEventListener('click', openChangeEmailModal);
+  }
 });
 
+let modalContext = {
+  action: null,
+  id: null,
+  newEmail: null,
+};
 
-let deleteType = null;
-let deleteId = null;
+function openModal(action, id = null) {
+  modalContext = { action, id, newEmail: null };
 
-function openDeleteModal(type, id = null) {
-  deleteType = type;
-  deleteId = id;
-  const modal = document.getElementById('delete-modal');
-  document.getElementById('delete-password').value = '';
-  document.getElementById('delete-error').innerText = '';
+  const modal = document.getElementById('confirmation-modal');
+  const title = document.getElementById('modal-title');
+  const message = document.getElementById('modal-message');
+  const warning = document.getElementById('delete-warning');
+  document.getElementById('modal-password').value = '';
+  document.getElementById('modal-error').innerText = '';
+  if (warning) warning.innerText = '';
 
-  document.getElementById('delete-password').addEventListener('input', () => {
-    document.getElementById('delete-error').innerText = '';
-  }, { once: true });
-
-  if (type === 'account') {
-    document.getElementById('delete-modal-title').innerText = 'Confirm Account Deletion';
-  } else if (type === 'address') {
-    document.getElementById('delete-modal-title').innerText = 'Confirm Address Deletion';
-  } else if (type === 'subscription') {
-    document.getElementById('delete-modal-title').innerText = 'Confirm Subscription Cancellation';
+  switch (action) {
+    case 'delete_account':
+      title.innerText = 'Confirm Account Deletion';
+      message.innerText = 'Please enter your password to permanently delete your account.';
+      break;
+    case 'delete_address':
+      title.innerText = 'Confirm Address Deletion';
+      message.innerText = 'Please enter your password to delete this saved address.';
+      const addressCards = document.querySelectorAll('.personal-address');
+      if (addressCards.length === 1 && warning) {
+        warning.innerText = "This is your only address. You’ll need to add another before ordering.";
+      }
+      break;
+    case 'cancel_subscription':
+      title.innerText = 'Cancel Subscription';
+      message.innerText = 'Please enter your password to cancel your subscription.';
+      break;
+    case 'change_email':
+      title.innerText = 'Confirm Email Change';
+      message.innerText = 'Please confirm your password to update your email address.';
+      break;
+    default:
+      title.innerText = 'Confirm Action';
+      message.innerText = 'Please enter your password to proceed.';
   }
+
   const instance = M.Modal.getInstance(modal) || M.Modal.init(modal);
   instance.open();
-
-  if (deleteType === 'address') {
-    const addressCards = document.querySelectorAll('.personal-address');
-    if (addressCards.length === 1) {
-      document.getElementById('delete-warning').innerText = "This is your only address. You’ll need to add another before ordering.";
-    } else {
-      document.getElementById('delete-warning').innerText = "";
-    }
-  }
 }
 
-function closeDeleteModal() {
-  const modal = document.getElementById('delete-modal');
+function openChangeEmailModal() {
+  const emailInput = document.getElementById('id_email');
+  const newEmail = emailInput?.value.trim();
+
+  if (!window.originalEmail) {
+    window.originalEmail = emailInput.defaultValue;
+  }
+
+  if (!newEmail) {
+    M.toast({ html: 'Email cannot be empty.', classes: 'red' });
+    return;
+  }
+
+  if (newEmail === window.originalEmail) {
+    M.toast({ html: 'Email has not changed.', classes: 'red' });
+    return;
+  }
+
+  openModal('change_email');
+  modalContext.newEmail = newEmail;
+  }
+
+function closeModal() {
+  const modal = document.getElementById('confirmation-modal');
   const instance = M.Modal.getInstance(modal);
   instance.close();
 }
 
-function submitDelete() {
-  const password = document.getElementById('delete-password').value.trim();
-  const errorBox = document.getElementById('delete-error');
+function submitModalAction() {
+  const password = document.getElementById('modal-password').value;
+  const errorEl = document.getElementById('modal-error');
+  errorEl.innerText = '';
 
   if (!password) {
-    errorBox.innerText = "Password is required.";
+    errorEl.innerText = 'Password is required.';
     return;
   }
-  let url = '';
 
-  if (deleteType === 'account') {
-    url = GLOBALS.urls.deleteAccount;
-  } else if (deleteType === 'address') {
-    url = GLOBALS.urls.deleteAddressBase + deleteId + '/';
-  } else if (deleteType === 'subscription') {
-    url = GLOBALS.urls.cancelSubscription;
+  let url = '';
+  const action = modalContext.action;
+
+  switch (action) {
+    case 'delete_account':
+      url = GLOBALS.urls.deleteAccount;
+      break;
+    case 'delete_address':
+      url = `${GLOBALS.urls.deleteAddressBase}${modalContext.id}/`;
+      break;
+    case 'cancel_subscription':
+      url = GLOBALS.urls.cancelSubscription;
+      break;
+    case 'change_email':
+      url = GLOBALS.urls.changeEmail;
+      break;
+    default:
+      errorEl.innerText = 'Invalid action.';
+      return;
   }
+
+  const payload = { password };
+  if (action === 'change_email') {
+    payload.new_email = modalContext.newEmail;
+  }
+
+  console.log("Submitting modal action:", {
+    action,
+    url,
+    payload
+  });
 
   fetch(url, {
     method: 'POST',
@@ -127,22 +179,22 @@ function submitDelete() {
       'Content-Type': 'application/json',
       'X-CSRFToken': GLOBALS.csrfToken,
     },
-    body: JSON.stringify({ password: password }),
+    body: JSON.stringify(payload),
   })
-    .then(response => response.json())
+    .then(res => res.json())
     .then(data => {
       if (data.success) {
-        if (deleteType === 'account') {
-          window.location.href = '/'; // Redirect home
+        if (action === 'delete_account') {
+          window.location.href = '/';
         } else {
-          window.location.reload(); // Reload page
+          window.location.reload();
         }
       } else {
-        document.getElementById('delete-error').innerText = data.error;
+        errorEl.innerText = data.error || 'Failed to complete action.';
       }
     })
-    .catch(error => {
-      console.error('Error:', error);
-      document.getElementById('delete-error').innerText = "Something went wrong.";
+    .catch(err => {
+      console.error('Request failed:', err);
+      errorEl.innerText = 'Something went wrong.';
     });
 }

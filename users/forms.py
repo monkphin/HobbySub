@@ -155,6 +155,12 @@ class UserEditForm(forms.ModelForm):
             'last_name'
         ]
 
+    def clean_email(self):
+        email = self.cleaned_data.get('email')
+        if User.objects.filter(email__iexact=email).exclude(pk=self.instance.pk).exists():
+            raise ValidationError("This email address is already in use.")
+        return email
+
 
 class AddAddressForm(forms.ModelForm):
     """
