@@ -40,25 +40,47 @@
 
 <section class="section center-align">
   <h3>Saved Addresses</h3>
-
-  <div class="address-grid">
-    {% for address in request.user.addresses.all|dictsortreversed:"is_default" %}
-      <div class="col">
-        {% include "users/includes/address_card.html" with address=address %}
-      </div>
-    {% endfor %}
-  </div>
-
-
+  <a href="{% url 'add_address' %}?gift=false&next={{ request.path }}" class="btn teal white-text">
+    <i class="fas fa-plus left"></i> Add Personal Address
+  </a>
   
-
+  <a href="{% url 'add_address' %}?gift=true&next={{ request.path }}" class="btn teal lighten-2 white-text">
+    <i class="fas fa-gift left"></i> Add Gift Address
+  </a>
+  <!-- Personal Addresses -->
   <div class="row">
-    <div class="col s12 center-align button-row">
-      <a href="{% url 'add_address' %}" class="btn teal white-text">
-        <i class="fas fa-plus left"></i> Add Another Address
-      </a>
-    </div>
+    <h5 class="center-align">Your Personal Addresses</h5>
+    {% if personal_addresses %}
+      <div class="address-grid">
+        {% for address in personal_addresses %}
+          <div class="col">
+            {% include "users/includes/address_card.html" with address=address %}
+          </div>
+        {% endfor %}
+      </div>
+    {% else %}
+      <p class="grey-text">You have no personal addresses saved.</p>
+    {% endif %}
   </div>
+
+  <!-- Gift Addresses -->
+  <div class="row">
+    <h5 class="center-align">Gift Recipient Addresses</h5>
+    {% if gift_addresses %}
+      <div class="address-grid">
+        {% for address in gift_addresses %}
+          <div class="col">
+            {% include "users/includes/address_card.html" with address=address %}
+          </div>
+        {% endfor %}
+      </div>
+    {% else %}
+      <p class="grey-text">You have no gift recipient addresses saved.</p>
+    {% endif %}
+  </div>
+
+
 </section>
+
 {% include "partials/delete_confirmation_modal.html" %}
 {% endblock %}

@@ -109,24 +109,31 @@ def build_shipping_details(shipping_address):
     }
 
 
-def get_gift_metadata(form, user_id):
+def get_gift_metadata(form, user_id, address_id=None):
     """
     Extracts gift-related metadata from a form.
 
     Args:
         form: Django Form object with cleaned_data.
         user_id: ID of the user sending the gift.
+        address_id (int, optional): Selected shipping address ID.
 
     Returns:
         dict: Gift metadata for Stripe session.
     """
-    return {
+    metadata = {
         'recipient_name': form.cleaned_data.get('recipient_name'),
         'recipient_email': form.cleaned_data.get('recipient_email'),
         'sender_name': form.cleaned_data.get('sender_name'),
         'gift_message': form.cleaned_data.get('gift_message'),
         'user_id': str(user_id),
     }
+
+    if address_id:
+        metadata['shipping_address_id'] = str(address_id)
+
+    return metadata
+
 
 
 def get_subscription_duration_display(subscription):

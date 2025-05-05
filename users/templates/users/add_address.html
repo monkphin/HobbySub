@@ -1,5 +1,6 @@
 {% extends 'base.html' %}
 {% load static %}
+{% load widget_tweaks %}
 
 {% block title %}Add Shipping Address{% endblock %}
 
@@ -7,10 +8,38 @@
 <section class="section center-align">
   <h2>{% if form.instance.pk %}Edit Address{% else %}Add Address{% endif %}</h2>
   <div class="row form-wrapper">
-    <form class="col s12" method="post">
+    <form method="post" action="{% if next or gift %}?{% if next %}next={{ next|urlencode }}{% endif %}{% if next and gift %}&{% endif %}{% if gift %}gift=true{% endif %}{% else %}#{% endif %}">
       {% include 'partials/form_errors.html' %}
       {% csrf_token %}
+      {% if gift %}
+        <p class="orange-text text-darken-2 center-align">
+          You're adding a <strong>gift address</strong>. It will only appear during gift checkout.
+        </p>
+      {% else %}
+        <p class="green-text text-darken-2 center-align">
+          You're adding a <strong>personal address</strong>. It will be available for normal purchases.
+        </p>
+      {% endif %}
       <input type="hidden" name="next" value="{{ next }}">
+
+      <div class="input-field">
+        {{ form.label|add_class:"validate" }}
+        <label for="{{ form.label.id_for_label }}">Label (e.g. Home, Work, Parents)</label>
+        <datalist id="address-labels">
+          <option value="Home">
+          <option value="Work">
+          <option value="Parents">
+          <option value="Other">
+        </datalist>
+        {% if form.label.help_text %}
+          <span class="helper-text">{{ form.label.help_text }}</span>
+        {% endif %}
+        {% for error in form.label.errors %}
+          <span class="red-text">{{ error }}</span>
+        {% endfor %}
+      </div>
+      
+
         <div class="row">
           <div class="input-field col s6">
             {{ form.recipient_f_name.label_tag }}
@@ -61,17 +90,19 @@
         <div class="row">
           <div class="input-field col s12">
             {{ form.phone_number.label_tag }}
-            {{ form.phone_number|add_class:"validate"|attr:"required"|attr:"type:text" }}
+            {{ form.phone_number|add_class:"validate"|attr:"required"|attr:"type:text"|attr:"pattern:^[-+()0-9 ]+$" }}
           </div>
         </div>
-        <div class="row">
-          <div class="input-field col s12">
-            <label>
-              {{ form.is_default }}
-              <span>{{ form.is_default.label }}</span>
-            </label>
-          </div> 
-        </div>
+        {% if not gift %}
+         <div class="row">
+           <div class="input-field col s12">
+             <label>
+                {{ form.is_default }}
+                <span>{{ form.is_default.label }}</span>
+              </label>
+            </div> 
+          </div>
+        {% endif %}
         <div class="row button-row center-align">
           <a href="{% url 'account' %}" class="btn grey lighten-1 black-text">
             <i class="fas fa-arrow-left left"></i> Back

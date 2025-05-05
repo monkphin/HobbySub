@@ -83,6 +83,11 @@ class ShippingAddress(models.Model):
         default=False,
         help_text="Check this box if this is your default delivery address"
     )
+    is_gift_address = models.BooleanField(
+        default=False,
+        help_text="Check this box if this is an address used for a gift"
+        )
+    label = models.CharField(max_length=50, blank=True, help_text="e.g. Home, Work, Parents")
 
     def __str__(self):
         return f"{self.recipient_f_name} {self.recipient_l_name}—{self.postcode}"  # noqa

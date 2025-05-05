@@ -23,9 +23,6 @@ import json
 
 
 # Local imports
-from .forms import PreCheckoutForm
-from hobbyhub.mail import send_subscription_cancelled_email
-from .models import Order, Payment, StripeSubscriptionMeta
 from hobbyhub.utils import (
     alert,
     get_user_default_shipping_address,
@@ -34,6 +31,10 @@ from hobbyhub.utils import (
     get_subscription_duration_display,
     get_subscription_status
 )
+from .models import Order, Payment, StripeSubscriptionMeta
+from hobbyhub.mail import send_subscription_cancelled_email
+from users.models import ShippingAddress
+from .forms import PreCheckoutForm
 
 # Configure Stripe with secret API key
 stripe.api_key = settings.STRIPE_SECRET_KEY
@@ -116,50 +117,55 @@ def handle_purchase_type(request, plan):
 
 @login_required
 def gift_message(request, plan):
-    """
-    Gathers gift message, then sends to checkout with correct price_id.
-    If user has no shipping address, redirect before showing form.
-    """
     logger.info(f"{request.user} is entering gift message for {plan} plan")
-    shipping_address, redirect_response = get_user_default_shipping_address(
-        request
-    )
-    if redirect_response:
-        # Include return path so user is redirected back here
+
+    # Only redirect if shipping ID is not in session
+    shipping_id = request.session.get('checkout_shipping_id')
+    if not shipping_id:
         request.session['return_to_gift'] = plan
         alert(
             request,
             "info",
             "Before continuing with your gift,"
-            "we need a shipping address on file for you."
+            " we need a shipping address on file for you."
         )
-        return redirect('add_shipping_address')
-    form = PreCheckoutForm(request.POST or None)
+        return redirect('choose_shipping_address', plan=plan)  # <- Fix here
 
+    form = PreCheckoutForm(request.POST or None)
     price_id = PLAN_MAP.get(plan)
 
     if request.method == 'POST':
         if form.is_valid():
             logger.info("Gift message valid, creating Stripe session")
-            shipping_address_data = get_user_default_shipping_address(request)
-            shipping_address, redirect_response = shipping_address_data
-            if redirect_response:
-                return redirect_response
 
             try:
-                session = stripe.checkout.Session.create(
-                    payment_method_types=['card'],
-                    mode='payment' if plan == 'oneoff' else 'subscription',
-                    line_items=[{'price': price_id, 'quantity': 1, }],
-                    metadata=get_gift_metadata(form, request.user.id),
-                    payment_intent_data={
-                        'metadata': get_gift_metadata(form, request.user.id),
-                        'shipping': build_shipping_details(shipping_address),
-                    },
-                    customer_email=request.user.email,
-                    success_url=request.build_absolute_uri('/orders/success/'),
-                    cancel_url=request.build_absolute_uri('/orders/cancel/'),
+                is_subscription = plan != 'oneoff'
+
+                gift_metadata = get_gift_metadata(
+                    form,
+                    request.user.id,
+                    address_id=shipping_id
                 )
+
+                shipping_address = ShippingAddress.objects.get(id=shipping_id)
+
+                checkout_data = {
+                    'payment_method_types': ['card'],
+                    'mode': 'subscription' if is_subscription else 'payment',
+                    'line_items': [{'price': price_id, 'quantity': 1}],
+                    'metadata': gift_metadata,
+                    'customer_email': request.user.email,
+                    'success_url': request.build_absolute_uri('/orders/success/'),
+                    'cancel_url': request.build_absolute_uri('/orders/cancel/'),
+                }
+
+                if not is_subscription:
+                    checkout_data['payment_intent_data'] = {
+                        'metadata': gift_metadata,
+                        'shipping': build_shipping_details(shipping_address),
+                    }
+
+                session = stripe.checkout.Session.create(**checkout_data)
                 return redirect(session.url, code=303)
 
             except stripe.error.CardError:
@@ -168,11 +174,7 @@ def gift_message(request, plan):
 
             except stripe.error.StripeError:
                 logger.error("General Stripe error", exc_info=True)
-                alert(
-                    request,
-                    "error",
-                    "There was a problem with the payment service."
-                )
+                alert(request, "error", "There was a problem with the payment service.")
 
         else:
             alert(request, "error", "Please correct the errors in the form.")
@@ -223,11 +225,25 @@ def handle_checkout(request, price_id):
 
 
 @login_required
+@login_required
 def create_subscription_checkout(request, price_id):
     """
     Handles Stripe checkout session creation for subscription purchases.
     """
     logger.info(f"{request.user} creating subscription session")
+
+    # ✅ Get shipping ID from session
+    shipping_id = request.session.get('checkout_shipping_id')
+    if not shipping_id:
+        logger.warning("No shipping address selected for subscription.")
+        alert(request, "error", "Please select a shipping address.")
+        return redirect('order_start')
+
+    metadata = {
+        'user_id': request.user.id,
+        'shipping_address_id': shipping_id,  # 👈 required for webhook handler
+    }
+
     try:
         checkout_session = stripe.checkout.Session.create(
             customer_email=request.user.email,
@@ -237,9 +253,7 @@ def create_subscription_checkout(request, price_id):
                 'price': price_id,
                 'quantity': 1,
             }],
-            metadata={
-                'user_id': request.user.id,
-            },
+            metadata=metadata,
             success_url=request.build_absolute_uri(
                 '/orders/success/?sub=monthly'
             ),
@@ -254,6 +268,7 @@ def create_subscription_checkout(request, price_id):
             "Please try again shortly."
         )
     return redirect('subscribe_options')
+
 
 
 def order_success(request):
@@ -288,9 +303,12 @@ def order_cancel(request):
 
 @login_required
 def order_history(request):
-    all_orders = Order.objects.filter(
+    all_orders = Order.objects.select_related("shipping_address").filter(
         user=request.user
-    ).order_by('-order_date')
+    ).order_by('-order_date')    
+    print("DEBUG: ORDER HISTORY")
+    for o in all_orders:
+        print(f"Order {o.id} | sub_id={o.stripe_subscription_id} | created={o.order_date}")
     payments = Payment.objects.filter(order__in=all_orders)
     subscriptions = StripeSubscriptionMeta.objects.filter(user=request.user)
     sub_map = {
@@ -379,10 +397,14 @@ def secure_cancel_subscription(request):
 def choose_shipping_address(request, plan):
     """
     Lets the user select a shipping address before checkout.
+    Filters based on gift/self.
     Stores selected address in session and redirects accordingly.
     """
     gift = request.GET.get('gift', 'false').lower() == 'true'
-    addresses = request.user.addresses.all()
+    logger.debug(f"gift={gift} in choose_shipping_address")
+
+    # Filter addresses based on gift flag
+    addresses = request.user.addresses.filter(is_gift_address=gift)
 
     if request.method == 'POST':
         selected_id = request.POST.get('shipping_address')

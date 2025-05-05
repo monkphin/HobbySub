@@ -20,13 +20,12 @@ from django.views.decorators.http import require_POST
 from django.views.decorators.csrf import csrf_exempt
 from django.http import HttpResponse, JsonResponse
 from django.core.signing import BadSignature
+from urllib.parse import urlparse, parse_qs
 from django.conf import settings
 import stripe.error
 import logging
 import stripe
 import json
-
-
 
 
 # Local imports
@@ -115,7 +114,17 @@ def account_view(request):
     """
     Displays the user's account dashboard.
     """
-    return render(request, 'users/account.html')
+    user = request.user
+    addresses = user.addresses.all()
+
+    personal_addresses = addresses.filter(is_gift_address=False).order_by('-is_default')
+    gift_addresses = addresses.filter(is_gift_address=True)
+
+    context = {
+        'personal_addresses': personal_addresses,
+        'gift_addresses': gift_addresses,
+    }
+    return render(request, 'users/account.html', context)
 
 
 @login_required
@@ -181,51 +190,71 @@ def add_address(request):
     or falls back to 'account'.
     """
     next_url = request.GET.get('next', request.POST.get('next', 'account'))
-
+    gift = request.GET.get('gift', 'false').lower() == 'true'
+    if not gift:
+        parsed_next = parse_qs(urlparse(next_url).query)
+        gift = parsed_next.get('gift', ['false'])[0].lower() == 'true'
     if request.method == 'POST':
         form = AddAddressForm(request.POST)
+
+        if gift:
+            # Don't let gift addresses be marked as default
+            form.fields.pop('is_default', None)
+
         if form.is_valid():
             address = form.save(commit=False)
             address.user = request.user
-            if address.is_default:
-                ShippingAddress.objects.filter(
-                    user=request.user,
-                    is_default=True
-                    ).update(is_default=False)
-            address.save()
+            address.is_gift_address = gift
 
-            if ShippingAddress.objects.filter(user=request.user).count() == 1:
-                address.is_default = True
-                address.save()
+            if gift:
+                address.is_default = False
+            else:
+                if address.is_default:
+                    ShippingAddress.objects.filter(
+                        user=request.user,
+                        is_default=True
+                    ).update(is_default=False)
+
+                if ShippingAddress.objects.filter(user=request.user).count() == 0:
+                    address.is_default = True
+
+            address.save()
+            print(f"DEBUG: Saved address = {address}, gift={address.is_gift_address}")
+
 
             logger.info(
-                f"{request.user} added new address — "
-                f"default={address.is_default}")
+                f"{request.user} added new address — default={address.is_default}"
+            )
             send_address_change_email(request.user, change_type="added")
             alert(request, "success", "Address added successfully.")
 
-            # Check if we're returning to a gift flow
             if 'return_to_gift' in request.session:
                 plan = request.session.pop('return_to_gift')
                 return redirect('gift_message', plan=plan)
 
-            # Otherwise, follow next_url if safe
+            # Ensure ?gift=true is preserved if this was a gift flow
+            if gift and 'gift=true' not in next_url:
+                separator = '&' if '?' in next_url else '?'
+                next_url = f"{next_url}{separator}gift=true"
+
             if url_has_allowed_host_and_scheme(
                 next_url, allowed_hosts={request.get_host()}
             ):
                 return redirect(next_url)
 
-            return redirect('account')  # fallback
+            return redirect('account')
 
     else:
         form = AddAddressForm(initial={
             'recipient_f_name': request.user.first_name,
             'recipient_l_name': request.user.last_name,
+            'is_gift_address': gift
         })
 
     return render(request, 'users/add_address.html', {
         'form': form,
-        'next': next_url  # pass this to the template
+        'next': next_url,
+        'gift': gift,
     })
 
 

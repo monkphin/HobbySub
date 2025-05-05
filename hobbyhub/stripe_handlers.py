@@ -17,6 +17,7 @@ Relies on:
 import stripe
 import logging
 from django.utils import timezone
+from django.db import IntegrityError
 from django.http import JsonResponse
 from django.contrib.auth.models import User
 from dateutil.relativedelta import relativedelta
@@ -41,26 +42,16 @@ from hobbyhub.mail import (
 logger = logging.getLogger(__name__)
 
 
+from django.db import IntegrityError
+
 def handle_checkout_session_completed(session):
     """
     Handle Stripe Checkout session completion.
-
-    Args:
-        session (dict): The Stripe session object.
-
-    - If mode is 'subscription', create a subscription record and send
-      a welcome email.
-    - If mode is 'payment', create a one-off order and send confirmation
-      or gift emails.
-    - Handles missing user ID or session metadata gracefully.
-    - Logs success and error events.
     """
     mode = session.get('mode')
     metadata = session.get('metadata', {})
     user_id = metadata.get('user_id')
-    logger.info(
-        f"Checkout session completed — mode: {mode}, user_id: {user_id}"
-    )
+    logger.info(f"Checkout session completed — mode: {mode}, user_id: {user_id}")
 
     if not user_id:
         logger.error("No user ID in session metadata")
@@ -74,82 +65,110 @@ def handle_checkout_session_completed(session):
 
     if mode == 'subscription':
         try:
-            sub_id = session.get('subscription')
-            subscription = stripe.Subscription.retrieve(sub_id)
-            price_id = subscription['items']['data'][0]['price']['id']
-            shipping = user.addresses.filter(is_default=True).first()
+            session = stripe.checkout.Session.retrieve(session["id"], expand=["subscription"])
+            sub = session.subscription
+            if not sub:
+                logger.error("No subscription found in expanded session")
+                return
+
+            sub_id = sub.id
+            price_id = sub["items"]["data"][0]["price"]["id"]
+            address_id = metadata.get('shipping_address_id')
+
+            shipping = ShippingAddress.objects.filter(id=address_id, user=user).first() or \
+                       user.addresses.filter(is_default=True).first()
+            if not shipping:
+                logger.warning(f"No shipping address found for user {user.username}")
+
+            if Order.objects.filter(stripe_subscription_id=sub_id).exists():
+                logger.warning(f"[Duplicate Prevention] Existing order found for sub {sub_id}, skipping create")
+                return
 
             StripeSubscriptionMeta.objects.create(
                 user=user,
                 stripe_subscription_id=sub_id,
                 stripe_price_id=price_id,
                 shipping_address=shipping,
-                is_gift=False,
+                is_gift=bool(metadata.get('recipient_email')),
             )
 
-            send_subscription_confirmation_email(
-                user,
-                plan_name="Subscription Box"
-            )
-            logger.info(
-                f"Subscription created and email sent for {user.username}"
+            box = Box.objects.filter(is_archived=False).order_by('-shipping_date').first()
+            Order.objects.create(
+                user=user,
+                stripe_subscription_id=sub_id,
+                shipping_address=shipping,
+                box=box,
+                order_date=timezone.now().date(),
+                scheduled_shipping_date=box.shipping_date if box else None,
+                status='processing',
             )
 
+            send_subscription_confirmation_email(user, plan_name="Subscription Box")
+            logger.info(f"Subscription created and email sent for {user.username}")
+
+        except IntegrityError:
+            logger.warning(f"Duplicate Order creation blocked for sub ID {sub_id}")
         except Exception as e:
             logger.error(f"Error handling subscription checkout: {e}")
 
     elif mode == 'payment':
         try:
-            payment_intent_id = session.get('payment_intent')
-            if not payment_intent_id:
-                logger.info("No payment_intent ID found in session")
+            if 'payment_intent' not in session or not session['payment_intent']:
+                session = stripe.checkout.Session.retrieve(
+                    session["id"],
+                    expand=["payment_intent"]
+                )
+
+            payment_intent_id = session['payment_intent']['id']
+
+            # ✅ ONE unified de-dupe check
+            if Payment.objects.filter(payment_intent_id=payment_intent_id).exists():
+                logger.warning(f"[SKIP] PaymentIntent {payment_intent_id} already handled, skipping.")
                 return
 
             payment_intent = stripe.PaymentIntent.retrieve(payment_intent_id)
             shipping_info = payment_intent.shipping
+
+            if not shipping_info:
+                logger.info("No shipping info in payment intent")
+                return
+
+            postcode = shipping_info['address']['postal_code']
+            address = ShippingAddress.objects.filter(user=user, postcode=postcode).first()
+            if not address:
+                logger.info("No matching address found for this shipping info")
+                return
 
             recipient_email = metadata.get('recipient_email')
             sender_name = metadata.get('sender_name', 'Someone')
             gift_message = metadata.get('gift_message', '')
             amount_total = session.get('amount_total', 0)
 
-            if not shipping_info:
-                logger.info("No shipping info in payment intent")
-                return
+            from django.db import transaction
+            with transaction.atomic():
+                order = Order.objects.create(
+                    user=user,
+                    shipping_address=address,
+                    box=None,
+                    stripe_subscription_id=None,
+                    scheduled_shipping_date=None,
+                    status='processing'
+                )
 
-            address = ShippingAddress.objects.filter(
-                user=user,
-                postcode=shipping_info['address']['postal_code']
-            ).first()
+                Payment.objects.create(
+                    user=user,
+                    order=order,
+                    payment_date=timezone.now(),
+                    amount=amount_total / 100,
+                    status='paid',
+                    payment_method='card',
+                    payment_intent_id=payment_intent.id,
+                )
 
-            if not address:
-                logger.info("No matching address found for this shipping info")
-                return
-
-            order = Order.objects.create(
-                user=user,
-                shipping_address=address,
-                box=None,
-                stripe_subscription_id=None,
-                scheduled_shipping_date=None,
-                status='processing'
-            )
-
-            Payment.objects.create(
-                user=user,
-                order=order,
-                payment_date=timezone.now(),
-                amount=amount_total / 100,
-                status='paid',
-                payment_method='card',
-            )
+            logger.warning(f"[CREATED] One-off order ID {order.id} and payment {payment_intent.id} for user {user.id}")
 
             if recipient_email:
-                send_gift_notification_to_recipient(
-                    recipient_email,
-                    sender_name,
-                    gift_message
-                )
+                send_gift_notification_to_recipient(recipient_email, sender_name, gift_message)
                 send_gift_confirmation_to_sender(user, recipient_email)
                 logger.info(f"Gift confirmation sent to {recipient_email}")
             else:
@@ -184,14 +203,17 @@ def handle_invoice_payment_succeeded(invoice):
         user = User.objects.get(email=customer.get('email'))
 
         sub_meta = StripeSubscriptionMeta.objects.filter(
-            user=user, stripe_subscription_id=subscription_id
-        ).first()
+            stripe_subscription_id=subscription_id
+        ).select_related('shipping_address').first()
 
-        shipping = (
-            sub_meta.shipping_address
-            if sub_meta else user.addresses
-            .filter(is_default=True).first()
-        )
+        if not sub_meta:
+            logger.error(f"No StripeSubscriptionMeta found for sub ID {subscription_id}")
+            return
+
+        shipping = sub_meta.shipping_address
+        if not shipping:
+            logger.error(f"Subscription {subscription_id} has no shipping address")
+            return
 
         box = (
             Box.objects.filter(is_archived=False)

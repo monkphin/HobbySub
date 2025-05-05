@@ -6,10 +6,12 @@ and managing shipping addresses.
 """
 
 # Django/Remote imports
-from django import forms
-from django.contrib.auth.models import User
-from django.contrib.auth.forms import UserCreationForm
 from django_countries.widgets import CountrySelectWidget
+from django.contrib.auth.forms import UserCreationForm
+from django.core.exceptions import ValidationError
+from django.contrib.auth.models import User
+from django import forms
+import re
 
 
 # Local imports
@@ -19,7 +21,6 @@ from .models import ShippingAddress
 from django import forms
 from django.contrib.auth.models import User
 from django.contrib.auth.forms import UserCreationForm
-
 
 class Register(UserCreationForm):
     email = forms.EmailField(
@@ -153,30 +154,43 @@ class AddAddressForm(forms.ModelForm):
     """
     Form for adding or editing a shipping address.
     """
+    # Add this line to include a checkbox in the form
+    is_gift_address = forms.BooleanField(
+        required=False,
+        label="This is a gift recipient address"
+    )
+    def clean_phone_number(self):
+        phone = self.cleaned_data.get("phone_number")
+        if not re.match(r'^[\d\s\-\+\(\)]+$', phone):
+            raise ValidationError("Phone number must only contain digits and common symbols (+, -, (, )).")
+        return phone
+
     class Meta:
         model = ShippingAddress
         fields = [
-                'recipient_f_name',
-                'recipient_l_name',
-                'address_line_1',
-                'address_line_2',
-                'town_or_city',
-                'county',
-                'postcode',
-                'country',
-                'phone_number',
-                'is_default',
-                ]
+            'label',
+            'recipient_f_name',
+            'recipient_l_name',
+            'address_line_1',
+            'address_line_2',
+            'town_or_city',
+            'county',
+            'postcode',
+            'country',
+            'phone_number',
+            'is_default',
+        ]
         labels = {
-                'recipient_f_name': 'First Name',
-                'recipient_l_name': 'Last Name',
-                'town_or_city': 'Town or City',
-                'phone_number': 'Phone Number',
-                'is_default': 'Set as my default shipping address',
-                }
+            'label': 'Label (e.g. Home, Work)',
+            'recipient_f_name': 'First Name',
+            'recipient_l_name': 'Last Name',
+            'town_or_city': 'Town or City',
+            'phone_number': 'Phone Number',
+            'is_default': 'Set as my default shipping address',
+        }
         widgets = {
-                'country': CountrySelectWidget(
-                    attrs={'class': 'browser-default'}
-                ),
-                'is_default': forms.CheckboxInput(),
-                }
+            'country': CountrySelectWidget(
+                attrs={'class': 'browser-default'}
+            ),
+            'is_default': forms.CheckboxInput(),
+        }

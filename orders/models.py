@@ -66,7 +66,8 @@ class Order(models.Model):
     stripe_subscription_id = models.CharField(
         max_length=100,
         blank=True,
-        null=True
+        null=True,
+        unique=True
     )
     order_date = models.DateField(auto_now_add=True)
     scheduled_shipping_date = models.DateField(null=True, blank=True)
@@ -97,6 +98,8 @@ class Payment(models.Model):
     amount = models.DecimalField(max_digits=8, decimal_places=2)
     status = models.CharField(max_length=20, choices=PAYMENT_STATUS)
     payment_method = models.CharField(max_length=50)
+    payment_intent_id = models.CharField(max_length=255, unique=True, null=True, blank=True)
+
 
     def __str__(self):
         return f"Payment #{self.id} - {self.status}"

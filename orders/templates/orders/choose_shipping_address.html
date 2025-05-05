@@ -4,31 +4,35 @@
 {% block content %}
 <section class="section container">
   <h4 class="green-text text-darken-2 center-align">Choose a Shipping Address</h4>
-
+  {% if gift %}
+    <p class="center-align grey-text">These are your gift recipient addresses.</p>
+  {% else %}
+    <p class="center-align grey-text">These are your personal delivery addresses.</p>
+  {% endif %}
   {% if addresses %}
   <div class="row">
     {% for address in addresses %}
     <div class="col s12 m6">
       <div class="card">
         <div class="card-content">
-            <span class="card-title">
-              {{ address.recipient_f_name }} {{ address.recipient_l_name }}
-              {% if address.is_default %}
-                <span class="new badge green" data-badge-caption="Default"></span>
-              {% endif %}
-            </span>
-          
-            <p>{{ address.address_line_1 }}</p>
-            {% if address.address_line_2 %}
-              <p>{{ address.address_line_2 }}</p>
+          <p class="flow-text">
+            <strong>{{ address.recipient_f_name }} {{ address.recipient_l_name }}</strong>
+            {% if address.is_default %}
+              <span class="new badge green" data-badge-caption="Default"></span>
             {% endif %}
-            <p>{{ address.town_or_city }}</p>
-            <p>{{ address.county }}</p>
-            <p>{{ address.postcode }}</p>
-            <p>{{ address.country }}</p>
-          
-            <i class="fas fa-phone-alt left"></i> {{ address.phone_number }}
-          </div>
+          </p>
+        
+          <p>{{ address.address_line_1 }}</p>
+          {% if address.address_line_2 %}
+            <p>{{ address.address_line_2 }}</p>
+          {% endif %}
+          <p>{{ address.town_or_city }}</p>
+          <p>{{ address.county }}</p>
+          <p>{{ address.postcode }}</p>
+          <p>{{ address.country }}</p>
+        
+          <i class="fas fa-phone-alt left"></i> {{ address.phone_number }}
+        </div>
         <div class="card-action">
           <form method="POST" action="">
             {% csrf_token %}
@@ -45,7 +49,7 @@
   {% endif %}
 
   <div class="section center-align">
-    <a href="{% url 'add_address' %}?next={{ request.path }}" class="btn-flat">
+    <a href="{% url 'add_address' %}?next={% url 'choose_shipping_address' plan=plan %}?gift={{ gift }}" class="btn-flat">
       <i class="fas fa-plus left"></i> Add a New Address
     </a>
   </div>
