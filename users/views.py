@@ -279,7 +279,7 @@ def edit_address(request, address_id):
                 ShippingAddress.objects.filter(
                     user=request.user,
                     is_default=True
-                    ).exclude(id=address.id).update(is_default=False)
+                ).exclude(id=address.id).update(is_default=False)
 
             updated_address.save()
             logger.info(f"{request.user} updated address {address_id}")
@@ -289,7 +289,10 @@ def edit_address(request, address_id):
     else:
         form = AddAddressForm(instance=address)
 
-    return render(request, 'users/add_address.html', {'form': form})
+    return render(request, 'users/add_address.html', {
+        'form': form,
+        'gift': address.is_gift_address,
+    })
 
 
 @require_POST
@@ -322,16 +325,35 @@ def secure_delete_address(request, address_id):
     data = json.loads(request.body)
     password = data.get('password')
 
+    if not password:
+        return JsonResponse({'success': False, 'error': 'Password is required'})
+
     if authenticate(username=request.user.username, password=password):
         address = get_object_or_404(
             ShippingAddress,
             id=address_id,
             user=request.user
         )
+        was_default = address.is_default
+        is_personal = not address.is_gift_address
+
         address.delete()
+
+        # If it was the default personal address, set a new one as default (if any remain)
+        if was_default and is_personal:
+            remaining = ShippingAddress.objects.filter(
+                user=request.user,
+                is_gift_address=False
+            )
+            if remaining.exists():
+                new_default = remaining.first()
+                new_default.is_default = True
+                new_default.save()
+
         return JsonResponse({'success': True})
     else:
         return JsonResponse({'success': False, 'error': 'Incorrect password'})
+
 
 
 @csrf_exempt

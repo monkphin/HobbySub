@@ -94,6 +94,12 @@ class Register(UserCreationForm):
             'password2'
         )
 
+    def clean_email(self):
+        email = self.cleaned_data.get('email')
+        if User.objects.filter(email__iexact=email).exists():
+            raise ValidationError("This email address is already registered.")
+        return email
+
 
 
 class ChangePassword(forms.Form):
