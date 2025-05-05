@@ -10,9 +10,9 @@
     <p class="center-align grey-text">These are your personal delivery addresses.</p>
   {% endif %}
   {% if addresses %}
-  <div class="row">
+  <div class="address-grid">
     {% for address in addresses %}
-    <div class="col s12 m6">
+    <div class="col">
       <div class="card">
         <div class="card-content">
           <p class="flow-text">
@@ -33,12 +33,16 @@
         
           <i class="fas fa-phone-alt left"></i> {{ address.phone_number }}
         </div>
-        <div class="card-action">
+        <div class="card-action" style="display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 0.5rem;">
           <form method="POST" action="">
             {% csrf_token %}
             <input type="hidden" name="shipping_address" value="{{ address.id }}">
             <button type="submit" class="btn green">Deliver to this address</button>
           </form>
+        
+          <a href="{% url 'edit_address' address.id %}" class="btn teal lighten-1 white-text">
+            <i class="fas fa-edit left"></i> Edit
+          </a>
         </div>
       </div>
     </div>
@@ -56,7 +60,9 @@
 
   <div class="section center-align">
     <a href="{{ request.META.HTTP_REFERER|default:'/' }}" class="btn-flat grey-text text-darken-2">
-      <i class="fas fa-arrow-left left"></i> Back
+      <a href="{% url 'account' %}" class="btn grey lighten-1 black-text">
+        <i class="fas fa-arrow-left left"></i> Back
+      </a>
     </a>
   </div>
 </section>
