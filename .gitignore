@@ -23,6 +23,7 @@ core.python*
 env.py
 db_seed.py 
 *.json
+todo.*
 
 node_modules/
 .github/
