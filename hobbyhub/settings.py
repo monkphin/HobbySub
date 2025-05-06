@@ -145,6 +145,7 @@ else:
     DEFAULT_FROM_EMAIL = os.getenv('DEFAULT_FROM_EMAIL', EMAIL_HOST_USER)
 
 # === Auth Redirects ===
+LOGIN_URL = 'login'
 LOGIN_REDIRECT_URL = 'account'
 LOGOUT_REDIRECT_URL = 'home'
 

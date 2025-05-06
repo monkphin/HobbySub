@@ -4,14 +4,21 @@
 Defines URL patterns for the public site.
 Includes views for home, about, contact, and subscription options.
 """
-
+from django.contrib.auth import views as auth_views
+from .views import home, about, subscribe_options, register_user, confirm_email
 from django.urls import path
 from . import views
 
+
 # URL patterns for public facing views within the home app
 urlpatterns = [
-    path('', views.home, name='home'),
-    path('about/', views.about, name='about'),
-    path('contact/', views.contact, name='contact'),
-    path('subscribe/', views.subscribe_options, name='subscribe_options'),
-]
+    path('', home, name='home'),
+    path('about/', about, name='about'),
+    path('subscribe/', subscribe_options, name='subscribe_options'),
+    path('register/', register_user, name='register'),
+    path('login/',
+        auth_views.LoginView.as_view(
+            template_name='home/login.html'
+        ), name='login'),
+    path('confirm/<str:token>/', confirm_email, name='confirm_email'),
+    ]

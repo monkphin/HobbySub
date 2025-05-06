@@ -6,11 +6,31 @@ Contains view logic for public-facing pages:
 """
 
 # Django/External Imports
+from django.utils.http import url_has_allowed_host_and_scheme
+from django.core.signing import BadSignature
+from django.contrib.auth.models import User
+from django.core.signing import Signer
+from django.shortcuts import redirect
+from django.contrib.auth import login
 from django.shortcuts import render
+from django.contrib import messages
 from datetime import date
+import logging
+
+
+
+
 
 # Local Imports
 from boxes.models import Box
+from .forms import Register
+
+from hobbyhub.mail import send_registration_email
+
+
+logger = logging.getLogger(__name__)
+signer = Signer()
+
 
 def home(request):
     """
@@ -65,8 +85,50 @@ def about(request):
     return render(request, 'home/about.html')
 
 
-def contact(request):
-    """
-    Renders the Contact page.
-    """
-    return render(request, 'home/contact.html')
+def register_user(request):
+    next_url = request.GET.get('next')  # get ?next param
+    if request.method == 'POST':
+        form = Register(request.POST)
+        if form.is_valid():
+            user = form.save(commit=False)
+            user.is_active = False
+            user.save()
+            send_registration_email(user, next_url)
+            request.session['post_confirm_redirect'] = next_url  # store it
+            logger.info(f"Registration successful for {user.email}, confirmation sent")
+            messages.success(request, "Check your email to confirm your account.")
+            return redirect('home')  # could redirect to a "check email" page if you want
+    else:
+        form = Register()
+
+    return render(request, 'home/register.html', {
+        'form': form,
+        'next': next_url  # pass this into hidden input if you want to preserve it across POST
+    })
+
+
+def confirm_email(request, token):
+    try:
+        user_id = signer.unsign(token)
+        user = User.objects.get(pk=user_id)
+        user.is_active = True
+        user.save()
+        login(request, user)
+
+        # First try session-based redirect
+        next_url = request.session.pop('post_confirm_redirect', None)
+
+        # If not found in session, fall back to query param
+        if not next_url:
+            next_url = request.GET.get('next')
+
+        messages.success(request, "Email confirmed! You're now logged in.")
+
+        if next_url and url_has_allowed_host_and_scheme(next_url, {request.get_host()}):
+            return redirect(next_url)
+
+        return redirect('home')
+
+    except (BadSignature, User.DoesNotExist):
+        messages.error(request, "Invalid or expired confirmation link.")
+        return redirect('home')
