@@ -190,8 +190,6 @@ def add_address(request):
                     address.is_default = True
 
             address.save()
-            print(f"DEBUG: Saved address = {address}, gift={address.is_gift_address}")
-
 
             logger.info(
                 f"{request.user} added new address — default={address.is_default}"

@@ -306,9 +306,6 @@ def order_history(request):
     all_orders = Order.objects.select_related("shipping_address").filter(
         user=request.user
     ).order_by('-order_date')    
-    print("DEBUG: ORDER HISTORY")
-    for o in all_orders:
-        print(f"Order {o.id} | sub_id={o.stripe_subscription_id} | created={o.order_date}")
     payments = Payment.objects.filter(order__in=all_orders)
     subscriptions = StripeSubscriptionMeta.objects.filter(user=request.user)
     sub_map = {
