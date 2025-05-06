@@ -68,7 +68,7 @@ class ShippingAddress(models.Model):
     postcode = models.CharField(
         max_length=10,
         blank=False,
-        help_text="Postal code or ZIP."
+        help_text="Postal or ZIP code (varies by country)."
     )
     country = CountryField(
         blank_label="(Select country)",

@@ -176,7 +176,12 @@ class AddAddressForm(forms.ModelForm):
         if not re.match(r'^[\d\s\-\+\(\)]+$', phone):
             raise ValidationError("Phone number must only contain digits and common symbols (+, -, (, )).")
         return phone
-
+    
+    def clean_postcode(self):
+        postcode = self.cleaned_data.get("postcode", "").strip()
+        if not re.match(r'^[\w\s-]+$', postcode):
+            raise ValidationError("Enter a valid postal code using letters, numbers, or dashes.")
+        return postcode
     class Meta:
         model = ShippingAddress
         fields = [
