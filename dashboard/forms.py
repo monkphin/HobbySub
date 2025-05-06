@@ -28,6 +28,19 @@ class BoxForm(forms.ModelForm):
     UK and ISO date formats. Materialize-compatible widgets are used for
     styling.
     """
+
+    def clean_name(self):
+        name = self.cleaned_data['name']
+        if Box.objects.filter(name__iexact=name).exclude(pk=self.instance.pk).exists():
+            raise forms.ValidationError("A box with this name already exists.")
+        return name
+
+    def clean_description(self):
+        desc = self.cleaned_data.get('description', '')
+        if len(desc) > 300:
+            raise forms.ValidationError("Description must be 300 characters or fewer.")
+        return desc
+
     shipping_date = forms.DateField(
         input_formats=['%d/%m/%Y', '%Y-%m-%d'],
         widget=forms.DateInput(attrs={'class': 'datepicker'})
@@ -44,8 +57,12 @@ class BoxForm(forms.ModelForm):
         ]
         widgets = {
             'name': forms.TextInput(attrs={'class': 'validate'}),
-            'description': forms.TextInput(
-                attrs={'class': 'materialize-textarea'}
+            'description': forms.Textarea(
+                attrs={
+                    'class': 'materialize-textarea validate',
+                    'maxlength': 300,
+                    'rows': 4
+                }
             ),
             'shipping_date': forms.DateInput(attrs={'class': 'datepicker'}),
             'is_archived': forms.CheckboxInput(),

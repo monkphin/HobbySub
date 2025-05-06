@@ -1,3 +1,4 @@
+from django import forms
 from django.db import models
 from django.utils.text import slugify
 from cloudinary.models import CloudinaryField
@@ -11,7 +12,11 @@ class Box(models.Model):
     shipping date. Boxes can be archived once no longer available for active
     shipping.
     """
-    name = models.CharField(max_length=100)
+    name = models.CharField(
+        max_length=100,
+        unique=True,
+        help_text="Name of the box (must be unique)"
+    )
     slug = models.SlugField(unique=True)
     description = models.TextField()
     image = CloudinaryField('image', null=True, blank=True)
