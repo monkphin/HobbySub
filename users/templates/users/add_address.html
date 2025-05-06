@@ -38,40 +38,30 @@
       <input type="hidden" name="next" value="{{ next }}">
 
       <div class="input-field">
-        {{ form.label|add_class:"validate" }}
+        {{ form.label|add_class:"validate"|attr:"maxlength:50" }}
         <label for="{{ form.label.id_for_label }}">Label (e.g. Home, Work, Parents)</label>
-        <datalist id="address-labels">
-          <option value="Home">
-          <option value="Work">
-          <option value="Parents">
-          <option value="Other">
-        </datalist>
-        {% if form.label.help_text %}
-          <span class="helper-text">{{ form.label.help_text }}</span>
-        {% endif %}
-        {% for error in form.label.errors %}
-          <span class="red-text">{{ error }}</span>
-        {% endfor %}
       </div>
       
 
         <div class="row">
           <div class="input-field col s6">
             {{ form.recipient_f_name.label_tag }}
-            {{ form.recipient_f_name|add_class:"validate"|attr:"required"|attr:"type:text" }}
+            {{ form.recipient_f_name|add_class:"validate"|attr:"required"|attr:"type:text"|attr:"maxlength:30" }}
           </div>
           <div class="input-field col s6">
             {{ form.recipient_l_name.label_tag }}
-            {{ form.recipient_l_name|add_class:"validate"|attr:"required"|attr:"type:text" }}
+            {{ form.recipient_l_name|add_class:"validate"|attr:"required"|attr:"type:text"|attr:"maxlength:30" }}
           </div>
           <div class="col s12">
-            <span class="helper-text">First and last name are pre-filled from your account, please edit these if this is intended to be a gift</span>
+            <p class="name-group-helper grey-text text-darken-1 center-align">
+              First and last name are pre-filled from your account — edit these if this is a gift.
+            </p>
           </div>
         </div>
         <div class="row">
           <div class="input-field col s6">
             {{ form.address_line_1.label_tag }}
-            {{ form.address_line_1|add_class:"validate"|attr:"required"|attr:"type:text" }}
+            {{ form.address_line_1|add_class:"validate"|attr:"required"|attr:"type:text"|attr:"maxlength:60" }}
           </div>
           <div class="input-field col s6">
             {{ form.address_line_2.label_tag }}
@@ -81,7 +71,7 @@
         <div class="row">
           <div class="input-field col s12">
             {{ form.town_or_city.label_tag }}
-            {{ form.town_or_city|add_class:"validate"|attr:"required"|attr:"type:text" }}
+            {{ form.town_or_city|add_class:"validate"|attr:"required"|attr:"type:text"|attr:"maxlength:40" }}
           </div>
         </div>
         <div class="row">
@@ -93,7 +83,8 @@
         <div class="row">
           <div class="input-field col s12">
             {{ form.postcode.label_tag }}
-            {{ form.postcode|add_class:"validate"|attr:"required"|attr:"type:text" }}
+            {{ form.postcode|add_class:"validate"|attr:"required"|attr:"type:text"|attr:"maxlength:10"|attr:"pattern:^[\\w\\s-]+$" }}
+            <span class="helper-text">Letters, numbers, spaces, and dashes only</span>
           </div>
         </div>
         <div class="row">
@@ -105,7 +96,7 @@
         <div class="row">
           <div class="input-field col s12">
             {{ form.phone_number.label_tag }}
-            {{ form.phone_number|add_class:"validate"|attr:"required"|attr:"type:text"|attr:"pattern:^[-+()0-9 ]+$" }}
+            {{ form.phone_number|add_class:"validate"|attr:"required"|attr:"type:text"|attr:"pattern:^[-+()0-9 ]+$"|attr:"maxlength:20" }}
           </div>
         </div>
         {% if not gift %}
