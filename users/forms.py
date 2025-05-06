@@ -171,10 +171,18 @@ class AddAddressForm(forms.ModelForm):
         required=False,
         label="This is a gift recipient address"
     )
+    
     def clean_phone_number(self):
-        phone = self.cleaned_data.get("phone_number")
+        phone = self.cleaned_data.get("phone_number", "").strip()
+
+        # Must contain at least one digit
+        if not re.search(r'\d', phone):
+            raise ValidationError("Phone number must include at least one digit.")
+
+        # Must only contain digits and common phone symbols
         if not re.match(r'^[\d\s\-\+\(\)]+$', phone):
-            raise ValidationError("Phone number must only contain digits and common symbols (+, -, (, )).")
+            raise ValidationError("Phone number must only contain digits and symbols like +, -, (, ).")
+
         return phone
     
     def clean_postcode(self):
