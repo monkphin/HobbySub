@@ -1,32 +1,46 @@
 # Python
 __pycache__/
-*.py[cod]
-*.sqlite3
 *.log
+*.sqlite3
+
+# Virtualenv
+venv/
+ENV/
+env/
 
 # VS Code
 .vscode/
+*.code-workspace
 
-# Django stuff
+# Django-specific
 *.db
 db.sqlite3
 .env
+.env.*
 
-# Static and media (if you're building these locally)
+# Static and media (locally generated)
 staticfiles/
 media/
 
-# Other stuff
-core.Microsoft*
-core.mongo*
-core.python*
-env.py
-db_seed.py 
-*.json
-todo.*
-
-node_modules/
+# GitHub and Cloudinary artifacts
 .github/
 cloudinary_python.txt
 
-venv/
+# Node (if used for any tooling or assets)
+node_modules/
+
+# Windows crash dumps and system files
+core.*
+*.pid
+*.bak
+*.swp
+*.tmp
+*.DS_Store
+Thumbs.db
+ehthumbs.db
+desktop.ini
+
+# Project-specific
+env.py
+db_seed.py
+todo.*
