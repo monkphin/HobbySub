@@ -63,6 +63,45 @@ def send_account_update_email(user):
     )
 
 
+# Email address changed. 
+def send_email_change_notifications(user, old_email, new_email):
+    """
+    Notify both old and new email addresses about the email change.
+    """
+    # Notify the new email address
+    send_user_email(
+        subject="Your Hobby Hub account email was changed",
+        message=(
+            f"Hi {user.username},\n\n"
+            f"Your email address has been successfully updated to {new_email}.\n\n"
+            "If you did not perform this action, please contact support immediately."
+        ),
+        recipient_email=new_email
+    )
+
+    # Notify the old email address
+    send_user_email(
+        subject="Your Hobby Hub account email was changed",
+        message=(
+            f"Hi {user.username},\n\n"
+            f"The email address associated with your Hobby Hub account was changed from {old_email} to {new_email}.\n\n"
+            "If you did not perform this action, please contact support immediately."
+        ),
+        recipient_email=old_email
+    )
+
+
+# Password changed
+def send_password_change_email(user):
+    send_user_email(
+        subject="Your password was changed",
+        message=(
+            f"Hi {user.username}, your password has been successfully changed."
+        ),
+        recipient_email=user.email
+    )
+
+
 # Successful single order
 def send_order_confirmation_email(user, order_id):
     """Send order confirmation email."""

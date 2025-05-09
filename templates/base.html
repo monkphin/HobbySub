@@ -65,7 +65,7 @@
       </ul>
 
       <!-- Mobile menu -->
-      <ul class="sidenav" id="mobile-nav">
+      <ul class="sidenav hide-on-large-only" id="mobile-nav" tabindex="-1">
         <li><a href="{% url 'about' %}">About</a></li>
         <li><a href="{% url 'past_boxes' %}">Past Boxes</a></li>
         {% if user.is_authenticated %}

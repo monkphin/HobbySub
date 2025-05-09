@@ -630,3 +630,23 @@ h4 {
   font-weight: 400;
   line-height: 1.5;
 }
+
+/* Highlight focused buttons and links during tab navigation */
+button:focus, a:focus {
+  outline: 2px solid black;
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* Remove outline on click */
+button:focus:not(:focus-visible),
+a:focus:not(:focus-visible) {
+    outline: none;
+}
+
+@media only screen and (min-width: 993px) {
+  #mobile-nav a {
+      pointer-events: none;
+      tabindex: -1;
+  }
+}

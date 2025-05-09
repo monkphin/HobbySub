@@ -11,13 +11,13 @@ from django.contrib.auth import (
     update_session_auth_hash,
     authenticate,
     get_user_model,
-    login
 )
+
+from django.views.decorators.csrf import csrf_exempt, csrf_protect
 from django.shortcuts import render, redirect, get_object_or_404
 from django.utils.http import url_has_allowed_host_and_scheme
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_POST
-from django.views.decorators.csrf import csrf_exempt
 from django.http import HttpResponse, JsonResponse
 from urllib.parse import urlparse, parse_qs
 from django.core.signing import Signer
@@ -33,7 +33,9 @@ import json
 # Local imports
 from hobbyhub.mail import (
     send_account_update_email,
+    send_email_change_notifications,
     send_address_change_email,
+    send_password_change_email,
     send_account_deletion_email
     )
 from hobbyhub.stripe_handlers import (
@@ -88,33 +90,43 @@ def edit_account(request):
 
     return render(request, 'users/edit_account.html', {'form': form})
 
-
+@csrf_protect
 @login_required
 @require_POST
 def change_email(request):
+    """
+    Handles the user's email change process. Authenticates the user,
+    updates the email, and sends confirmation notifications.
+    """
     try:
-
         if request.content_type != 'application/json':
-            return JsonResponse({'success': False, 'error': 'Invalid content type: ' + request.content_type})
+            return JsonResponse({'success': False, 'error': 'Invalid content type: ' + request.content_type}, status=400)
 
         data = json.loads(request.body)
         new_email = data.get('new_email')
         password = data.get('password')
 
         if not new_email or not password:
-            return JsonResponse({'success': False, 'error': 'Missing email or password.'})
+            return JsonResponse({'success': False, 'error': 'Missing email or password.'}, status=400)
 
         user = authenticate(request, username=request.user.username, password=password)
         if user is None:
-            return JsonResponse({'success': False, 'error': 'Incorrect password.'})
+            return JsonResponse({'success': False, 'error': 'Incorrect password.'}, status=401)
 
+        # Store the old email
+        old_email = user.email
         user.email = new_email
         user.save()
 
+        # CALLING THE FUNCTION FROM `mail.py`
+        from hobbyhub.mail import send_email_change_notifications
+        send_email_change_notifications(user, old_email, new_email)
+
+        logger.info(f"Email change confirmed: {old_email} → {new_email} for user {user.username}")
         return JsonResponse({'success': True})
-    
+
     except json.JSONDecodeError as e:
-        return JsonResponse({'success': False, 'error': f'JSON error: {str(e)}'})
+        return JsonResponse({'success': False, 'error': f'JSON error: {str(e)}'}, status=400)
 
 
 @login_required
@@ -129,6 +141,9 @@ def change_password(request):
                 "success",
                 "Your password has been changed successfully."
             )
+
+            send_password_change_email(request.user)
+
             return redirect('account')
     else:
         form = ChangePassword(user=request.user)
@@ -136,18 +151,24 @@ def change_password(request):
     return render(request, 'users/change_password.html', {'form': form})
 
 
+@csrf_protect
 @require_POST
 @login_required
-@csrf_exempt  # fetch() sometimes needs this if CSRF breaks
 def secure_delete_account(request):
     data = json.loads(request.body)
     password = data.get('password')
 
-    if authenticate(username=request.user.username, password=password):
+    if request.user.check_password(password):
         user = request.user
-        logout(request)
-        user.delete()
-        return JsonResponse({'success': True})
+        user_email = user.email
+        try:
+            logout(request)
+            user.delete()
+            send_account_deletion_email(user_email)
+            return JsonResponse({'success': True})
+        except Exception as e:
+            logger.error(f"Account deletion failed for user {user.username}: {e}")
+            return JsonResponse({'success': False, 'error': 'Deletion failed. Please try again.'}, status=500)
     else:
         return JsonResponse({'success': False, 'error': 'Incorrect password'})
 
@@ -287,15 +308,15 @@ def set_default_address(request, address_id):
     return redirect('account')
 
 
+@csrf_protect
 @require_POST
 @login_required
-@csrf_exempt
 def secure_delete_address(request, address_id):
     data = json.loads(request.body)
     password = data.get('password')
 
     if not password:
-        return JsonResponse({'success': False, 'error': 'Password is required'})
+        return JsonResponse({'success': False, 'error': 'Password is required'}, status=400)
 
     if authenticate(username=request.user.username, password=password):
         address = get_object_or_404(
@@ -307,6 +328,8 @@ def secure_delete_address(request, address_id):
         is_personal = not address.is_gift_address
 
         address.delete()
+
+        send_address_change_email(request.user, change_type="removed from your account")
 
         # If it was the default personal address, set a new one as default (if any remain)
         if was_default and is_personal:
@@ -320,10 +343,12 @@ def secure_delete_address(request, address_id):
                 new_default.save()
                 messages.info(request, "Your remaining address has been set as default.")
 
+                send_address_change_email(request.user, change_type="set as your default")
 
         return JsonResponse({'success': True})
     else:
-        return JsonResponse({'success': False, 'error': 'Incorrect password'})
+        return JsonResponse({'success': False, 'error': 'Incorrect password'}, status=401)
+
 
 
 

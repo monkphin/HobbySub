@@ -55,6 +55,7 @@ class Order(models.Model):
         ('shipped', 'Shipped'),
         ('cancelled', 'Cancelled'),
     ]
+
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     shipping_address = models.ForeignKey(
         ShippingAddress,
@@ -64,6 +65,12 @@ class Order(models.Model):
         )
     box = models.ForeignKey(Box, on_delete=models.SET_NULL, null=True)
     stripe_subscription_id = models.CharField(
+        max_length=100,
+        blank=True,
+        null=True,
+        unique=True
+    )
+    stripe_payment_intent_id = models.CharField(
         max_length=100,
         blank=True,
         null=True,

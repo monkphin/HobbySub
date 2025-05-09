@@ -75,14 +75,15 @@ def handle_checkout_session_completed(session):
             price_id = sub["items"]["data"][0]["price"]["id"]
             address_id = metadata.get('shipping_address_id')
 
+            # DE-DUPE CHECK
+            if Order.objects.filter(stripe_subscription_id=sub_id).exists():
+                logger.warning(f"[Duplicate Prevention] Existing order found for sub {sub_id}, skipping create")
+                return
+
             shipping = ShippingAddress.objects.filter(id=address_id, user=user).first() or \
                        user.addresses.filter(is_default=True).first()
             if not shipping:
                 logger.warning(f"No shipping address found for user {user.username}")
-
-            if Order.objects.filter(stripe_subscription_id=sub_id).exists():
-                logger.warning(f"[Duplicate Prevention] Existing order found for sub {sub_id}, skipping create")
-                return
 
             StripeSubscriptionMeta.objects.create(
                 user=user,
@@ -119,9 +120,11 @@ def handle_checkout_session_completed(session):
                     expand=["payment_intent"]
                 )
 
-            payment_intent_id = session['payment_intent']['id']
+            print("Stripe Session Object: ", session)
+            # Get the payment intent ID from the session
+            payment_intent_id = session['payment_intent']
 
-            # ✅ ONE unified de-dupe check
+            # ONE unified de-dupe check
             if Payment.objects.filter(payment_intent_id=payment_intent_id).exists():
                 logger.warning(f"[SKIP] PaymentIntent {payment_intent_id} already handled, skipping.")
                 return
@@ -151,6 +154,7 @@ def handle_checkout_session_completed(session):
                     shipping_address=address,
                     box=None,
                     stripe_subscription_id=None,
+                    stripe_payment_intent_id=payment_intent_id,
                     scheduled_shipping_date=None,
                     status='processing'
                 )
@@ -199,6 +203,11 @@ def handle_invoice_payment_succeeded(invoice):
     payment_date = timezone.now()
 
     try:
+        # DE-DUPE CHECK
+        if Order.objects.filter(stripe_subscription_id=subscription_id).exists():
+            logger.warning(f"[Duplicate Prevention] Existing order found for sub {subscription_id}, skipping create")
+            return
+
         customer = stripe.Customer.retrieve(customer_id)
         user = User.objects.get(email=customer.get('email'))
 
@@ -221,6 +230,7 @@ def handle_invoice_payment_succeeded(invoice):
             .first()
         )
 
+        # CREATE ORDER ONLY IF IT DOES NOT EXIST
         order = Order.objects.create(
             user=user,
             stripe_subscription_id=subscription_id,
@@ -240,6 +250,8 @@ def handle_invoice_payment_succeeded(invoice):
             payment_method='card',
         )
 
+    except IntegrityError:
+        logger.warning(f"Duplicate Order creation blocked for sub ID {subscription_id}")
     except Exception as e:
         logger.error(f"Invoice payment succeeded error: {e}")
 
