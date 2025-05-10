@@ -17,11 +17,9 @@ Relies on:
 import stripe
 import logging
 from django.utils import timezone
-from django.db import IntegrityError
 from django.http import JsonResponse
 from django.contrib.auth.models import User
-from dateutil.relativedelta import relativedelta
-
+from django.db import IntegrityError, transaction
 
 from orders.models import (
     Order,
@@ -41,8 +39,6 @@ from hobbyhub.mail import (
 
 logger = logging.getLogger(__name__)
 
-
-from django.db import IntegrityError
 
 def handle_checkout_session_completed(session):
     """
@@ -124,7 +120,6 @@ def handle_checkout_session_completed(session):
             # Get the payment intent ID from the session
             payment_intent_id = session['payment_intent']
 
-            # ONE unified de-dupe check
             if Payment.objects.filter(payment_intent_id=payment_intent_id).exists():
                 logger.warning(f"[SKIP] PaymentIntent {payment_intent_id} already handled, skipping.")
                 return
@@ -135,39 +130,57 @@ def handle_checkout_session_completed(session):
             if not shipping_info:
                 logger.info("No shipping info in payment intent")
                 return
+            
+            address_id = metadata.get('shipping_address_id')
+            address = ShippingAddress.objects.filter(user=user, id=address_id).first()
 
-            postcode = shipping_info['address']['postal_code']
-            address = ShippingAddress.objects.filter(user=user, postcode=postcode).first()
+            # If the ID lookup fails, fallback to postcode
             if not address:
-                logger.info("No matching address found for this shipping info")
-                return
+                postcode = shipping_info['address']['postal_code']
+                address = ShippingAddress.objects.filter(
+                    user=user,
+                    postcode__iexact=postcode  # <-- Case-insensitive search
+                ).first()
 
             recipient_email = metadata.get('recipient_email')
             sender_name = metadata.get('sender_name', 'Someone')
             gift_message = metadata.get('gift_message', '')
             amount_total = session.get('amount_total', 0)
 
-            from django.db import transaction
-            with transaction.atomic():
-                order = Order.objects.create(
-                    user=user,
-                    shipping_address=address,
-                    box=None,
-                    stripe_subscription_id=None,
-                    stripe_payment_intent_id=payment_intent_id,
-                    scheduled_shipping_date=None,
-                    status='processing'
-                )
+            from django.db import IntegrityError
 
-                Payment.objects.create(
-                    user=user,
-                    order=order,
-                    payment_date=timezone.now(),
-                    amount=amount_total / 100,
-                    status='paid',
-                    payment_method='card',
-                    payment_intent_id=payment_intent.id,
-                )
+            try:
+                with transaction.atomic():
+                    order = Order.objects.select_for_update().filter(stripe_payment_intent_id=payment_intent_id).first()
+                    if order:
+                        logger.warning(f"[SKIP] PaymentIntent {payment_intent_id} already exists.")
+                        return
+
+                    # If no order exists, we create it
+                    order = Order.objects.create(
+                        user=user,
+                        shipping_address=address,
+                        box=None,
+                        stripe_subscription_id=None,
+                        stripe_payment_intent_id=payment_intent_id,
+                        scheduled_shipping_date=None,
+                        status='processing'
+                    )
+
+                    Payment.objects.create(
+                        user=user,
+                        order=order,
+                        payment_date=timezone.now(),
+                        amount=amount_total / 100,
+                        status='paid',
+                        payment_method='card',
+                        payment_intent_id=payment_intent.id,
+                    )
+                    logger.warning(f"[CREATED] One-off order ID {order.id} and payment {payment_intent.id} for user {user.id}")
+
+            except IntegrityError as e:
+                logger.error(f"IntegrityError detected: {e}")
+
 
             logger.warning(f"[CREATED] One-off order ID {order.id} and payment {payment_intent.id} for user {user.id}")
 
