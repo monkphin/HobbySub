@@ -527,6 +527,14 @@ h4 {
   min-height: 320px;
 }
 
+.button-container {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  margin-top: 30px;
+}
+
+
 .button-row {
   display: flex;
   gap: 1rem;

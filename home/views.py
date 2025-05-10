@@ -96,14 +96,28 @@ def register_user(request):
             send_registration_email(user, next_url)
             request.session['post_confirm_redirect'] = next_url  # store it
             logger.info(f"Registration successful for {user.email}, confirmation sent")
-            messages.success(request, "Check your email to confirm your account.")
-            return redirect('home')  # could redirect to a "check email" page if you want
+            messages.success(request, "Registration successful! Please check your email and click the confirmation link to activate your account.")
+            request.session['registered_email'] = user.email
+            return redirect('check_email')
     else:
         form = Register()
 
     return render(request, 'home/register.html', {
         'form': form,
-        'next': next_url  # pass this into hidden input if you want to preserve it across POST
+        'next': next_url
+    })
+
+
+def check_email(request):
+    """
+    Renders a page instructing the user to check their email for verification.
+    """
+    email = request.session.get('registered_email', None)  # Get from session
+    if email:
+        request.session['registered_email'] = email  # Put it back so it stays
+    
+    return render(request, 'home/check_email.html', {
+        'email': email
     })
 
 
@@ -132,3 +146,16 @@ def confirm_email(request, token):
     except (BadSignature, User.DoesNotExist):
         messages.error(request, "Invalid or expired confirmation link.")
         return redirect('home')
+    
+
+def resend_activation(request):
+    email = request.GET.get('email')
+    try:
+        user = User.objects.get(email=email)
+        if not user.is_active:
+            send_registration_email(user, request.session.get('post_confirm_redirect'))
+            messages.success(request, "Activation email resent. Please check your inbox.")
+    except User.DoesNotExist:
+        messages.error(request, "No account found with that email.")
+    
+    return redirect('check_email')
