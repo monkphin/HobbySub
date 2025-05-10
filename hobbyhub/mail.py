@@ -115,12 +115,12 @@ def send_order_confirmation_email(user, order_id):
 
 
 # Gift (Sender)
-def send_gift_confirmation_to_sender(user, recipient_email):
+def send_gift_confirmation_to_sender(user, recipient_name):
     """Send gift confirmation email to sender."""
     send_user_email(
         subject="Your gift is on its way!",
         message=(
-            f"You sent a Hobby Hub box to {recipient_email}. "
+            f"You sent a Hobby Hub box to {recipient_name}. "
             "We're sure they'll love it."
         ),
         recipient_email=user.email
@@ -131,13 +131,15 @@ def send_gift_confirmation_to_sender(user, recipient_email):
 def send_gift_notification_to_recipient(
         recipient_email,
         sender_name,
-        gift_message
-):
+        gift_message,
+        recipient_name
+        ):
     """Notify recipient that a gift has been sent."""
     send_user_email(
         subject="You've received a gift from Hobby Hub!",
         message=(
-            f"{sender_name} sent you a box!\n\n"
+            f"Hi {recipient_name},\n\n"
+            f"{sender_name} sent you a Hobby Hub box!\n\n"
             f"Gift Message:\n{gift_message}"
         ),
         recipient_email=recipient_email

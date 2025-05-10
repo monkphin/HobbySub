@@ -225,14 +225,13 @@ def handle_checkout(request, price_id):
 
 
 @login_required
-@login_required
 def create_subscription_checkout(request, price_id):
     """
     Handles Stripe checkout session creation for subscription purchases.
     """
     logger.info(f"{request.user} creating subscription session")
 
-    # ✅ Get shipping ID from session
+    # Get shipping ID from session
     shipping_id = request.session.get('checkout_shipping_id')
     if not shipping_id:
         logger.warning("No shipping address selected for subscription.")
@@ -241,12 +240,28 @@ def create_subscription_checkout(request, price_id):
 
     metadata = {
         'user_id': request.user.id,
-        'shipping_address_id': shipping_id,  # 👈 required for webhook handler
+        'shipping_address_id': shipping_id,
     }
 
     try:
+        address = ShippingAddress.objects.get(id=shipping_id)
+
+        customer = stripe.Customer.create(
+            email=request.user.email,
+            shipping={
+                'name': f"{address.recipient_f_name} {address.recipient_l_name}",
+                'address': {
+                    'line1': address.address_line_1,
+                    'line2': address.address_line_2 or '',
+                    'city': address.town_or_city,
+                    'state': address.county or '',
+                    'postal_code': address.postcode,
+                    'country': address.country.code
+                }
+            }
+        )
         checkout_session = stripe.checkout.Session.create(
-            customer_email=request.user.email,
+            customer=customer.id,
             payment_method_types=['card'],
             mode='subscription',
             line_items=[{
@@ -268,7 +283,6 @@ def create_subscription_checkout(request, price_id):
             "Please try again shortly."
         )
     return redirect('subscribe_options')
-
 
 
 def order_success(request):
@@ -424,7 +438,11 @@ def choose_shipping_address(request, plan):
         if plan == "oneoff":
             return redirect('handle_purchase_type', plan='oneoff')
 
-        return redirect('handle_purchase_type', plan=plan)
+        logger.debug(f"Plan is: {plan}")
+        logger.debug(f"Session data: {request.session.items()}")
+        logger.debug(f"Next redirect: /orders/purchase/{plan}/")
+
+        return redirect(f'/orders/purchase/{plan}/')
 
     if gift:
         back_url = reverse('select_purchase_type') + '?gift=true'

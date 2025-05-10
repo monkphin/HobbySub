@@ -191,3 +191,20 @@ function submitModalAction() {
       errorEl.innerText = 'Sorry — there was a problem completing your request.';
     });
 }
+
+const resendButton = document.getElementById('resend-email');
+  
+if (resendButton) {
+  resendButton.addEventListener('click', function (e) {
+    // Prevent spamming
+    e.preventDefault();
+    resendButton.classList.add('disabled');
+    M.toast({ html: 'Activation email resent. Check your inbox.', classes: 'green' });
+
+    // Cooldown to re-enable button
+    setTimeout(() => {
+      resendButton.classList.remove('disabled');
+    }, 30000); // 30 seconds
+  });
+}
+});

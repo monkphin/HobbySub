@@ -17,7 +17,6 @@ Relies on:
 import stripe
 import logging
 from django.utils import timezone
-from django.http import JsonResponse
 from django.contrib.auth.models import User
 from django.db import IntegrityError, transaction
 
@@ -46,6 +45,10 @@ def handle_checkout_session_completed(session):
     """
     mode = session.get('mode')
     metadata = session.get('metadata', {})
+    recipient_name = metadata.get('recipient_name', 'N/A')
+    recipient_email = metadata.get('recipient_email', 'N/A')
+    sender_name = metadata.get('sender_name', 'Anonymous')
+    gift_message = metadata.get('gift_message', 'No message provided.')
     user_id = metadata.get('user_id')
     logger.info(f"Checkout session completed — mode: {mode}, user_id: {user_id}")
 
@@ -81,14 +84,6 @@ def handle_checkout_session_completed(session):
             if not shipping:
                 logger.warning(f"No shipping address found for user {user.username}")
 
-            StripeSubscriptionMeta.objects.create(
-                user=user,
-                stripe_subscription_id=sub_id,
-                stripe_price_id=price_id,
-                shipping_address=shipping,
-                is_gift=bool(metadata.get('recipient_email')),
-            )
-
             box = Box.objects.filter(is_archived=False).order_by('-shipping_date').first()
             Order.objects.create(
                 user=user,
@@ -97,11 +92,21 @@ def handle_checkout_session_completed(session):
                 box=box,
                 order_date=timezone.now().date(),
                 scheduled_shipping_date=box.shipping_date if box else None,
-                status='processing',
+                status='processing'
             )
 
-            send_subscription_confirmation_email(user, plan_name="Subscription Box")
-            logger.info(f"Subscription created and email sent for {user.username}")
+            if recipient_email != "N/A":
+                send_gift_notification_to_recipient(
+                    recipient_email, 
+                    sender_name, 
+                    gift_message, 
+                    recipient_name
+                )
+                send_gift_confirmation_to_sender(
+                    user, 
+                    recipient_name
+                )
+                logger.info(f"Gift confirmation sent to {recipient_email}")
 
         except IntegrityError:
             logger.warning(f"Duplicate Order creation blocked for sub ID {sub_id}")
@@ -146,8 +151,6 @@ def handle_checkout_session_completed(session):
             sender_name = metadata.get('sender_name', 'Someone')
             gift_message = metadata.get('gift_message', '')
             amount_total = session.get('amount_total', 0)
-
-            from django.db import IntegrityError
 
             try:
                 with transaction.atomic():

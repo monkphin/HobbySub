@@ -75,7 +75,7 @@ def subscribe_options(request):
     """
     Renders the subscription options page.
     """
-    return render(request, 'orders/subscribe.html')
+    return render(request, 'home')
 
 
 def about(request):
@@ -86,7 +86,7 @@ def about(request):
 
 
 def register_user(request):
-    next_url = request.GET.get('next')  # get ?next param
+    next_url = request.GET.get('next')
     if request.method == 'POST':
         form = Register(request.POST)
         if form.is_valid():
@@ -94,7 +94,7 @@ def register_user(request):
             user.is_active = False
             user.save()
             send_registration_email(user, next_url)
-            request.session['post_confirm_redirect'] = next_url  # store it
+            request.session['post_confirm_redirect'] = next_url
             logger.info(f"Registration successful for {user.email}, confirmation sent")
             messages.success(request, "Registration successful! Please check your email and click the confirmation link to activate your account.")
             request.session['registered_email'] = user.email
@@ -112,9 +112,9 @@ def check_email(request):
     """
     Renders a page instructing the user to check their email for verification.
     """
-    email = request.session.get('registered_email', None)  # Get from session
+    email = request.session.get('registered_email', None)
     if email:
-        request.session['registered_email'] = email  # Put it back so it stays
+        request.session['registered_email'] = email
     
     return render(request, 'home/check_email.html', {
         'email': email
