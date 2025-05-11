@@ -35,7 +35,6 @@ M.Datepicker.init(document.querySelectorAll('.datepicker'), {
   }
 });
 
-
   // Toasts
   document.querySelectorAll('.toast').forEach((toast) => {
     toast.addEventListener("click", () => toast.remove());
@@ -89,6 +88,18 @@ M.Datepicker.init(document.querySelectorAll('.datepicker'), {
     });
 });
 
+  // === Modal trigger bindings for Box and Product Deletion ===
+  document.querySelectorAll('.delete-box-btn').forEach(button => {
+    button.addEventListener('click', () => {
+      openModal('delete_box', button.dataset.id);
+    });
+  });
+
+  document.querySelectorAll('.delete-product-btn').forEach(button => {
+    button.addEventListener('click', () => {
+      openModal('delete_product', button.dataset.id);
+    });
+  });
 
   const emailChangeBtn = document.getElementById('change-email-btn');
   if (emailChangeBtn) {
@@ -165,72 +176,73 @@ function openChangeEmailModal() {
   modalContext.newEmail = newEmail;
   }
 
-function closeModal() {
-  const modal = document.getElementById('confirmation-modal');
-  const instance = M.Modal.getInstance(modal);
-  instance.close();
-}
-
-function submitModalAction() {
-  const password = document.getElementById('modal-password').value;
-  const errorEl = document.getElementById('modal-error');
-  errorEl.innerText = '';
-
-  if (!password) {
-    errorEl.innerText = 'Password is required.';
-    return;
+  function closeModal() {
+    const modal = document.getElementById('confirmation-modal');
+    const instance = M.Modal.getInstance(modal) || M.Modal.init(modal);
+    instance.close();
   }
 
-  let url = '';
-  const action = modalContext.action;
-
-  switch (action) {
-    case 'delete_account':
-      url = GLOBALS.urls.deleteAccount;
-      break;
-    case 'delete_address':
-      url = `${GLOBALS.urls.deleteAddressBase}${modalContext.id}/`;
-      break;
-    case 'cancel_subscription':
-      url = GLOBALS.urls.cancelSubscription;
-      break;
-    case 'change_email':
-      url = GLOBALS.urls.changeEmail;
-      break;
-    default:
-      errorEl.innerText = 'Invalid action.';
+  function submitModalAction() {
+    const password = document.getElementById('modal-password').value;
+    const errorEl = document.getElementById('modal-error');
+    errorEl.innerText = '';
+  
+    if (!password) {
+      errorEl.innerText = 'Password is required.';
       return;
-  }
-
-  const payload = { password };
-  if (action === 'change_email') {
-    payload.new_email = modalContext.newEmail;
-  }
-  if (action === 'cancel_subscription') {
-    payload.subscription_id = modalContext.id;
-  }
-
-  fetch(url, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'X-CSRFToken': GLOBALS.csrfToken,
-    },
-    body: JSON.stringify(payload),
-  })
-    .then(res => res.json())
-    .then(data => {
-      if (data.success) {
-        if (action === 'delete_account') {
-          window.location.href = '/';
-        } else {
-          window.location.reload();
-        }
-      } else {
-        errorEl.innerText = data.error || 'Failed to complete action.';
-      }
+    }
+  
+    let url = '';
+    const action = modalContext.action;
+  
+    switch (action) {
+      case 'delete_account':
+        url = GLOBALS.urls.deleteAccount;
+        break;
+      case 'delete_address':
+        url = `${GLOBALS.urls.deleteAddressBase}${modalContext.id}/`;
+        break;
+      case 'cancel_subscription':
+        url = GLOBALS.urls.cancelSubscription;
+        break;
+      case 'delete_box':
+        url = `/dashboard/box_admin/${modalContext.id}/delete/`;
+        break;
+      case 'delete_product':
+        url = `/dashboard/products/${modalContext.id}/delete/`;
+        break;
+      case 'change_email':
+        url = GLOBALS.urls.changeEmail;
+        break;
+      default:
+        errorEl.innerText = 'Invalid action.';
+        return;
+    }
+  
+    const payload = new FormData();
+    payload.append('password', password);
+  
+    fetch(url, {
+      method: 'POST',
+      headers: {
+        'X-CSRFToken': GLOBALS.csrfToken,
+      },
+      body: payload,
     })
-    .catch(err => {
-      errorEl.innerText = 'Sorry — there was a problem completing your request.';
-    });
-}
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) {
+          if (action === 'delete_account') {
+            window.location.href = '/';
+          } else {
+            window.location.reload();
+          }
+        } else {
+          errorEl.innerText = data.error || 'Failed to complete action.';
+        }
+      })
+      .catch(err => {
+        errorEl.innerText = 'Sorry — there was a problem completing your request.';
+      });
+  }
+  

@@ -36,8 +36,8 @@
               <a href="{% url 'remove_product_from_box' product.id %}?box_id={{ box.id }}" class="btn-small orange">
                 <i class="fas fa-trash-alt"></i> Remove
               </a>
-              <a href="{% url 'delete_product' product.id %}" class="btn-small red">
-                <i class="fas fa-times"></i> Delete
+              <a href="#!" class="btn-small red delete-product-btn" data-id="{{ product.id }}">
+                <i class="fas fa-trash-alt left"></i> Delete
               </a>
             </div>
           </div>
@@ -47,5 +47,51 @@
       <p>No products in this box yet.</p>
     {% endif %}
   </div>
+  <hr>
+  <div class="section">
+    <h4>Orphaned Products (Unassigned)</h4>
+  
+    {% if orphaned_products %}
+      <form id="orphaned-products-form" method="POST" action="{% url 'assign_orphaned_to_box' box.id %}">
+        {% csrf_token %}
+        <div class="section center-align">
+          <button type="submit" class="btn green">
+            <i class="fas fa-plus left"></i> Add Selected to Box
+          </button>
+        </div>
+  
+        <ul class="collection">
+          {% for product in orphaned_products %}
+            <li class="collection-item">
+              <div class="row row-no-margin">
+                <div class="col s1">
+                  <label>
+                    <input type="checkbox" name="product_ids" value="{{ product.id }}" />
+                    <span></span>
+                  </label>
+                </div>
+                <div class="col s5">
+                  <strong>{{ product.name }}</strong> (x{{ product.quantity }})
+                </div>
+                <div class="col s6 right-align">
+                  <div class="secondary-content btn-group">
+                    <a href="{% url 'edit_product' product.id %}" class="btn-small">
+                      <i class="fas fa-edit left"></i> Edit
+                    </a>
+                    <a href="#!" class="btn-small red delete-product-btn" data-id="{{ product.id }}">
+                      <i class="fas fa-trash-alt left"></i> Delete
+                    </a>
+                  </div>
+                </div>
+              </div>
+            </li>
+          {% endfor %}
+        </ul>
+      </form>
+    {% else %}
+      <p class="grey-text">No orphaned products available.</p>
+    {% endif %}
+  </div>
+  
 </div>
 {% endblock %}

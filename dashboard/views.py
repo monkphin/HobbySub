@@ -16,7 +16,10 @@ messaging.
 from django.contrib.admin.views.decorators import staff_member_required
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import get_user_model
+from django.contrib.auth import authenticate
+from cloudinary.uploader import destroy
 from django.utils.timezone import now
+from django.http import JsonResponse
 import logging
 
 # Local Imports
@@ -119,20 +122,46 @@ def edit_box(request, box_id):
     - On success, redirects back to the box admin overview.
     - Displays error messages on invalid submissions.
     """
+    from django.utils.timezone import now
+    
     box = get_object_or_404(Box, pk=box_id)
+    
     if request.method == 'POST':
         form = BoxForm(request.POST, request.FILES, instance=box)
+        
         if form.is_valid():
-            form.save()
-            logger.info(
-                f"Admin {request.user} edited box: {box.name} (ID: {box.id})"
-            )
-            alert(request, "success", "Box successfully edited.")
-            return redirect('box_admin')
+            try:
+                updated_box = form.save(commit=False)
+                
+                # Auto-archive logic
+                if updated_box.shipping_date < now().date():
+                    updated_box.is_archived = True
+                
+                # Save the box
+                updated_box.save()
+                
+                logger.info(
+                    f"Admin {request.user} edited box: {updated_box.name} (ID: {updated_box.id})"
+                )
+                alert(request, "success", "Box successfully edited.")
+                
+                # Email notification if auto-archived
+                if updated_box.is_archived:
+                    send_auto_archive_notification(updated_box)
+                
+                return redirect('box_admin')
+            
+            except Exception as e:
+                import traceback
+                tb = traceback.format_exc()
+                logger.error(f"Failed to edit box: {e}\nTraceback:\n{tb}")
+                alert(request, "error", "There was a problem editing the box.")
         else:
             alert(request, "error", "There was a problem editing the box.")
+            logger.info(f"Admin {request.user} error editing box.")
     else:
         form = BoxForm(instance=box)
+
     return render(
         request,
         'dashboard/box.html',
@@ -148,27 +177,41 @@ def edit_box(request, box_id):
 @staff_member_required
 def delete_box(request, box_id):
     """
-    Deletes a box after confirmation.
-
-    - Only performs deletion on POST.
-    - Redirects back to box admin on success.
+    Deletes a box after confirmation, checks password first.
     """
-    box = get_object_or_404(Box, pk=box_id)
     if request.method == 'POST':
-        box.delete()
-        alert(request, "success", "Box successfully deleted.")
-        logger.info(
-            f"Admin {request.user} deleted box: {box.name} (ID: {box.id})"
-        )
-        return redirect('box_admin')
+        password = request.POST.get('password')
 
-    return render(
-        request,
-        'dashboard/delete_box.html',
-        {
-            'box_id': box_id,
-        }
-    )
+        # Validate the password
+        user = authenticate(username=request.user.username, password=password)
+        if not user:
+            # If password is incorrect, send back an error message
+            return JsonResponse({
+                "success": False,
+                "error": "Password is incorrect."
+            }, status=403)
+
+        box = get_object_or_404(Box, pk=box_id)
+        logger.info(f"Attempting to delete Box '{box.name}' (ID: {box.id})")
+
+        try:
+            if box.image:
+                result = destroy(box.image.public_id)
+                if result.get('result') == 'ok':
+                    logger.info(f"Cloudinary image deleted for box: {box.name}")
+            
+            box.delete()
+            alert(request, "success", f"Box '{box.name}' successfully deleted.")
+            logger.info(f"Admin {request.user} deleted box: {box.name} (ID: {box_id})")
+            return JsonResponse({"success": True})
+
+        except Exception as e:
+            logger.error(f"Failed to delete box: {e}")
+            return JsonResponse({
+                "success": False,
+                "error": "An error occurred during deletion."
+            }, status=500)
+
 
 
 @staff_member_required
@@ -178,9 +221,22 @@ def edit_box_products(request, box_id):
 
     - Shows all products currently assigned to the box.
     - Provides links to edit or remove each product.
+    - Lists orphaned products for bulk add.
     """
     box = get_object_or_404(Box, pk=box_id)
     products = box.products.all()
+    orphaned_products = BoxProduct.objects.filter(box__isnull=True)
+
+    if request.method == 'POST':
+        selected_products = request.POST.getlist('orphaned_products')
+        if selected_products:
+            # Update the selected orphaned products to this box
+            BoxProduct.objects.filter(id__in=selected_products).update(box=box)
+            alert(request, "success", f"Successfully added {len(selected_products)} orphaned products to '{box.name}'.")
+            return redirect('edit_box_products', box_id=box_id)
+        else:
+            alert(request, "error", "No orphaned products were selected.")
+
     logger.info(
         f"Admin {request.user} is editing products in box "
         f"'{box.name}' (ID: {box.id})"
@@ -191,8 +247,27 @@ def edit_box_products(request, box_id):
         {
             'box': box,
             'products': products,
+            'orphaned_products': orphaned_products,  # Add this to the context
         }
     )
+
+
+@staff_member_required
+def assign_orphaned_to_box(request, box_id):
+    """
+    Reassigns selected orphaned products to the specified box.
+    """
+    box = get_object_or_404(Box, pk=box_id)
+    if request.method == 'POST':
+        product_ids = request.POST.getlist('product_ids')
+        if product_ids:
+            products = BoxProduct.objects.filter(id__in=product_ids, box__isnull=True)
+            products.update(box=box)
+            alert(request, "success", f"{products.count()} products successfully added to '{box.name}'.")
+        else:
+            alert(request, "error", "No products selected.")
+    return redirect('edit_box_products', box_id=box_id)
+
 
 
 @staff_member_required
@@ -201,6 +276,7 @@ def add_product_to_box(request, box_id):
     Adds a new product directly to a specific box.
 
     - On GET: displays a product form.
+    - On POST: creates a new BoxProduct and links it to the given box.
     - On POST: creates a new BoxProduct and links it to the given box.
     - Redirects back to the box’s product editor with a success
       or error message.
@@ -317,39 +393,36 @@ def edit_product(request, product_id):
 @staff_member_required
 def delete_product(request, product_id):
     """
-    Permanently deletes a product from the system.
-
-    - Handles both box-linked and orphaned products.
-    - On success: redirects to the relevant box product page or box admin.
+    Deletes a product after confirmation, checks password first.
     """
-    product = get_object_or_404(BoxProduct, pk=product_id)
-    box_id = product.box_id
-
     if request.method == 'POST':
+        password = request.POST.get('password')
+
+        # Validate the password
+        user = authenticate(username=request.user.username, password=password)
+        if not user:
+            # If password is incorrect, send back an error message
+            return JsonResponse({
+                "success": False,
+                "error": "Password is incorrect."
+            }, status=403)
+
+        # Get the product
+        product = get_object_or_404(BoxProduct, pk=product_id)
+
         try:
+            # Delete the product
             product.delete()
-            alert(request, "success", "Product permanently deleted.")
+            alert(request, "success", f"Product '{product.name}' successfully deleted.")
+            logger.info(f"Admin {request.user} deleted product: {product.name} (ID: {product_id})")
+            return JsonResponse({"success": True})
+
         except Exception as e:
-            logger.error(f"Deletion error: {e}")
-            alert(
-                request,
-                "error",
-                "There was a problem deleting the product."
-            )
-
-        if box_id:
-            return redirect('edit_box_products', box_id=box_id)
-        else:
-            return redirect('box_admin')
-
-    return render(
-        request,
-        'dashboard/delete_product.html',
-        {
-            'product': product,
-            'box_id': box_id,
-        }
-    )
+            logger.error(f"Failed to delete product: {e}")
+            return JsonResponse({
+                "success": False,
+                "error": "An error occurred during deletion."
+            }, status=500)
 
 
 @staff_member_required
@@ -399,6 +472,56 @@ def remove_product_from_box(request, product_id):
             'box': box,
         }
     )
+
+
+@staff_member_required
+def manage_orphaned_products(request):
+    """
+    Handles batch reassignment or deletion of orphaned products.
+    """
+    action = request.POST.get('action')
+    product_ids = request.POST.getlist('product_ids')
+
+    if action not in ['reassign', 'delete']:
+        alert(request, "error", "Invalid action.")
+        return redirect('box_admin')
+
+    if not product_ids:
+        alert(request, "error", "No products selected.")
+        return redirect('box_admin')
+
+    if action == 'reassign':
+        # Redirect to reassign page
+        return redirect('reassign_orphaned_products', product_ids=",".join(product_ids))
+
+    elif action == 'delete':
+        # Batch delete
+        BoxProduct.objects.filter(id__in=product_ids).delete()
+        alert(request, "success", f"Deleted {len(product_ids)} orphaned products.")
+        return redirect('box_admin')
+
+
+@staff_member_required
+def reassign_orphaned_products(request, product_ids):
+    """
+    Reassigns multiple orphaned products to a selected box.
+    """
+    product_ids = product_ids.split(',')
+    products = BoxProduct.objects.filter(id__in=product_ids)
+
+    if request.method == 'POST':
+        box_id = request.POST.get('box_id')
+        box = get_object_or_404(Box, pk=box_id)
+        products.update(box=box)
+        alert(request, "success", f"{products.count()} products reassigned to '{box.name}'.")
+        return redirect('box_admin')
+
+    boxes = Box.objects.all()
+    return render(request, 'dashboard/reassign_products.html', {
+        'products': products,
+        'boxes': boxes
+    })
+
 
 
 @staff_member_required

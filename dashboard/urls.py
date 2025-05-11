@@ -29,6 +29,8 @@ urlpatterns = [
         'box_admin/<int:box_id>/products/add/',
         views.add_product_to_box, name='add_product_to_box'
     ),
+    path('dashboard/box/<int:box_id>/assign_orphaned/', views.assign_orphaned_to_box, name='assign_orphaned_to_box'),
+
 
     # Product Admin
     path('products/add/', views.add_products, name='add_products'),
@@ -47,6 +49,9 @@ urlpatterns = [
         views.remove_product_from_box,
         name='remove_product_from_box'
     ),
+    path('manage_orphaned_products/', views.manage_orphaned_products, name='manage_orphaned_products'),
+    path('reassign_orphaned_products/<str:product_ids>/', views.reassign_orphaned_products, name='reassign_orphaned_products'),
+
 
     # User admin
     path('user_admin/', views.user_admin, name='user_admin'),
