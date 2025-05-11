@@ -548,7 +548,7 @@ def edit_user(request, user_id):
     Allows an admin to update a user's details.
 
     - Supports changing username, email, and admin status.
-    - Uses a Materialize-compatible form for inline editing.
+    - Displays Last Login and Date Joined as context.
     """
     user = get_object_or_404(User, pk=user_id)
 
@@ -557,8 +557,7 @@ def edit_user(request, user_id):
         if form.is_valid():
             form.save()
             logger.info(
-                f"Admin {request.user} "
-                f"updated user: {user.username} (ID: {user.id})"
+                f"Admin {request.user} updated user: {user.username} (ID: {user.id})"
             )
             alert(
                 request,
@@ -575,14 +574,31 @@ def edit_user(request, user_id):
     else:
         form = UserEditForm(instance=user)
 
+    # Adding last login and date joined to the context
     return render(
         request,
         'dashboard/edit_user.html',
         {
             'form': form,
             'user': user,
+            'last_login': user.last_login,
+            'date_joined': user.date_joined
         }
     )
+
+
+@staff_member_required
+def reset_user_password(request, user_id):
+    """
+    Sends a password reset email to the user.
+    """
+    user = get_object_or_404(User, pk=user_id)
+    user.set_password(User.objects.make_random_password())
+    user.save()
+    alert(request, "success", f"Password for '{user.username}' has been reset.")
+    logger.info(f"Password reset for user: {user.username}")
+    return redirect('user_admin')
+
 
 
 @staff_member_required

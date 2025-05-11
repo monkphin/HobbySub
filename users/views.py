@@ -12,14 +12,16 @@ from django.contrib.auth import (
     authenticate,
     get_user_model,
 )
-
+from django.utils.http import url_has_allowed_host_and_scheme, urlsafe_base64_decode
 from django.views.decorators.csrf import csrf_exempt, csrf_protect
 from django.shortcuts import render, redirect, get_object_or_404
-from django.utils.http import url_has_allowed_host_and_scheme
+from django.contrib.auth.tokens import default_token_generator
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.http import require_POST
 from django.http import HttpResponse, JsonResponse
+from django.contrib.auth.models import User
 from urllib.parse import urlparse, parse_qs
+from django.utils.encoding import force_str
 from django.core.signing import Signer
 from django.contrib import messages
 from django.conf import settings
@@ -29,14 +31,14 @@ import stripe
 import json
 
 
-
 # Local imports
 from hobbyhub.mail import (
     send_account_update_email,
     send_email_change_notifications,
     send_address_change_email,
     send_password_change_email,
-    send_account_deletion_email
+    send_account_deletion_email,
+    send_password_reset_email
     )
 from hobbyhub.stripe_handlers import (
     handle_checkout_session_completed,
@@ -44,7 +46,7 @@ from hobbyhub.stripe_handlers import (
     handle_invoice_payment_failed,
     handle_invoice_upcoming,
 )
-from .forms import AddAddressForm, ChangePassword, UserEditForm
+from .forms import AddAddressForm, ChangePassword, UserEditForm, PasswordResetRequestForm, SetNewPasswordForm
 from .models import ShippingAddress
 from hobbyhub.utils import alert
 
@@ -149,6 +151,63 @@ def change_password(request):
         form = ChangePassword(user=request.user)
 
     return render(request, 'users/change_password.html', {'form': form})
+
+
+
+def password_reset_request(request):
+    """
+    Request password reset by entering an email.
+    """
+    if request.method == "POST":
+        form = PasswordResetRequestForm(request.POST)
+        if form.is_valid():
+            email = form.cleaned_data.get('email')
+            user = User.objects.filter(email=email).first()
+            if user:
+                send_password_reset_email(user, domain=request.get_host())
+            return redirect('password_reset_done')
+    else:
+        form = PasswordResetRequestForm()
+
+    return render(request, 'users/password_reset_request.html', {'form': form})
+
+
+def password_reset_confirm(request, uidb64, token):
+    """
+    Confirm the password reset and allow the user to set a new password.
+    """
+    try:
+        uid = force_str(urlsafe_base64_decode(uidb64))
+        user = User.objects.get(pk=uid)
+    except (TypeError, ValueError, OverflowError, User.DoesNotExist):
+        user = None
+
+    if user is not None and default_token_generator.check_token(user, token):
+        if request.method == "POST":
+            form = SetNewPasswordForm(request.POST)
+            if form.is_valid():
+                user.set_password(form.cleaned_data.get('new_password'))
+                user.save()
+                return redirect('password_reset_complete')
+        else:
+            form = SetNewPasswordForm()
+        return render(request, 'users/password_reset_confirm.html', {'form': form})
+    else:
+        return HttpResponse("Password reset link is invalid!", status=400)
+
+
+def password_reset_done(request):
+    """
+    Inform the user that a password reset email has been sent.
+    """
+    return render(request, 'users/password_reset_done.html')
+
+
+def password_reset_complete(request):
+    """
+    Inform the user that the password has been reset successfully.
+    """
+    return render(request, 'users/password_reset_complete.html')
 
 
 @csrf_protect

@@ -56,6 +56,7 @@ urlpatterns = [
     # User admin
     path('user_admin/', views.user_admin, name='user_admin'),
     path('user_admin/<int:user_id>/edit/', views.edit_user, name='edit_user'),
+    path('users/<int:user_id>/reset_password/', views.reset_user_password, name='admin_password_reset'),
     path(
         'user_admin/<int:user_id>/delete/',
         views.delete_user,

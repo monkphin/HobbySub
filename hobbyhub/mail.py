@@ -101,6 +101,37 @@ def send_password_change_email(user):
         recipient_email=user.email
     )
 
+# Password Reset
+def send_password_reset_email(user, domain, protocol='https'):
+    """
+    Sends a password reset email to the user.
+    Includes a link to reset their password, valid for a short time.
+    """
+    from django.utils.http import urlsafe_base64_encode
+    from django.utils.encoding import force_bytes
+    from django.urls import reverse
+    from django.contrib.auth.tokens import default_token_generator
+
+    uid = urlsafe_base64_encode(force_bytes(user.pk))
+    token = default_token_generator.make_token(user)
+
+    reset_link = f"{protocol}://{domain}{reverse('password_reset_confirm', kwargs={'uidb64': uid, 'token': token})}"
+
+    message = (
+        f"Hi {user.username},\n\n"
+        "You requested a password reset for your Hobby Hub account.\n\n"
+        f"Click the link below to reset your password:\n\n{reset_link}\n\n"
+        "If you did not request this, ignore this email.\n\n"
+        "Thanks,\n"
+        "The Hobby Hub Team"
+    )
+
+    send_user_email(
+        subject="Reset Your Hobby Hub Password",
+        message=message,
+        recipient_email=user.email
+    )
+
 
 # Successful single order
 def send_order_confirmation_email(user, order_id):
@@ -252,7 +283,7 @@ def send_subscription_cancelled_email(user, plan_id, start_date):
         recipient_email=user.email
     )
 
-
+ # Auto archived box
 def send_auto_archive_notification(box):
     """
     Sends an email notification to the admin when a box is auto-archived.

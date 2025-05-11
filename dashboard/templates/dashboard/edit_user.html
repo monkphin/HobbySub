@@ -23,6 +23,25 @@
       {% endif %}
     </div>
 
+    <div class="button-row">
+      <button type="submit" class="btn green">Save</button>
+      <a href="{% url 'user_admin' %}" class="btn grey">Cancel</a>
+      <a href="{% url 'admin_password_reset' user.id %}" class="btn red">Reset Password</a>
+    </div>
+    
+
+    <div class="card-panel grey lighten-4">
+      <p><strong>Last Login:</strong> {{ last_login|date:"d M Y H:i" }}</p>
+      <p><strong>Date Joined:</strong> {{ date_joined|date:"d M Y H:i" }}</p>
+    </div>
+    
+    <p>
+      <label>
+        <input type="checkbox" name="is_active" {% if user.is_active %}checked{% endif %} />
+        <span>Active Account?</span>
+      </label>
+    </p>
+    
     <p>
       <label>
         <input type="checkbox" name="is_staff" {% if form.is_staff.value %}checked{% endif %} />
