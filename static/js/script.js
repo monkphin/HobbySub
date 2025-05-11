@@ -3,10 +3,38 @@ document.addEventListener('DOMContentLoaded', function () {
   M.Sidenav.init(document.querySelectorAll('.sidenav'), { edge: 'right' });
   M.Carousel.init(document.querySelectorAll('.carousel'), { duration: 200, dist: -30, shift: 0, padding: 20 });
   M.Modal.init(document.querySelectorAll('.modal'));
-  M.Datepicker.init(document.querySelectorAll('.datepicker'), { format: 'dd/mm/yyyy' });
   M.Dropdown.init(document.querySelectorAll('.dropdown-trigger'), { coverTrigger: false, constrainWidth: false });
   M.FormSelect.init(document.querySelectorAll('select'));
   M.updateTextFields();
+
+// === Materialize Datepicker Initialization ===
+M.Datepicker.init(document.querySelectorAll('.datepicker'), {
+  format: 'dd/mm/yyyy',      // Ensures it matches '%d/%m/%Y' in Django forms
+  autoClose: true,           // Closes the date picker after selection
+  showClearBtn: true,        // Allows clearing the date if needed
+  firstDay: 1,               // Start the week on Monday
+  i18n: {
+      cancel: 'Cancel',
+      clear: 'Clear',
+      done: 'Select',
+      months: [
+          'January', 'February', 'March', 'April', 'May', 'June', 
+          'July', 'August', 'September', 'October', 'November', 'December'
+      ],
+      monthsShort: [
+          'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 
+          'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
+      ],
+      weekdays: [
+          'Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'
+      ],
+      weekdaysShort: [
+          'Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'
+      ],
+      weekdaysAbbrev: ['S', 'M', 'T', 'W', 'T', 'F', 'S']
+  }
+});
+
 
   // Toasts
   document.querySelectorAll('.toast').forEach((toast) => {

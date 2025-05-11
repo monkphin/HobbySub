@@ -251,3 +251,16 @@ def send_subscription_cancelled_email(user, plan_id, start_date):
         ),
         recipient_email=user.email
     )
+
+
+def send_auto_archive_notification(box):
+    """
+    Sends an email notification to the admin when a box is auto-archived.
+    """
+    send_mail(
+        'Box Auto-Archived',
+        f'The box "{box.name}" has been auto-archived because its date is in the past.',
+        settings.DEFAULT_FROM_EMAIL,
+        ['admin@hobbysub.com'],
+        fail_silently=False,
+    )

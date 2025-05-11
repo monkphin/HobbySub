@@ -16,14 +16,16 @@ messaging.
 from django.contrib.admin.views.decorators import staff_member_required
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import get_user_model
+from django.utils.timezone import now
 import logging
 
 # Local Imports
 from hobbyhub.utils import alert
 from boxes.models import Box, BoxProduct
 from .forms import BoxForm, ProductForm, UserEditForm
-from hobbyhub.mail import send_shipping_confirmation_email
+from hobbyhub.mail import send_shipping_confirmation_email, send_auto_archive_notification
 from orders.models import Order, Payment, StripeSubscriptionMeta
+
 
 logger = logging.getLogger(__name__)
 
@@ -68,13 +70,33 @@ def add_box(request):
     if request.method == 'POST':
         form = BoxForm(request.POST, request.FILES)
         if form.is_valid():
-            new_box = form.save()
-            alert(request, "success", "Box successfully created.")
-            logger.info(f"Admin {request.user} created box: {new_box.name}")
-            return redirect('edit_box_products', box_id=new_box.id)
+            try:
+                new_box = form.save(commit=False)  # Do not commit yet
+                
+                # Auto-archive if date is in the past
+                if new_box.shipping_date < now().date():
+                    new_box.is_archived = True
+
+                # Save to DB
+                new_box.save()
+                alert(request, "success", "Box successfully created.")
+                logger.info(f"Admin {request.user} created box: {new_box.name}")
+                
+                # Send the email
+                if new_box.is_archived:
+                    send_auto_archive_notification(new_box)
+                    
+                return redirect('edit_box_products', box_id=new_box.id)
+            
+            except Exception as e:
+                import traceback
+                tb = traceback.format_exc()
+                logger.error(f"Failed to create box: {e}\nTraceback:\n{tb}")
+                alert(request, "error", f"There was a problem creating the box: {e}")
         else:
-            alert(request, "error", "There was a problem creating the box.")
-            logger.info(f"Admin {request.user} error creating box.")
+            # If the form is not valid, we should log the errors for clarity
+            logger.error(f"Form is not valid: {form.errors}")
+            alert(request, "error", f"There was a problem creating the box. Please check the form inputs.")
     else:
         form = BoxForm()
     return render(
@@ -85,6 +107,7 @@ def add_box(request):
             'box': box,
         }
     )
+
 
 
 @staff_member_required

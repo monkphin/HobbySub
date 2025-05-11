@@ -12,11 +12,15 @@ All forms use MaterializeCSS-friendly widgets for consistent styling.
 """
 
 # Django Imports
-from django import forms
 from django.contrib.auth import get_user_model
+from django.utils.timezone import now
+from django import forms
+
 
 # Local Imports
+from hobbyhub.mail import send_auto_archive_notification
 from boxes.models import Box, BoxProduct
+from hobbyhub.utils import alert
 
 User = get_user_model()
 
@@ -43,9 +47,14 @@ class BoxForm(forms.ModelForm):
 
     shipping_date = forms.DateField(
         input_formats=['%d/%m/%Y', '%Y-%m-%d'],
-        widget=forms.DateInput(attrs={'class': 'datepicker'})
+        widget=forms.DateInput(
+            attrs={
+                'class': 'datepicker',
+                'placeholder': 'DD/MM/YYYY',
+                'autocomplete': 'off',
+            }
+        )
     )
-
     class Meta:
         model = Box
         fields = [
@@ -64,7 +73,6 @@ class BoxForm(forms.ModelForm):
                     'rows': 4
                 }
             ),
-            'shipping_date': forms.DateInput(attrs={'class': 'datepicker'}),
             'is_archived': forms.CheckboxInput(),
         }
 

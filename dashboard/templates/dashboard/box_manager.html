@@ -13,12 +13,16 @@
 
   <div class="section">
     <h4>Existing Boxes</h4>
+    
     <ul class="collection">
       {% for box in boxes %}
         <li class="collection-item">
           <div class="row row-no-margin">
             <div class="col s12 m6">
               <strong>{{ box.name }}</strong> — {{ box.shipping_date|date:"d M Y" }}
+              {% if box.is_archived %}
+                <span class="new badge red" data-badge-caption="Archived"></span>
+              {% endif %}
             </div>
             <div class="col s12 m6 right-align">
               <div class="secondary-content btn-group">
