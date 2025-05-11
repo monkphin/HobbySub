@@ -83,6 +83,8 @@ class Order(models.Model):
         choices=STATUS_CHOICES,
         default='pending'
     )
+    is_gift = models.BooleanField(default=False)
+
 
     def __str__(self):
         return f"Order #{self.id} - {self.user.username}"

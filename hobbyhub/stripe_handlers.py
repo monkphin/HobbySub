@@ -35,6 +35,8 @@ from hobbyhub.mail import (
     send_payment_failed_email,
     send_upcoming_renewal_email,
 )
+from hobbyhub.utils import PLAN_MAP
+
 
 logger = logging.getLogger(__name__)
 
@@ -45,12 +47,22 @@ def handle_checkout_session_completed(session):
     """
     mode = session.get('mode')
     metadata = session.get('metadata', {})
-    recipient_name = metadata.get('recipient_name', 'N/A')
-    recipient_email = metadata.get('recipient_email', 'N/A')
-    sender_name = metadata.get('sender_name', 'Anonymous')
-    gift_message = metadata.get('gift_message', 'No message provided.')
     user_id = metadata.get('user_id')
-    logger.info(f"Checkout session completed — mode: {mode}, user_id: {user_id}")
+    address_id = metadata.get('shipping_address_id')
+
+    # Explicitly force it to Boolean
+    is_gift = bool(metadata.get('recipient_email'))
+    logger.info(f"[WEBHOOK] Parsed is_gift as: {is_gift}")
+
+
+
+    logger.info(f"[WEBHOOK] Metadata received from Stripe: {metadata}")
+    logger.info(f"[WEBHOOK] Subscription ID received: {session.get('subscription')}")
+    logger.info(f"[WEBHOOK] Mode: {mode}, User ID: {user_id}, Address ID: {address_id}")
+    logger.info(f"[WEBHOOK] Metadata received: {metadata}")
+    logger.info(f"[WEBHOOK] Parsed is_gift: {is_gift}")
+    logger.info(f"[WEBHOOK] Subscription ID: {session.get('subscription')}")
+    logger.info(f"Checkout session completed — mode: {mode}, user_id: {user_id}, address_id: {address_id}")
 
     if not user_id:
         logger.error("No user ID in session metadata")
@@ -72,46 +84,62 @@ def handle_checkout_session_completed(session):
 
             sub_id = sub.id
             price_id = sub["items"]["data"][0]["price"]["id"]
-            address_id = metadata.get('shipping_address_id')
 
-            # DE-DUPE CHECK
-            if Order.objects.filter(stripe_subscription_id=sub_id).exists():
-                logger.warning(f"[Duplicate Prevention] Existing order found for sub {sub_id}, skipping create")
-                return
+            # ADDITIONAL LOGGING HERE
+            logger.info(f"Retrieved subscription: {sub_id}, price_id: {price_id}")
+            
+            # Create Subscription Meta
+            StripeSubscriptionMeta.objects.create(
+                user=user,
+                stripe_subscription_id=sub_id,
+                stripe_price_id=price_id,
+                shipping_address_id=address_id,
+                is_gift=is_gift
+            )
+            logger.info(f"[CREATED] StripeSubscriptionMeta for {sub_id} with is_gift={is_gift}")
+            logger.info(f"Created StripeSubscriptionMeta for {sub_id}")
 
-            shipping = ShippingAddress.objects.filter(id=address_id, user=user).first() or \
-                       user.addresses.filter(is_default=True).first()
-            if not shipping:
-                logger.warning(f"No shipping address found for user {user.username}")
-
+            # Create Order
             box = Box.objects.filter(is_archived=False).order_by('-shipping_date').first()
             Order.objects.create(
                 user=user,
                 stripe_subscription_id=sub_id,
-                shipping_address=shipping,
+                shipping_address_id=address_id,
                 box=box,
                 order_date=timezone.now().date(),
                 scheduled_shipping_date=box.shipping_date if box else None,
-                status='processing'
+                status='processing',
+                is_gift=is_gift
             )
+            logger.info(f"[CREATED] Order for subscription {sub_id} with is_gift={is_gift}")
 
-            if recipient_email != "N/A":
-                send_gift_notification_to_recipient(
-                    recipient_email, 
-                    sender_name, 
-                    gift_message, 
-                    recipient_name
-                )
-                send_gift_confirmation_to_sender(
-                    user, 
-                    recipient_name
-                )
-                logger.info(f"Gift confirmation sent to {recipient_email}")
+            try:
+                _, plan_name = PLAN_MAP.get(price_id, (None, "Unknown Plan"))
+                
+                if is_gift and metadata.get('recipient_email'):
+                    recipient_email = metadata['recipient_email']
+                    recipient_name = metadata.get('recipient_name', 'Friend')
+                    sender_name = metadata.get('sender_name', 'Someone')
+                    gift_message = metadata.get('gift_message', '')
 
-        except IntegrityError:
-            logger.warning(f"Duplicate Order creation blocked for sub ID {sub_id}")
+                    send_gift_notification_to_recipient(
+                        recipient_email,
+                        sender_name,
+                        gift_message,
+                        recipient_name
+                    )
+                    send_gift_confirmation_to_sender(user, recipient_name)
+                    logger.info(f"[EMAIL] Gift confirmation sent to {recipient_email}")
+                else:
+                    send_subscription_confirmation_email(user, plan_name)
+                    logger.info(f"[EMAIL] Subscription confirmation email sent to {user.email} for {plan_name}")
+            except Exception as e:
+                logger.error(f"Error in creating subscription/order: {e}")
+
+
         except Exception as e:
-            logger.error(f"Error handling subscription checkout: {e}")
+            logger.error(f"Error in creating subscription/order: {e}")
+
 
     elif mode == 'payment':
         try:
@@ -187,13 +215,20 @@ def handle_checkout_session_completed(session):
 
             logger.warning(f"[CREATED] One-off order ID {order.id} and payment {payment_intent.id} for user {user.id}")
 
-            if recipient_email:
-                send_gift_notification_to_recipient(recipient_email, sender_name, gift_message)
-                send_gift_confirmation_to_sender(user, recipient_email)
+            if is_gift and recipient_email:
+                recipient_name = metadata.get('recipient_name', 'Friend')
+                send_gift_notification_to_recipient(
+                    recipient_email,
+                    sender_name,
+                    gift_message,
+                    recipient_name
+                )
+                send_gift_confirmation_to_sender(user, recipient_name)
                 logger.info(f"Gift confirmation sent to {recipient_email}")
             else:
                 send_order_confirmation_email(user, order.id)
                 logger.info(f"Order confirmation sent to {user.email}")
+
 
         except Exception as e:
             logger.error(f"Error handling one-off payment: {e}")
@@ -219,14 +254,11 @@ def handle_invoice_payment_succeeded(invoice):
     payment_date = timezone.now()
 
     try:
-        # DE-DUPE CHECK
-        if Order.objects.filter(stripe_subscription_id=subscription_id).exists():
-            logger.warning(f"[Duplicate Prevention] Existing order found for sub {subscription_id}, skipping create")
-            return
-
+        # Fetch the customer from Stripe
         customer = stripe.Customer.retrieve(customer_id)
         user = User.objects.get(email=customer.get('email'))
 
+        # Fetch associated subscription metadata
         sub_meta = StripeSubscriptionMeta.objects.filter(
             stripe_subscription_id=subscription_id
         ).select_related('shipping_address').first()
@@ -240,36 +272,60 @@ def handle_invoice_payment_succeeded(invoice):
             logger.error(f"Subscription {subscription_id} has no shipping address")
             return
 
+        # Find the latest box
         box = (
             Box.objects.filter(is_archived=False)
             .order_by('-shipping_date')
             .first()
         )
 
-        # CREATE ORDER ONLY IF IT DOES NOT EXIST
-        order = Order.objects.create(
-            user=user,
+        # ➡️ Fetch or create the order
+        order, created = Order.objects.get_or_create(
             stripe_subscription_id=subscription_id,
-            shipping_address=shipping,
-            box=box,
-            order_date=payment_date.date(),
-            scheduled_shipping_date=box.shipping_date if box else None,
-            status='processing',
+            defaults={
+                'user': user,
+                'shipping_address': shipping,
+                'box': box,
+                'order_date': payment_date.date(),
+                'scheduled_shipping_date': box.shipping_date if box else None,
+                'status': 'processing',
+                'is_gift': sub_meta.is_gift   # <-- Ensure it is stored here
+            }
         )
 
-        Payment.objects.create(
-            user=user,
-            order=order,
-            payment_date=payment_date,
-            amount=amount_paid,
-            status='succeeded',
-            payment_method='card',
+        if created:
+            logger.info(f"[CREATED] Order {order.id} for subscription {subscription_id} with is_gift={sub_meta.is_gift}")
+        else:
+            logger.warning(f"[EXISTS] Order {order.id} already exists for subscription {subscription_id}")
+
+        # ➡️ Always create a Payment record
+        payment, created = Payment.objects.get_or_create(
+            payment_intent_id=invoice.get('payment_intent'),
+            defaults={
+                'user': user,
+                'order': order,
+                'payment_date': payment_date,
+                'amount': amount_paid,
+                'status': 'succeeded',
+                'payment_method': 'card',
+            }
         )
+
+
+
+        if created:
+            logger.info(f"[CREATED] Payment for Order {order.id}")
+            # Send the confirmation email
+            send_order_confirmation_email(user, order.id)
+            logger.info(f"[EMAIL] Sent confirmation email for Order {order.id} to {user.email}")
+        else:
+            logger.warning(f"[EXISTS] Payment already exists for Order {order.id}")
 
     except IntegrityError:
         logger.warning(f"Duplicate Order creation blocked for sub ID {subscription_id}")
     except Exception as e:
         logger.error(f"Invoice payment succeeded error: {e}")
+
 
 
 def handle_invoice_payment_failed(invoice):

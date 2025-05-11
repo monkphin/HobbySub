@@ -47,8 +47,20 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 
   document.querySelectorAll('.cancel-subscription-btn').forEach(button => {
-    button.addEventListener('click', () => openModal('cancel_subscription'));
-  });
+    button.addEventListener('click', () => {
+        const subscriptionId = button.dataset.subscriptionId;
+        
+        if (!subscriptionId) {
+            console.error("Subscription ID missing on button.");
+            M.toast({ html: "Failed to identify subscription. Please try again.", classes: "red" });
+            return;
+        }
+
+        openModal('cancel_subscription');
+        modalContext.id = subscriptionId;
+    });
+});
+
 
   const emailChangeBtn = document.getElementById('change-email-btn');
   if (emailChangeBtn) {
@@ -166,6 +178,9 @@ function submitModalAction() {
   if (action === 'change_email') {
     payload.new_email = modalContext.newEmail;
   }
+  if (action === 'cancel_subscription') {
+    payload.subscription_id = modalContext.id;
+  }
 
   fetch(url, {
     method: 'POST',
@@ -191,20 +206,3 @@ function submitModalAction() {
       errorEl.innerText = 'Sorry — there was a problem completing your request.';
     });
 }
-
-const resendButton = document.getElementById('resend-email');
-  
-if (resendButton) {
-  resendButton.addEventListener('click', function (e) {
-    // Prevent spamming
-    e.preventDefault();
-    resendButton.classList.add('disabled');
-    M.toast({ html: 'Activation email resent. Check your inbox.', classes: 'green' });
-
-    // Cooldown to re-enable button
-    setTimeout(() => {
-      resendButton.classList.remove('disabled');
-    }, 30000); // 30 seconds
-  });
-}
-});

@@ -4,9 +4,20 @@
 {% block title %}Checkout{% endblock %}
 
 {% block content %}
+
+{% if form.errors %}
+    <div class="card-panel red lighten-4">
+        <ul>
+            {% for field, errors in form.errors.items %}
+                <li><strong>{{ field }}:</strong> {{ errors }}</li>
+            {% endfor %}
+        </ul>
+    </div>
+{% endif %}
+
 <section class="section center-align">
   <h2>Gift Message</h2>
-  <form method="post">
+  <form id="gift-message-form" method="post" action="{% url 'gift_message' plan %}">
     {% csrf_token %}
     <div class="row">
       <div class="input-field col s12">
@@ -30,7 +41,7 @@
       <button class="btn" type="submit">
         <i class="fas fa-credit-card left"></i> Proceed to Checkout
       </button>
-    </div>
+    </div> 
   </form>
 </section>
 {% endblock %}

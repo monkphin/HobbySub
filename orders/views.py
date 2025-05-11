@@ -129,11 +129,18 @@ def gift_message(request, plan):
             "Before continuing with your gift,"
             " we need a shipping address on file for you."
         )
-        return redirect('choose_shipping_address', plan=plan)  # <- Fix here
+        return redirect('choose_shipping_address', plan=plan)
 
     form = PreCheckoutForm(request.POST or None)
     price_id = PLAN_MAP.get(plan)
 
+    # ** Here we add the 'plan' to the context **
+    context = {
+        'form': form,
+        'plan': plan  # <-- add this line
+    }
+
+    # If it's a POST request and form is valid, it will continue with Stripe
     if request.method == 'POST':
         if form.is_valid():
             logger.info("Gift message valid, creating Stripe session")
@@ -166,20 +173,21 @@ def gift_message(request, plan):
                     }
 
                 session = stripe.checkout.Session.create(**checkout_data)
-                return redirect(session.url, code=303)
+                logger.info(f"Stripe session created: {session.url}")
+                return redirect(session.url)
 
             except stripe.error.CardError:
                 logger.error("Stripe CardError", exc_info=True)
                 alert(request, "error", "Your card was declined.")
-
             except stripe.error.StripeError:
                 logger.error("General Stripe error", exc_info=True)
                 alert(request, "error", "There was a problem with the payment service.")
-
         else:
+            logger.error(f"Form errors: {form.errors}")
             alert(request, "error", "Please correct the errors in the form.")
 
-    return render(request, 'orders/pre_checkout.html', {'form': form})
+    # Re-render the form with the plan in context
+    return render(request, 'orders/pre_checkout.html', context)
 
 
 @login_required
@@ -194,6 +202,14 @@ def handle_checkout(request, price_id):
     )
     if redirect_response:
         return redirect_response
+    metadata = {
+        'user_id': request.user.id,
+        'shipping_address_id': shipping_address.id if shipping_address else None,
+    }
+
+    # ✅ Now log after metadata is ready
+    logger.info(f"[SUBSCRIPTION] Metadata before session creation: {metadata}")
+    logger.info(f"[SUBSCRIPTION] Session Data: {dict(request.session.items())}")
 
     try:
         session = stripe.checkout.Session.create(
@@ -237,29 +253,62 @@ def create_subscription_checkout(request, price_id):
         logger.warning("No shipping address selected for subscription.")
         alert(request, "error", "Please select a shipping address.")
         return redirect('order_start')
+    
+    is_gift = request.GET.get('gift', 'false').lower() == 'true'
+
+    if is_gift:
+        recipient_name = request.POST.get('recipient_name', '')
+        recipient_email = request.POST.get('recipient_email', '')
+        sender_name = request.POST.get('sender_name', '')
+        gift_message = request.POST.get('gift_message', '')
+    else:
+        recipient_name = recipient_email = sender_name = gift_message = ''
 
     metadata = {
         'user_id': request.user.id,
         'shipping_address_id': shipping_id,
+        'is_gift': json.dumps(is_gift),
+        'recipient_name': recipient_name,
+        'recipient_email': recipient_email,
+        'sender_name': sender_name,
     }
+    
+    logger.info(f"[SUBSCRIPTION] Creating session with metadata: {metadata}")
 
     try:
         address = ShippingAddress.objects.get(id=shipping_id)
 
-        customer = stripe.Customer.create(
-            email=request.user.email,
-            shipping={
-                'name': f"{address.recipient_f_name} {address.recipient_l_name}",
-                'address': {
-                    'line1': address.address_line_1,
-                    'line2': address.address_line_2 or '',
-                    'city': address.town_or_city,
-                    'state': address.county or '',
-                    'postal_code': address.postcode,
-                    'country': address.country.code
+        if not address:
+            logger.error(f"No address found for ID {shipping_id}")
+        else:
+            logger.info(f"Found Address: {address}")
+
+        # ✅ Step 1: Check if customer ID already exists for the user
+        if not request.user.profile.stripe_customer_id:
+            # ⬇️ If not, create a new customer and save it
+            customer = stripe.Customer.create(
+                email=request.user.email,
+                shipping={
+                    'name': f"{address.recipient_f_name} {address.recipient_l_name}",
+                    'address': {
+                        'line1': address.address_line_1,
+                        'line2': address.address_line_2 or '',
+                        'city': address.town_or_city,
+                        'state': address.county or '',
+                        'postal_code': address.postcode,
+                        'country': address.country.code
+                    }
                 }
-            }
-        )
+            )
+            request.user.profile.stripe_customer_id = customer.id
+            request.user.save()
+            logger.info(f"New Stripe Customer Created: {customer.id}")
+        else:
+            # ✅ Step 2: If it exists, just fetch it
+            customer = stripe.Customer.retrieve(request.user.profile.stripe_customer_id)
+            logger.info(f"Reusing Existing Stripe Customer: {customer.id}")
+
+        # ⬇️ Proceed with checkout
         checkout_session = stripe.checkout.Session.create(
             customer=customer.id,
             payment_method_types=['card'],
@@ -269,20 +318,14 @@ def create_subscription_checkout(request, price_id):
                 'quantity': 1,
             }],
             metadata=metadata,
-            success_url=request.build_absolute_uri(
-                '/orders/success/?sub=monthly'
-            ),
+            success_url=request.build_absolute_uri('/orders/success/?sub=monthly'),
             cancel_url=request.build_absolute_uri('/orders/cancel/'),
         )
         return redirect(checkout_session.url, code=303)
-    except stripe.error.StripeError:
-        alert(
-            request,
-            "error",
-            "There was a problem connecting to the payment service."
-            "Please try again shortly."
-        )
-    return redirect('subscribe_options')
+    except stripe.error.StripeError as e:
+        logger.error(f"Stripe error during subscription creation: {str(e)}")
+        alert(request, "error", "There was a problem connecting to the payment service. Please try again shortly.")
+        return redirect('subscribe_options')
 
 
 def order_success(request):
@@ -352,18 +395,22 @@ def secure_cancel_subscription(request):
     """
     data = json.loads(request.body)
     password = data.get('password')
+    subscription_id = data.get('subscription_id')
+
+    if not subscription_id:
+        logger.error(f"Cancel subscription request with no subscription ID from user {request.user}")
+        return JsonResponse({
+            'success': False,
+            'error': 'Subscription ID not provided.'
+        })
 
     if authenticate(username=request.user.username, password=password):
         try:
-            sub = StripeSubscriptionMeta.objects.filter(
+            sub = StripeSubscriptionMeta.objects.get(
                 user=request.user,
+                stripe_subscription_id=subscription_id,
                 cancelled_at__isnull=True
-            ).latest('created_at')
-
-            if not sub.stripe_subscription_id:
-                return JsonResponse({
-                    'success': False, 'error': 'No Stripe subscription found.'
-                })
+            )
 
             stripe.Subscription.modify(
                 sub.stripe_subscription_id,
@@ -380,7 +427,7 @@ def secure_cancel_subscription(request):
             )
 
             logger.info(
-                f"Subscription cancelled for user {request.user}"
+                f"Subscription {subscription_id} cancelled for user {request.user}"
             )
             return JsonResponse({
                 'success': True,
@@ -390,7 +437,7 @@ def secure_cancel_subscription(request):
         except StripeSubscriptionMeta.DoesNotExist:
             logger.warning(
                 f"{request.user} "
-                f"tried to cancel but no active subscription found"
+                f"tried to cancel {subscription_id} but no active subscription found"
             )
             return JsonResponse({
                 'success': False,

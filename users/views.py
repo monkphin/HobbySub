@@ -1,7 +1,7 @@
 """
 users/views.py
 
-Handles user registration, authentication, account management,
+Handles user account management,
 shipping address operations, password changes, and Stripe webhooks.
 """
 

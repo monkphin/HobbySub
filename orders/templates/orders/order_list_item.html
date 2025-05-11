@@ -19,7 +19,7 @@
       {% if order.stripe_subscription_id %}
         {% with sub_map|get_item:order.stripe_subscription_id as sub_info %}
           {% if not sub_info.sub.cancelled_at %}
-            <button class="btn-small red lighten-1 white-text cancel-subscription-btn">
+            <button class="btn-small red lighten-1 white-text cancel-subscription-btn" data-subscription-id="{{ sub_info.sub.stripe_subscription_id }}">
               Cancel Subscription
             </button>   
           {% else %}
