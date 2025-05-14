@@ -21,12 +21,13 @@ from cloudinary.uploader import destroy
 from django.utils.timezone import now
 from django.http import JsonResponse
 import logging
+import json
 
 # Local Imports
 from hobbyhub.utils import alert
 from boxes.models import Box, BoxProduct
 from .forms import BoxForm, ProductForm, UserEditForm
-from hobbyhub.mail import send_shipping_confirmation_email, send_auto_archive_notification
+from hobbyhub.mail import send_shipping_confirmation_email, send_auto_archive_notification, send_password_reset_email
 from orders.models import Order, Payment, StripeSubscriptionMeta
 
 
@@ -180,19 +181,22 @@ def delete_box(request, box_id):
     Deletes a box after confirmation, checks password first.
     """
     if request.method == 'POST':
-        password = request.POST.get('password')
+        # Check the content type
+        if request.content_type == 'application/json':
+            data = json.loads(request.body)
+            password = data.get('password')
+        else:
+            password = request.POST.get('password')
 
         # Validate the password
         user = authenticate(username=request.user.username, password=password)
         if not user:
-            # If password is incorrect, send back an error message
             return JsonResponse({
                 "success": False,
                 "error": "Password is incorrect."
             }, status=403)
 
         box = get_object_or_404(Box, pk=box_id)
-        logger.info(f"Attempting to delete Box '{box.name}' (ID: {box.id})")
 
         try:
             if box.image:
@@ -211,7 +215,6 @@ def delete_box(request, box_id):
                 "success": False,
                 "error": "An error occurred during deletion."
             }, status=500)
-
 
 
 @staff_member_required
@@ -396,12 +399,16 @@ def delete_product(request, product_id):
     Deletes a product after confirmation, checks password first.
     """
     if request.method == 'POST':
-        password = request.POST.get('password')
+        # Check the content type
+        if request.content_type == 'application/json':
+            data = json.loads(request.body)
+            password = data.get('password')
+        else:
+            password = request.POST.get('password')
 
         # Validate the password
         user = authenticate(username=request.user.username, password=password)
         if not user:
-            # If password is incorrect, send back an error message
             return JsonResponse({
                 "success": False,
                 "error": "Password is incorrect."
@@ -423,6 +430,7 @@ def delete_product(request, product_id):
                 "success": False,
                 "error": "An error occurred during deletion."
             }, status=500)
+
 
 
 @staff_member_required
@@ -588,50 +596,56 @@ def edit_user(request, user_id):
 
 
 @staff_member_required
-def reset_user_password(request, user_id):
+def admin_initiated_password_reset(request, user_id):
     """
-    Sends a password reset email to the user.
+    Admin triggers a password reset email for the selected user.
     """
-    user = get_object_or_404(User, pk=user_id)
-    user.set_password(User.objects.make_random_password())
-    user.save()
-    alert(request, "success", f"Password for '{user.username}' has been reset.")
-    logger.info(f"Password reset for user: {user.username}")
-    return redirect('user_admin')
+    if request.method == 'POST':
+        data = json.loads(request.body)
+        password = data.get('password')
 
+        # Authenticate the admin
+        admin_user = authenticate(username=request.user.username, password=password)
+        if not admin_user:
+            return JsonResponse({"success": False, "error": "Password is incorrect."}, status=403)
+
+        # If authenticated, send the reset email
+        user = get_object_or_404(User, pk=user_id)
+        send_password_reset_email(user, domain=request.get_host())
+
+        # Log the action for auditing
+        logger.info(f"Admin {request.user.username} initiated password reset for user {user.username}")
+
+        alert(request, "success", f"Password reset email sent to {user.email}.")
+        return JsonResponse({"success": True, "message": f"Password reset email sent to {user.email}."})
 
 
 @staff_member_required
-def delete_user(request, user_id):
+def admin_toggle_user_state(request, user_id):
     """
-    Deactivates a user account instead of deleting it.
-
-    - Sets is_active to False on POST.
-    - Prevents accidental loss of related data (orders, addresses, etc.).
+    Admin toggles the user's active state.
     """
-    user = get_object_or_404(User, pk=user_id)
-
     if request.method == 'POST':
-        user.is_active = False
-        user.save()
-        logger.warning(
-            f"Admin {request.user} "
-            f"deactivated user: {user.username} (ID: {user.id})"
-        )
-        alert(
-            request,
-            "success",
-            f"User '{user.username}' has been deactivated."
-        )
-        return redirect('user_admin')
+        data = json.loads(request.body)
+        password = data.get('password')
 
-    return render(
-        request,
-        'dashboard/delete_user.html',
-        {
-            'user': user,
-        }
-    )
+        # Authenticate the admin
+        admin_user = authenticate(username=request.user.username, password=password)
+        if not admin_user:
+            return JsonResponse({"success": False, "error": "Password is incorrect."}, status=403)
+
+        # Get the user and toggle the state
+        user = get_object_or_404(User, pk=user_id)
+        user.is_active = not user.is_active
+        user.save()
+
+        # Log the action
+        state = "activated" if user.is_active else "deactivated"
+        logger.info(f"Admin {request.user.username} {state} user {user.username}")
+
+        alert(request, "success", f"User '{user.username}' has been {state}.")
+        return JsonResponse({"success": True, "message": f"User '{user.username}' has been {state}."})
+
 
 
 @staff_member_required

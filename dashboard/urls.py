@@ -56,12 +56,8 @@ urlpatterns = [
     # User admin
     path('user_admin/', views.user_admin, name='user_admin'),
     path('user_admin/<int:user_id>/edit/', views.edit_user, name='edit_user'),
-    path('users/<int:user_id>/reset_password/', views.reset_user_password, name='admin_password_reset'),
-    path(
-        'user_admin/<int:user_id>/delete/',
-        views.delete_user,
-        name='delete_user'
-    ),
+    path('user_admin/password-reset/<int:user_id>/', views.admin_initiated_password_reset, name='admin_password_reset'),
+    path('user_admin/<int:user_id>/toggle-state/', views.admin_toggle_user_state, name='admin_toggle_user_state'),
     path(
         'user_admin/<int:user_id>/orders/',
         views.user_orders,

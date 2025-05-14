@@ -30,10 +30,19 @@
           </td>
           <td>
             <div class="btn-group">
+              <a href="#" class="btn-small orange admin-password-reset-btn" data-id="{{ user.id }}">Reset Password</a>
               <a href="{% url 'edit_user' user.id %}" class="btn-small blue">Edit</a>
               <a href="{% url 'user_orders' user.id %}" class="btn-small green">Orders</a>
               {% if not user.is_superuser %}
-                <a href="{% url 'delete_user' user.id %}" class="btn-small red">Delete</a>
+                <a href="#" 
+                  class="btn-small admin-toggle-state-btn {% if not user.is_active %}activate-btn{% else %}deactivate-btn{% endif %}" 
+                  data-id="{{ user.id }}">
+                    {% if not user.is_active %}
+                        Activate Account
+                    {% else %}
+                        Deactivate Account
+                    {% endif %}
+                </a>
               {% endif %}
             </div>
           </td>

@@ -370,6 +370,16 @@ ul li i.left {
   color: #ffffff;
 }
 
+.activate-btn {
+    background-color: green !important;
+    color: white !important;
+}
+
+.deactivate-btn {
+    background-color: red !important;
+    color: white !important;
+}
+
 /* === Product Cards & Product List === */
 .product-row {
   display: flex;

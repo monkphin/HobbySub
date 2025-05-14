@@ -73,6 +73,7 @@ M.Datepicker.init(document.querySelectorAll('.datepicker'), {
     accountDeleteBtn.addEventListener('click', () => openModal('delete_account'));
   }
 
+  // Subscription cancellation button
   document.querySelectorAll('.cancel-subscription-btn').forEach(button => {
     button.addEventListener('click', () => {
         const subscriptionId = button.dataset.subscriptionId;
@@ -95,16 +96,32 @@ M.Datepicker.init(document.querySelectorAll('.datepicker'), {
     });
   });
 
+  // Product deletion button
   document.querySelectorAll('.delete-product-btn').forEach(button => {
     button.addEventListener('click', () => {
       openModal('delete_product', button.dataset.id);
     });
   });
 
+  // === Modal trigger bindings for Toggle Active State ===
+  document.querySelectorAll('.admin-toggle-state-btn').forEach(button => {
+    button.addEventListener('click', () => {
+      openModal('admin_toggle_user_state', button.dataset.id);
+    });
+  });
+
+  // === Modal trigger bindings for Email Change ===
   const emailChangeBtn = document.getElementById('change-email-btn');
   if (emailChangeBtn) {
     emailChangeBtn.addEventListener('click', openChangeEmailModal);
   }
+});
+
+// === Modal trigger bindings for Password Reset ===
+document.querySelectorAll('.admin-password-reset-btn').forEach(button => {
+  button.addEventListener('click', () => {
+    openModal('admin_password_reset', button.dataset.id);
+  });
 });
 
 let modalContext = {
@@ -145,6 +162,14 @@ function openModal(action, id = null) {
       title.innerText = 'Confirm Email Change';
       message.innerText = 'Please confirm your password to update your email address.';
       break;
+    case 'admin_password_reset':
+      title.innerText = 'Admin-Initiated Password Reset';
+      message.innerText = 'Are you sure you want to send a password reset email to this user?';
+      break;
+    case 'admin_toggle_user_state':
+      title.innerText = 'Toggle User Account State';
+      message.innerText = 'Are you sure you want to toggle this user\'s active state?';
+      break;
     default:
       title.innerText = 'Confirm Action';
       message.innerText = 'Please enter your password to proceed.';
@@ -183,66 +208,81 @@ function openChangeEmailModal() {
   }
 
   function submitModalAction() {
-    const password = document.getElementById('modal-password').value;
-    const errorEl = document.getElementById('modal-error');
-    errorEl.innerText = '';
-  
-    if (!password) {
-      errorEl.innerText = 'Password is required.';
-      return;
-    }
-  
-    let url = '';
-    const action = modalContext.action;
-  
-    switch (action) {
-      case 'delete_account':
-        url = GLOBALS.urls.deleteAccount;
-        break;
-      case 'delete_address':
-        url = `${GLOBALS.urls.deleteAddressBase}${modalContext.id}/`;
-        break;
-      case 'cancel_subscription':
-        url = GLOBALS.urls.cancelSubscription;
-        break;
-      case 'delete_box':
-        url = `/dashboard/box_admin/${modalContext.id}/delete/`;
-        break;
-      case 'delete_product':
-        url = `/dashboard/products/${modalContext.id}/delete/`;
-        break;
-      case 'change_email':
-        url = GLOBALS.urls.changeEmail;
-        break;
-      default:
-        errorEl.innerText = 'Invalid action.';
-        return;
-    }
-  
-    const payload = new FormData();
-    payload.append('password', password);
-  
-    fetch(url, {
-      method: 'POST',
-      headers: {
-        'X-CSRFToken': GLOBALS.csrfToken,
-      },
-      body: payload,
-    })
-      .then(res => res.json())
-      .then(data => {
-        if (data.success) {
-          if (action === 'delete_account') {
-            window.location.href = '/';
-          } else {
-            window.location.reload();
-          }
-        } else {
-          errorEl.innerText = data.error || 'Failed to complete action.';
-        }
-      })
-      .catch(err => {
-        errorEl.innerText = 'Sorry — there was a problem completing your request.';
-      });
+  const password = document.getElementById('modal-password').value;
+  const errorEl = document.getElementById('modal-error');
+  errorEl.innerText = '';
+
+  if (!password) {
+    errorEl.innerText = 'Password is required.';
+    return;
   }
-  
+
+  let url = '';
+  const action = modalContext.action;
+
+  switch (action) {
+    case 'delete_account':
+      url = GLOBALS.urls.deleteAccount;
+      break;
+    case 'delete_address':
+      url = `${GLOBALS.urls.deleteAddressBase}${modalContext.id}/`;
+      break;
+    case 'cancel_subscription':
+      url = GLOBALS.urls.cancelSubscription;
+      break;
+    case 'delete_box':
+      url = `/dashboard/box_admin/${modalContext.id}/delete/`;
+      break;
+    case 'delete_product':
+      url = `/dashboard/products/${modalContext.id}/delete/`;
+      break;
+    case 'admin_password_reset':
+      url = `/dashboard/user_admin/password-reset/${modalContext.id}/`;
+      break;
+    case 'admin_toggle_user_state':
+      url = `/dashboard/user_admin/${modalContext.id}/toggle-state/`;
+      break;
+    case 'change_email':
+      url = GLOBALS.urls.changeEmail;
+      break;
+    default:
+      errorEl.innerText = 'Invalid action.';
+      return;
+  }
+
+  // JSON-based payload
+  const payload = {
+    password: password
+  };
+
+  // Add additional context if needed
+  if (action === 'cancel_subscription') {
+    payload.subscription_id = modalContext.id;
+  } else if (action === 'change_email') {
+    payload.new_email = modalContext.newEmail;
+  }
+
+  fetch(url, {
+    method: 'POST',
+    headers: {
+      'X-CSRFToken': GLOBALS.csrfToken,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(payload),
+  })
+    .then(res => res.json())
+    .then(data => {
+      if (data.success) {
+        if (action === 'delete_account') {
+          window.location.href = '/';
+        } else {
+          window.location.reload();
+        }
+      } else {
+        errorEl.innerText = data.error || 'Failed to complete action.';
+      }
+    })
+    .catch(err => {
+      errorEl.innerText = 'Sorry — there was a problem completing your request.';
+    });
+}
