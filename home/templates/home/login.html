@@ -11,6 +11,7 @@
         <form method="post">
           {% csrf_token %}
           <div class="input-field col s12">
+            {% include 'partials/form_errors.html' %}
             {{ form.username.label_tag }}
             {{ form.username }}
           </div>

@@ -600,24 +600,33 @@ def admin_initiated_password_reset(request, user_id):
     """
     Admin triggers a password reset email for the selected user.
     """
-    if request.method == 'POST':
-        data = json.loads(request.body)
-        password = data.get('password')
-
-        # Authenticate the admin
-        admin_user = authenticate(username=request.user.username, password=password)
-        if not admin_user:
-            return JsonResponse({"success": False, "error": "Password is incorrect."}, status=403)
-
-        # If authenticated, send the reset email
+    try:
+        # Fetch the user or return a 404 if not found
         user = get_object_or_404(User, pk=user_id)
-        send_password_reset_email(user, domain=request.get_host())
+    except Exception as e:
+        logger.error(f"Failed to find user {user_id}: {e}")
+        return JsonResponse({
+            "success": False,
+            "error": "User not found."
+        }, status=404)
 
-        # Log the action for auditing
-        logger.info(f"Admin {request.user.username} initiated password reset for user {user.username}")
+    # Check if the user is active
+    if not user.is_active:
+        logger.warning(f"Attempted password reset for deactivated user: {user.username}")
+        return JsonResponse({
+            "success": False,
+            "error": "User account is deactivated."
+        }, status=403)
 
-        alert(request, "success", f"Password reset email sent to {user.email}.")
-        return JsonResponse({"success": True, "message": f"Password reset email sent to {user.email}."})
+    # Proceed with the password reset logic
+    send_password_reset_email(user, domain=request.get_host())
+
+    # Optionally, log the action for auditing
+    logger.info(f"Admin {request.user.username} initiated password reset for user {user.username}")
+
+    alert(request, "success", f"Password reset email sent to {user.email}.")
+    return JsonResponse({"success": True, "message": f"Password reset email sent to {user.email}."})
+
 
 
 @staff_member_required
