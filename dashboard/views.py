@@ -26,6 +26,7 @@ import json
 # Local Imports
 from hobbyhub.utils import alert
 from boxes.models import Box, BoxProduct
+from .decorators import custom_staff_required
 from .forms import BoxForm, ProductForm, UserEditForm
 from hobbyhub.mail import send_shipping_confirmation_email, send_auto_archive_notification, send_password_reset_email
 from orders.models import Order, Payment, StripeSubscriptionMeta
@@ -36,7 +37,7 @@ logger = logging.getLogger(__name__)
 User = get_user_model()
 
 
-@staff_member_required
+@custom_staff_required
 def box_admin(request):
     """
     Displays the admin dashboard for box management.
@@ -61,7 +62,7 @@ def box_admin(request):
     )
 
 
-@staff_member_required
+@custom_staff_required
 def add_box(request):
     """
     Allows an admin to create a new subscription box.
@@ -114,7 +115,7 @@ def add_box(request):
 
 
 
-@staff_member_required
+@custom_staff_required
 def edit_box(request, box_id):
     """
     Allows an admin to update an existing box.
@@ -175,7 +176,7 @@ def edit_box(request, box_id):
     )
 
 
-@staff_member_required
+@custom_staff_required
 def delete_box(request, box_id):
     """
     Deletes a box after confirmation, checks password first.
@@ -217,7 +218,7 @@ def delete_box(request, box_id):
             }, status=500)
 
 
-@staff_member_required
+@custom_staff_required
 def edit_box_products(request, box_id):
     """
     Displays and manages products linked to a specific box.
@@ -255,7 +256,7 @@ def edit_box_products(request, box_id):
     )
 
 
-@staff_member_required
+@custom_staff_required
 def assign_orphaned_to_box(request, box_id):
     """
     Reassigns selected orphaned products to the specified box.
@@ -273,7 +274,7 @@ def assign_orphaned_to_box(request, box_id):
 
 
 
-@staff_member_required
+@custom_staff_required
 def add_product_to_box(request, box_id):
     """
     Adds a new product directly to a specific box.
@@ -321,7 +322,7 @@ def add_product_to_box(request, box_id):
     )
 
 
-@staff_member_required
+@custom_staff_required
 def add_products(request):
     """
     Adds a new product without assigning it to a box (orphaned product).
@@ -354,7 +355,7 @@ def add_products(request):
     )
 
 
-@staff_member_required
+@custom_staff_required
 def edit_product(request, product_id):
     """
     Allows an admin to edit a product’s name, quantity, or box assignment.
@@ -363,6 +364,7 @@ def edit_product(request, product_id):
     - Redirects to the related box’s product editor after saving.
     """
     product = get_object_or_404(BoxProduct, pk=product_id)
+    
     if request.method == 'POST':
         form = ProductForm(request.POST, request.FILES, instance=product)
         if form.is_valid():
@@ -372,7 +374,11 @@ def edit_product(request, product_id):
                 f"'{product.name}' (ID: {product.id})"
             )
             alert(request, "success", "Products successfully edited.")
-            return redirect('edit_box_products', box_id=product.box.id)
+            if product.box:
+                return redirect('edit_box_products', box_id=product.box.id)
+            else:
+                alert(request, "warning", "Product is now orphaned (no box linked).")
+                return redirect('manage_orphaned_products')        
         else:
             alert(
                 request,
@@ -393,7 +399,7 @@ def edit_product(request, product_id):
     )
 
 
-@staff_member_required
+@custom_staff_required
 def delete_product(request, product_id):
     """
     Deletes a product after confirmation, checks password first.
@@ -433,7 +439,7 @@ def delete_product(request, product_id):
 
 
 
-@staff_member_required
+@custom_staff_required
 def remove_product_from_box(request, product_id):
     """
     Unassigns a product from its box (makes it orphaned).
@@ -482,7 +488,7 @@ def remove_product_from_box(request, product_id):
     )
 
 
-@staff_member_required
+@custom_staff_required
 def manage_orphaned_products(request):
     """
     Handles batch reassignment or deletion of orphaned products.
@@ -509,7 +515,7 @@ def manage_orphaned_products(request):
         return redirect('box_admin')
 
 
-@staff_member_required
+@custom_staff_required
 def reassign_orphaned_products(request, product_ids):
     """
     Reassigns multiple orphaned products to a selected box.
@@ -532,7 +538,7 @@ def reassign_orphaned_products(request, product_ids):
 
 
 
-@staff_member_required
+@custom_staff_required
 def user_admin(request):
     """
     Admin overview of all users.
@@ -550,7 +556,7 @@ def user_admin(request):
     )
 
 
-@staff_member_required
+@custom_staff_required
 def edit_user(request, user_id):
     """
     Allows an admin to update a user's details.
@@ -595,11 +601,28 @@ def edit_user(request, user_id):
     )
 
 
-@staff_member_required
+@custom_staff_required
 def admin_initiated_password_reset(request, user_id):
     """
     Admin triggers a password reset email for the selected user.
     """
+    if request.method != 'POST':
+        return JsonResponse({"success": False, "error": "Invalid request method."}, status=405)
+
+    # Extract password from the JSON payload
+    data = json.loads(request.body)
+    password = data.get('password')
+
+    # Authenticate the admin
+    admin_user = authenticate(username=request.user.username, password=password)
+    
+    if not admin_user:
+        logger.warning(f"Password reset attempt with incorrect password by {request.user.username}")
+        return JsonResponse({
+            "success": False,
+            "error": "Incorrect password."
+        }, status=403)
+
     try:
         # Fetch the user or return a 404 if not found
         user = get_object_or_404(User, pk=user_id)
@@ -621,15 +644,13 @@ def admin_initiated_password_reset(request, user_id):
     # Proceed with the password reset logic
     send_password_reset_email(user, domain=request.get_host())
 
-    # Optionally, log the action for auditing
+    # Log the action for auditing
     logger.info(f"Admin {request.user.username} initiated password reset for user {user.username}")
-
-    alert(request, "success", f"Password reset email sent to {user.email}.")
+    
     return JsonResponse({"success": True, "message": f"Password reset email sent to {user.email}."})
 
 
-
-@staff_member_required
+@custom_staff_required
 def admin_toggle_user_state(request, user_id):
     """
     Admin toggles the user's active state.
@@ -657,7 +678,7 @@ def admin_toggle_user_state(request, user_id):
 
 
 
-@staff_member_required
+@custom_staff_required
 def user_orders(request, user_id):
     """
     Displays a user's order and subscription history in the admin dashboard.
@@ -690,7 +711,7 @@ def user_orders(request, user_id):
     )
 
 
-@staff_member_required
+@custom_staff_required
 def update_order_status(request, order_id):
     """
     Allows an admin to update the status of an order from the dashboard.

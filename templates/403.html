@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block title %}Access Denied{% endblock %}
+
+{% block content %}
+<div class="container center-align error-container">
+  <i class="fas fa-exclamation-triangle fa-3x red-text" aria-hidden="true"></i>
+    <h3>403 - Forbidden</h3>
+    <p>You don't have permission to access this page.</p>
+    <a href="{% url 'home' %}" class="btn">Return Home</a>
+</div>
+{% endblock %}

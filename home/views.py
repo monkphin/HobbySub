@@ -7,19 +7,14 @@ Contains view logic for public-facing pages:
 
 # Django/External Imports
 from django.utils.http import url_has_allowed_host_and_scheme
+from django.shortcuts import redirect, render
 from django.core.signing import BadSignature
 from django.contrib.auth.models import User
 from django.core.signing import Signer
-from django.shortcuts import redirect
 from django.contrib.auth import login
-from django.shortcuts import render
 from django.contrib import messages
 from datetime import date
 import logging
-
-
-
-
 
 # Local Imports
 from boxes.models import Box
@@ -159,3 +154,10 @@ def resend_activation(request):
         messages.error(request, "No account found with that email.")
     
     return redirect('check_email')
+
+
+def custom_403(request, exception=None):
+    """
+    Renders the custom 403 Forbidden page.
+    """
+    return render(request, '403.html', status=403)
