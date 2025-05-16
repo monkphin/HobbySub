@@ -22,10 +22,10 @@ from django.http import HttpResponse, JsonResponse
 from django.contrib.auth.models import User
 from urllib.parse import urlparse, parse_qs
 from django.utils.encoding import force_str
+from stripe import error as stripe_error
 from django.core.signing import Signer
 from django.contrib import messages
 from django.conf import settings
-import stripe.error
 import logging
 import stripe
 import json

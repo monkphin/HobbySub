@@ -87,7 +87,8 @@ class Order(models.Model):
 
 
     def __str__(self):
-        return f"Order #{self.id} - {self.user.username}"
+        return f"Order #{self.id} - {self.status}"
+
 
 
 class Payment(models.Model):
@@ -111,4 +112,6 @@ class Payment(models.Model):
 
 
     def __str__(self):
+        if self.order:
+            return f"Payment for Order #{self.order.id} - {self.status}"
         return f"Payment #{self.id} - {self.status}"

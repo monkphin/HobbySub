@@ -133,17 +133,6 @@ def edit_box(request, box_id):
         if form.is_valid():
             try:
                 updated_box = form.save(commit=False)
-                current_date = now().date()
-                
-                # Archive if the date is in the past
-                if updated_box.shipping_date < current_date:
-                    updated_box.is_archived = True
-                    logger.info(f"Box '{updated_box.name}' archived due to past date.")
-                elif updated_box.shipping_date >= current_date and updated_box.is_archived:
-                    # Unarchive logic: Date is in the future and was archived
-                    updated_box.is_archived = False
-                    logger.info(f"Box '{updated_box.name}' unarchived due to future date.")
-                    alert(request, "success", f"Box '{updated_box.name}' is now unarchived.")
                 
                 # Save the box
                 updated_box.save()

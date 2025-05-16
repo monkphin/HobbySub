@@ -12,10 +12,11 @@ All forms use MaterializeCSS-friendly widgets for consistent styling.
 """
 
 # Django Imports
+from django.core.exceptions import ValidationError
 from django.contrib.auth import get_user_model
 from django.utils.timezone import now
+from datetime import date
 from django import forms
-
 
 # Local Imports
 from hobbyhub.mail import send_auto_archive_notification
@@ -45,6 +46,44 @@ class BoxForm(forms.ModelForm):
             raise forms.ValidationError("Description must be 300 characters or fewer.")
         return desc
 
+    def clean_image(self):
+        """
+        Ensure the uploaded image is actually an image file.
+        """
+        image = self.cleaned_data.get('image')
+        if image:
+            # Check if it's a CloudinaryResource or a standard file
+            if hasattr(image, 'content_type'):
+                # This means it's a freshly uploaded image
+                if not image.content_type.startswith('image/'):
+                    raise ValidationError("The uploaded file is not a valid image.")
+            else:
+                # If it's a CloudinaryResource, we need to trust it's valid
+                # You can extend this with Cloudinary's API call to double-check if needed
+                from cloudinary.api import resource
+                try:
+                    metadata = resource(image.public_id)
+                    if 'image' not in metadata.get('resource_type', ''):
+                        raise ValidationError("The saved file is not a valid image.")
+                except Exception as e:
+                    raise ValidationError(f"Could not verify the image from Cloudinary: {e}")
+
+        return image
+
+
+    def save(self, commit=True):
+        instance = super().save(commit=False)
+
+        # Archive logic applied directly to the instance
+        if instance.shipping_date < date.today():
+            instance.is_archived = True
+        else:
+            instance.is_archived = False
+
+        if commit:
+            instance.save()
+        return instance
+
     shipping_date = forms.DateField(
         input_formats=['%d/%m/%Y', '%Y-%m-%d'],
         widget=forms.DateInput(
@@ -55,6 +94,7 @@ class BoxForm(forms.ModelForm):
             }
         )
     )
+
     class Meta:
         model = Box
         fields = [
