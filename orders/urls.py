@@ -9,12 +9,11 @@ from django.urls import path
 
 # Local imports 
 from . import views
-from .views import order_start, select_purchase_type, handle_purchase_type, gift_message, secure_cancel_subscription, order_success, order_cancel, order_history
+from .views import select_purchase_type, handle_purchase_type, gift_message, secure_cancel_subscription, order_success, order_cancel, order_history
 
 
 urlpatterns = [
     # Unified entry point for orders
-    path('start/', order_start, name='order_start'),
     path('select/', select_purchase_type, name='select_purchase_type'),
     path('purchase/<str:plan>/', handle_purchase_type, name='handle_purchase_type'),
     path('gift/message/<str:plan>/', gift_message, name='gift_message'),

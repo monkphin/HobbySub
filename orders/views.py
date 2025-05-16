@@ -60,17 +60,6 @@ logger = logging.getLogger(__name__)
 
 
 @login_required
-def order_start(request):
-    """
-    Presents user with choice: Buy for self or gift.
-    """
-    # Force address selection due to session caching
-    request.session.pop('checkout_shipping_id', None)
-    logger.info(f"{request.user} started an order (fresh session)")
-    return render(request, 'orders/order_start.html')
-
-
-@login_required
 def select_purchase_type(request):
     """
     User selects one of the 5 purchase types (single, sub, etc.).

@@ -144,16 +144,6 @@ class TestPayment:
         assert not Payment.objects.exists()
 
 @pytest.mark.django_db
-def test_order_start_view(client, admin_user):
-    """
-    Tests that the order start page renders correctly.
-    """
-    client.force_login(admin_user)
-    response = client.get(reverse('order_start'))
-    assert response.status_code == 200
-    assert "started an order" in response.content.decode()
-
-@pytest.mark.django_db
 def test_select_purchase_type_view(client, admin_user):
     """
     Tests that the select purchase type page renders correctly.
