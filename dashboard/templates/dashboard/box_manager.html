@@ -78,9 +78,9 @@
                     <a href="{% url 'edit_product' product.id %}" class="btn-small">
                       <i class="fas fa-edit left"></i> Edit
                     </a>
-                    <a href="#!" class="btn-small red delete-product-btn" data-id="{{ product.id }}">
-                      <i class="fas fa-trash-alt left"></i> Delete
-                    </a>
+                    <button type="submit" name="action" value="delete" class="btn-small red">
+                        <i class="fas fa-trash-alt left"></i> Delete
+                    </button>
                   </div>
                 </div>
               </div>

@@ -68,4 +68,5 @@ urlpatterns = [
         views.update_order_status,
         name='update_order_status'
     ),
+    path('user_admin/<int:user_id>/cancel-subscription/', views.admin_cancel_subscription, name='admin_cancel_subscription'),
 ]

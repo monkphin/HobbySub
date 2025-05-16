@@ -24,7 +24,12 @@
     </div>
 
     <div class="button-row">
-      <button type="submit" class="btn green">Save</button>
+    <button 
+        type="button" 
+        class="btn admin-update-user-btn" 
+        data-id="{{ user.id }}">
+        Save
+    </button>
       <a href="{% url 'user_admin' %}" class="btn grey">Cancel</a>
       <a href="#" class="btn-small orange admin-password-reset-btn" data-id="{{ user.id }}">Reset Password</a>
       {% if not user.is_superuser %}

@@ -15,22 +15,24 @@ messaging.
 # Django/External Imports
 from django.contrib.admin.views.decorators import staff_member_required
 from django.shortcuts import render, redirect, get_object_or_404
+from django.views.decorators.http import require_POST
 from django.contrib.auth import get_user_model
 from django.contrib.auth import authenticate
 from cloudinary.uploader import destroy
 from django.utils.timezone import now
 from django.http import JsonResponse
+from django.utils import timezone
 import logging
+import stripe
 import json
 
 # Local Imports
-from hobbyhub.utils import alert
+from hobbyhub.utils import alert, get_subscription_duration_display, get_subscription_status
 from boxes.models import Box, BoxProduct
 from .decorators import custom_staff_required
 from .forms import BoxForm, ProductForm, UserEditForm
 from hobbyhub.mail import send_shipping_confirmation_email, send_auto_archive_notification, send_password_reset_email
 from orders.models import Order, Payment, StripeSubscriptionMeta
-
 
 logger = logging.getLogger(__name__)
 
@@ -114,7 +116,6 @@ def add_box(request):
     )
 
 
-
 @custom_staff_required
 def edit_box(request, box_id):
     """
@@ -124,8 +125,6 @@ def edit_box(request, box_id):
     - On success, redirects back to the box admin overview.
     - Displays error messages on invalid submissions.
     """
-    from django.utils.timezone import now
-    
     box = get_object_or_404(Box, pk=box_id)
     
     if request.method == 'POST':
@@ -134,10 +133,17 @@ def edit_box(request, box_id):
         if form.is_valid():
             try:
                 updated_box = form.save(commit=False)
+                current_date = now().date()
                 
-                # Auto-archive logic
-                if updated_box.shipping_date < now().date():
+                # Archive if the date is in the past
+                if updated_box.shipping_date < current_date:
                     updated_box.is_archived = True
+                    logger.info(f"Box '{updated_box.name}' archived due to past date.")
+                elif updated_box.shipping_date >= current_date and updated_box.is_archived:
+                    # Unarchive logic: Date is in the future and was archived
+                    updated_box.is_archived = False
+                    logger.info(f"Box '{updated_box.name}' unarchived due to future date.")
+                    alert(request, "success", f"Box '{updated_box.name}' is now unarchived.")
                 
                 # Save the box
                 updated_box.save()
@@ -364,6 +370,9 @@ def edit_product(request, product_id):
     - Redirects to the related box’s product editor after saving.
     """
     product = get_object_or_404(BoxProduct, pk=product_id)
+
+    # Track the original state before editing
+    was_orphaned = product.box is None
     
     if request.method == 'POST':
         form = ProductForm(request.POST, request.FILES, instance=product)
@@ -374,11 +383,16 @@ def edit_product(request, product_id):
                 f"'{product.name}' (ID: {product.id})"
             )
             alert(request, "success", "Products successfully edited.")
+            
+            # If it has a box, redirect back to the box view
             if product.box:
                 return redirect('edit_box_products', box_id=product.box.id)
-            else:
+            
+            # If it is now orphaned, but was not orphaned before, show the message
+            if not was_orphaned:
                 alert(request, "warning", "Product is now orphaned (no box linked).")
-                return redirect('manage_orphaned_products')        
+                
+            return redirect('box_admin')
         else:
             alert(
                 request,
@@ -493,26 +507,40 @@ def manage_orphaned_products(request):
     """
     Handles batch reassignment or deletion of orphaned products.
     """
+    # === DEBUGGING OUTPUT ===
+    print("=== DEBUGGING: Entering manage_orphaned_products ===")
+    print(f"Request method: {request.method}")
+    print(f"POST Data: {request.POST}")
+
     action = request.POST.get('action')
     product_ids = request.POST.getlist('product_ids')
+    
+    # Log the action and product IDs
+    print(f"=== DEBUGGING: Action received -> {action}")
+    print(f"=== DEBUGGING: Product IDs received -> {product_ids}")
 
     if action not in ['reassign', 'delete']:
         alert(request, "error", "Invalid action.")
+        print("=== DEBUGGING: Invalid action encountered, redirecting to box_admin ===")
         return redirect('box_admin')
 
     if not product_ids:
         alert(request, "error", "No products selected.")
+        print("=== DEBUGGING: No products selected, redirecting to box_admin ===")
         return redirect('box_admin')
 
     if action == 'reassign':
+        print(f"=== DEBUGGING: Redirecting to reassign_orphaned_products with IDs: {product_ids} ===")
         # Redirect to reassign page
         return redirect('reassign_orphaned_products', product_ids=",".join(product_ids))
 
     elif action == 'delete':
+        print(f"=== DEBUGGING: Deleting products with IDs: {product_ids} ===")
         # Batch delete
         BoxProduct.objects.filter(id__in=product_ids).delete()
         alert(request, "success", f"Deleted {len(product_ids)} orphaned products.")
         return redirect('box_admin')
+
 
 
 @custom_staff_required
@@ -567,28 +595,37 @@ def edit_user(request, user_id):
     user = get_object_or_404(User, pk=user_id)
 
     if request.method == 'POST':
-        form = UserEditForm(request.POST, instance=user)
-        if form.is_valid():
-            form.save()
-            logger.info(
-                f"Admin {request.user} updated user: {user.username} (ID: {user.id})"
-            )
-            alert(
-                request,
-                "success",
-                f"User '{user.username}' updated successfully."
-            )
-            return redirect('user_admin')
-        else:
-            alert(
-                request,
-                "error",
-                f"Unable to update User '{user.username}'."
-            )
-    else:
-        form = UserEditForm(instance=user)
+        # If it's AJAX, handle the JSON request
+        if request.content_type == 'application/json':
+            data = json.loads(request.body)
+            password = data.get('password')
+            form_data = {
+                'username': data.get('username'),
+                'email': data.get('email'),
+                'is_staff': data.get('is_staff')
+            }
 
-    # Adding last login and date joined to the context
+            print(f"Received form data: {form_data}")
+
+            # Authenticate admin user
+            admin_user = authenticate(username=request.user.username, password=password)
+            if not admin_user:
+                logger.warning(f"Password attempt failed for {request.user.username}")
+                return JsonResponse({"success": False, "error": "Password is incorrect."}, status=403)
+
+            # Update the form data
+            form = UserEditForm(form_data, instance=user)
+            if form.is_valid():
+                form.save()
+                logger.info(f"Admin {request.user} updated user: {user.username} (ID: {user.id})")
+                alert(request, "success", f"User '{user.username}' updated successfully.")
+                return JsonResponse({"success": True, "message": f"User '{user.username}' updated successfully."})
+            else:
+                logger.error(f"Form errors: {form.errors}")
+                return JsonResponse({"success": False, "error": "Form data is invalid."}, status=400)
+
+    # Regular GET request
+    form = UserEditForm(instance=user)
     return render(
         request,
         'dashboard/edit_user.html',
@@ -696,6 +733,14 @@ def user_orders(request, user_id):
     active_sub = subs.filter(cancelled_at__isnull=True).first()
     cancelled_subs = subs.filter(cancelled_at__isnull=False)
 
+    sub_map = {
+        sub.stripe_subscription_id: {
+            'sub': sub,
+            'label': get_subscription_duration_display(sub),
+            'status': get_subscription_status(sub),
+        } for sub in subs
+    }
+
     for order in orders:
         order.payment = Payment.objects.filter(order=order).first()
 
@@ -707,6 +752,7 @@ def user_orders(request, user_id):
             'orders': orders,
             'active_sub': active_sub,
             'cancelled_subs': cancelled_subs,
+            'sub_map': sub_map
         }
     )
 
@@ -715,22 +761,35 @@ def user_orders(request, user_id):
 def update_order_status(request, order_id):
     """
     Allows an admin to update the status of an order from the dashboard.
-
-    - Sends a shipping confirmation email if marked as 'shipped'.
     """
     order = get_object_or_404(Order, id=order_id)
 
     if request.method == 'POST':
         new_status = request.POST.get('status')
-        if new_status in dict(Order.STATUS_CHOICES):
+        
+        if new_status == 'cancelled' and order.stripe_subscription_id:
+            # Call Stripe to cancel
+            try:
+                stripe.Subscription.modify(
+                    order.stripe_subscription_id,
+                    cancel_at_period_end=True
+                )
+                order.status = 'cancelled'
+                order.save()
+                alert(request, "success", "Subscription successfully marked as cancelled.")
+            except Exception as e:
+                logger.error(f"Failed to cancel subscription: {e}")
+                alert(request, "error", "Failed to cancel the subscription.")
+        
+        elif new_status == 'cancelled':
+            # If it's just a plain order, mark as cancelled
+            order.status = 'cancelled'
+            order.save()
+            alert(request, "success", f"Order #{order.id} has been cancelled.")
+        
+        elif new_status in dict(Order.STATUS_CHOICES):
             order.status = new_status
             order.save()
-            if new_status == "shipped":
-                send_shipping_confirmation_email(order.user, order.box)
-                logger.info(
-                    f"Shipping confirmation email sent to {order.user.email} "
-                    f"for box {order.box}"
-                )
             alert(
                 request,
                 "success",
@@ -740,3 +799,44 @@ def update_order_status(request, order_id):
             alert(request, "error", "Invalid status selected.")
 
     return redirect('user_orders', user_id=order.user.id)
+
+
+@custom_staff_required
+@require_POST
+def admin_cancel_subscription(request, user_id):
+    """
+    Allows an admin to securely cancel a user's subscription.
+    """
+    data = json.loads(request.body)
+    password = data.get('password')
+    subscription_id = data.get('subscription_id')
+
+    if not subscription_id:
+        return JsonResponse({'success': False, 'error': 'Subscription ID not provided.'})
+
+    if authenticate(username=request.user.username, password=password):
+        try:
+            sub = StripeSubscriptionMeta.objects.get(
+                user_id=user_id,
+                stripe_subscription_id=subscription_id,
+                cancelled_at__isnull=True
+            )
+
+            stripe.Subscription.modify(
+                sub.stripe_subscription_id,
+                cancel_at_period_end=True
+            )
+
+            sub.cancelled_at = timezone.now()
+            sub.save()
+
+            # Log and alert
+            logger.info(f"Admin {request.user} cancelled subscription {subscription_id} for user ID {user_id}")
+            return JsonResponse({'success': True, 'message': 'Subscription will cancel at period end.'})
+
+        except StripeSubscriptionMeta.DoesNotExist:
+            logger.warning(f"Attempted to cancel subscription {subscription_id} for user ID {user_id}, but it was not found.")
+            return JsonResponse({'success': False, 'error': 'No active subscription found to cancel.'})
+
+    else:
+        return JsonResponse({'success': False, 'error': 'Incorrect password'})

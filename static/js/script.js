@@ -74,12 +74,11 @@ M.Datepicker.init(document.querySelectorAll('.datepicker'), {
   }
 
   // Subscription cancellation button
-  document.querySelectorAll('.cancel-subscription-btn').forEach(button => {
+document.querySelectorAll('.cancel-subscription-btn').forEach(button => {
     button.addEventListener('click', () => {
-        const subscriptionId = button.dataset.subscriptionId;
-        
+        const subscriptionId = button.dataset.subscriptionId;       
+
         if (!subscriptionId) {
-            console.error("Subscription ID missing on button.");
             M.toast({ html: "Failed to identify subscription. Please try again.", classes: "red" });
             return;
         }
@@ -88,6 +87,7 @@ M.Datepicker.init(document.querySelectorAll('.datepicker'), {
         modalContext.id = subscriptionId;
     });
 });
+
 
   // === Modal trigger bindings for Box and Product Deletion ===
   document.querySelectorAll('.delete-box-btn').forEach(button => {
@@ -107,6 +107,13 @@ M.Datepicker.init(document.querySelectorAll('.datepicker'), {
   document.querySelectorAll('.admin-toggle-state-btn').forEach(button => {
     button.addEventListener('click', () => {
       openModal('admin_toggle_user_state', button.dataset.id);
+    });
+  });
+
+  // === Modal trigger binding for Admin Save User ===
+  document.querySelectorAll('.admin-update-user-btn').forEach(button => {
+    button.addEventListener('click', () => {
+      openModal('admin_save_user', button.dataset.id);
     });
   });
 
@@ -207,7 +214,7 @@ function openChangeEmailModal() {
     instance.close();
   }
 
-  function submitModalAction() {
+function submitModalAction() {
   const password = document.getElementById('modal-password').value;
   const errorEl = document.getElementById('modal-error');
   errorEl.innerText = '';
@@ -220,6 +227,11 @@ function openChangeEmailModal() {
   let url = '';
   const action = modalContext.action;
 
+  // Initialize payload object
+  let payload = {
+    password: password
+  };
+
   switch (action) {
     case 'delete_account':
       url = GLOBALS.urls.deleteAccount;
@@ -229,6 +241,7 @@ function openChangeEmailModal() {
       break;
     case 'cancel_subscription':
       url = GLOBALS.urls.cancelSubscription;
+      payload.subscription_id = modalContext.id;
       break;
     case 'delete_box':
       url = `/dashboard/box_admin/${modalContext.id}/delete/`;
@@ -239,6 +252,19 @@ function openChangeEmailModal() {
     case 'admin_password_reset':
       url = `/dashboard/user_admin/password-reset/${modalContext.id}/`;
       break;
+    case 'admin_save_user':
+      url = `/dashboard/user_admin/${modalContext.id}/edit/`;
+
+      // Collect form data from the page
+      const formData = {
+        username: document.getElementById('username').value,
+        email: document.getElementById('email').value,
+        is_staff: document.querySelector('input[name="is_staff"]').checked
+      };
+
+      // Merge form data into the main payload
+      Object.assign(payload, formData);
+      break;
     case 'admin_toggle_user_state':
       url = `/dashboard/user_admin/${modalContext.id}/toggle-state/`;
       break;
@@ -248,18 +274,6 @@ function openChangeEmailModal() {
     default:
       errorEl.innerText = 'Invalid action.';
       return;
-  }
-
-  // JSON-based payload
-  const payload = {
-    password: password
-  };
-
-  // Add additional context if needed
-  if (action === 'cancel_subscription') {
-    payload.subscription_id = modalContext.id;
-  } else if (action === 'change_email') {
-    payload.new_email = modalContext.newEmail;
   }
 
   fetch(url, {
@@ -282,7 +296,7 @@ function openChangeEmailModal() {
         errorEl.innerText = data.error || 'Failed to complete action.';
       }
     })
-    .catch(err => {
+    .catch(() => {
       errorEl.innerText = 'Sorry — there was a problem completing your request.';
     });
 }

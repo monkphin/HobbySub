@@ -2,9 +2,9 @@
 Django settings for hobbyhub project.
 """
 
+from dotenv import load_dotenv
 import os
 from pathlib import Path
-from dotenv import load_dotenv
 import dj_database_url
 import cloudinary
 
