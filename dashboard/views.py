@@ -31,7 +31,7 @@ from hobbyhub.utils import alert, get_subscription_duration_display, get_subscri
 from boxes.models import Box, BoxProduct
 from .decorators import custom_staff_required
 from .forms import BoxForm, ProductForm, UserEditForm
-from hobbyhub.mail import send_shipping_confirmation_email, send_auto_archive_notification, send_password_reset_email
+from hobbyhub.mail import send_shipping_confirmation_email, send_auto_archive_notification, send_password_reset_email, send_order_status_update_email
 from orders.models import Order, Payment, StripeSubscriptionMeta
 
 logger = logging.getLogger(__name__)
@@ -745,7 +745,6 @@ def user_orders(request, user_id):
         }
     )
 
-
 @custom_staff_required
 def update_order_status(request, order_id):
     """
@@ -766,6 +765,13 @@ def update_order_status(request, order_id):
                 order.status = 'cancelled'
                 order.save()
                 alert(request, "success", "Subscription successfully marked as cancelled.")
+                
+                # 🔥 Send email notification for cancellation
+                send_order_status_update_email(order.user, order.id, 'cancelled')
+                
+                # 🔔 Fire a toast notification
+                alert(request, "success", "Order has been cancelled and email notification sent.")
+                
             except Exception as e:
                 logger.error(f"Failed to cancel subscription: {e}")
                 alert(request, "error", "Failed to cancel the subscription.")
@@ -775,6 +781,12 @@ def update_order_status(request, order_id):
             order.status = 'cancelled'
             order.save()
             alert(request, "success", f"Order #{order.id} has been cancelled.")
+            
+            # 🔥 Send email notification for cancellation
+            send_order_status_update_email(order.user, order.id, 'cancelled')
+            
+            # 🔔 Fire a toast notification
+            alert(request, "success", "Order has been cancelled and email notification sent.")
         
         elif new_status in dict(Order.STATUS_CHOICES):
             order.status = new_status
@@ -784,6 +796,13 @@ def update_order_status(request, order_id):
                 "success",
                 f"Order #{order.id} status updated to {new_status.title()}."
             )
+            
+            # 🔥 Send email notification for status change
+            send_order_status_update_email(order.user, order.id, new_status)
+            
+            # 🔔 Fire a toast notification
+            alert(request, "success", f"Order status updated to {new_status.title()} and email sent.")
+            
         else:
             alert(request, "error", "Invalid status selected.")
 

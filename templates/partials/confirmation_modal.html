@@ -4,12 +4,15 @@
       <p id="delete-warning" class="orange-text text-darken-2 margin-top-10"></p>
       <p id="modal-message">Please enter your password to confirm.</p>
       <label for="modal-password" class="sr-only">Password</label>
-      <input id="modal-password" type="password" class="browser-default" placeholder="Password">
-      <div id="modal-error" class="red-text margin-top-10"></div>
-    </div>
-    <div class="modal-footer center-align">
-      <button id="modal-cancel-btn" class="btn grey lighten-1 black-text">Cancel</button>
-      <button id="modal-confirm-btn" class="btn green white-text">Confirm</button>
-    </div>
+      <form id="modal-password-form" style="display:none;">
+        <!-- Added username and autocomplete to satisfy Google’s "recommendations" – username field is not actually used -->
+        <input type="text" name="username" autocomplete="username" aria-hidden="true" style="display: none;" />
+        <input id="modal-password" type="password" class="browser-default" placeholder="Password" autocomplete="new-password">
+      </form>
+    <div id="modal-error" class="red-text margin-top-10"></div>
   </div>
-  
+  <div class="modal-footer center-align">
+    <button id="modal-cancel-btn" class="btn grey lighten-1 black-text">Cancel</button>
+    <button id="modal-confirm-btn" class="btn green white-text">Confirm</button>
+  </div>
+</div>

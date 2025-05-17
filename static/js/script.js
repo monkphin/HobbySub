@@ -1,4 +1,5 @@
 document.addEventListener('DOMContentLoaded', function () {
+
   // === Materialize Component Initializations ===
   M.Sidenav.init(document.querySelectorAll('.sidenav'), { edge: 'right' });
   M.Carousel.init(document.querySelectorAll('.carousel'), { duration: 200, dist: -30, shift: 0, padding: 20 });
@@ -34,6 +35,28 @@ M.Datepicker.init(document.querySelectorAll('.datepicker'), {
       weekdaysAbbrev: ['S', 'M', 'T', 'W', 'T', 'F', 'S']
   }
 });
+
+// Form Button Disable on Submit
+  document.querySelectorAll('form').forEach(form => {
+      form.addEventListener('submit', function (event) {
+          const submitButton = form.querySelector('button[type="submit"]');
+
+          if (submitButton) {
+              
+              // Disable the button and indicate it's processing
+              submitButton.disabled = true;
+              submitButton.style.opacity = '0.5';
+
+              // If the form fails (redirect, error, or otherwise), re-enable after 3 seconds
+              setTimeout(() => {
+                  if (submitButton.disabled) {
+                      submitButton.disabled = false;
+                      submitButton.style.opacity = '1';
+                  }
+              }, 3000);
+          }
+      });
+  });
 
   // Toasts
   document.querySelectorAll('.toast').forEach((toast) => {
@@ -144,6 +167,11 @@ function openModal(action, id = null) {
   const title = document.getElementById('modal-title');
   const message = document.getElementById('modal-message');
   const warning = document.getElementById('delete-warning');
+  const form = document.getElementById('modal-password-form');
+
+  // show form when opening modal
+  form.style.display = 'block';
+
   document.getElementById('modal-password').value = '';
   document.getElementById('modal-error').innerText = '';
   if (warning) warning.innerText = '';
@@ -154,13 +182,35 @@ function openModal(action, id = null) {
       message.innerText = 'Please enter your password to permanently delete your account.';
       break;
     case 'delete_address':
-      title.innerText = 'Confirm Address Deletion';
-      message.innerText = 'Please enter your password to delete this saved address.';
-      const addressCards = document.querySelectorAll('.personal-address');
-      if (addressCards.length === 1 && warning) {
-        warning.innerText = "This is your only address. You’ll need to add another before ordering.";
-      }
-      break;
+        title.innerText = 'Confirm Address Deletion';
+        
+        // Find the parent card that has the class
+        const button = document.querySelector(`button[data-id="${id}"]`);
+        const addressElement = button.closest('.address-card');
+
+        if (!addressElement) {
+            console.error(`Address with ID ${id} not found.`);
+            M.toast({ html: "Address not found. Please refresh the page.", classes: "red" });
+            closeModal();
+            return;
+        }
+
+        const isGift = addressElement.classList.contains('gift-address');
+        message.innerText = `Please enter your password to delete this ${isGift ? 'gift' : 'personal'} address.`;
+
+        // Specific warning and clarification based on type
+        if (!isGift) {
+            const addressCards = document.querySelectorAll('.personal-address');
+            if (addressCards.length === 1 && warning) {
+                warning.innerText = "This is your only personal address. You’ll need to add another before ordering.";
+            } else {
+                warning.innerText = "This will affect your default delivery options.";
+            }
+        } else {
+            warning.innerText = "This is your only gift order address.";
+        }
+        break;
+
     case 'cancel_subscription':
       title.innerText = 'Cancel Subscription';
       message.innerText = 'Please enter your password to cancel your subscription.';
@@ -210,6 +260,11 @@ function openChangeEmailModal() {
 
   function closeModal() {
     const modal = document.getElementById('confirmation-modal');
+    const form = document.getElementById('modal-password-form');
+
+    // Hide the form when closing
+    form.style.display = 'none';
+
     const instance = M.Modal.getInstance(modal) || M.Modal.init(modal);
     instance.close();
   }
@@ -270,6 +325,7 @@ function submitModalAction() {
       break;
     case 'change_email':
       url = GLOBALS.urls.changeEmail;
+      payload.new_email = modalContext.newEmail;
       break;
     default:
       errorEl.innerText = 'Invalid action.';

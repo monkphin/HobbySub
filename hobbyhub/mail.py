@@ -295,3 +295,29 @@ def send_auto_archive_notification(box):
         ['admin@hobbysub.com'],
         fail_silently=False,
     )
+    
+
+def send_order_status_update_email(user, order_id, status):
+    """
+    Send an email notification to the user when their order status changes.
+    """
+    status_messages = {
+        'pending': "Your order is currently pending and will be processed soon.",
+        'processing': "Your order is now being processed.",
+        'shipped': "Your order has been shipped and is on its way to you.",
+        'cancelled': "Your order has been cancelled. If you have any questions, please contact support."
+    }
+
+    status_message = status_messages.get(status, "Your order status has been updated.")
+    
+    send_user_email(
+        subject=f"Order Update - Order #{order_id}",
+        message=(
+            f"Hi {user.username},\n\n"
+            f"{status_message}\n\n"
+            "Thank you for choosing Hobby Hub.\n\n"
+            "Best regards,\n"
+            "The Hobby Hub Team"
+        ),
+        recipient_email=user.email
+    )
