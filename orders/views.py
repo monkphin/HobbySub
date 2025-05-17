@@ -84,7 +84,7 @@ def handle_purchase_type(request, plan):
     if not price_id:
         logger.warning(f"Invalid plan selected: {plan}")
         alert(request, "error", "Invalid selection.")
-        return redirect('order_start')
+        return redirect('select_purchase_type')
 
     # ✅ Force address selection if not already chosen
     if 'checkout_shipping_id' not in request.session:
@@ -92,6 +92,20 @@ def handle_purchase_type(request, plan):
         url = reverse('choose_shipping_address', args=[plan])
         gift_param = 'true' if gift else 'false'
         return redirect(f"{url}?gift={gift_param}")
+
+    if gift:
+        logger.info(f"{request.user} selected plan={plan}, gift={gift}")
+        request.session['is_gift'] = True   # ⬅️ Set it in the session
+        request.session.modified = True      # ✅ Explicitly mark the session as modified
+        logger.info(f"[DEBUG] Session content right after setting is_gift=True: {request.session.items()}")
+        return redirect('gift_message', plan=plan)
+    else:
+        request.session['is_gift'] = False
+        request.session.modified = True  
+        logger.info(f"[DEBUG] Session content right after setting is_gift=False: {request.session.items()}")
+
+
+    logger.info(f"[SESSION DEBUG] Session data after setting is_gift: {request.session.items()}")
 
     # ⬇️ Proceed to correct flow based on plan + gift flag
     if plan == "oneoff" and not gift:
@@ -106,8 +120,15 @@ def handle_purchase_type(request, plan):
 
 @login_required
 def gift_message(request, plan):
-    logger.info(f"{request.user} is entering gift message for {plan} plan")
+    logger.info(f"[DEBUG] Session content at gift_message entry: {request.session.items()}")
+    logger.info(f"[SESSION CHECK] Session data at gift_message before refresh: {dict(request.session.items())}")
+    request.session.modified = True
+    request.session.save()  # 🚀 Force it to persist!
+    logger.info(f"[SESSION CHECK] Session data at gift_message after refresh: {dict(request.session.items())}")
 
+    logger.info(f"[SESSION CHECK] Session data at gift_message: {request.session.items()}")
+    logger.info(f"{request.user} is entering gift message for {plan} plan")
+    
     # Only redirect if shipping ID is not in session
     shipping_id = request.session.get('checkout_shipping_id')
     if not shipping_id:
@@ -126,7 +147,7 @@ def gift_message(request, plan):
     # ** Here we add the 'plan' to the context **
     context = {
         'form': form,
-        'plan': plan  # <-- add this line
+        'plan': plan
     }
 
     # If it's a POST request and form is valid, it will continue with Stripe
@@ -142,9 +163,14 @@ def gift_message(request, plan):
                     request.user.id,
                     address_id=shipping_id
                 )
+                
+                is_gift = request.session.get('is_gift', False)  # 🚀 Retrieve it safely from the session
+                logger.info(f"[STRIPE CHECKOUT] Session-based is_gift value: {is_gift}")
+
+                gift_metadata['gift'] = 'true' if is_gift else 'false'
+                logger.info(f"[STRIPE CHECKOUT] Metadata before submission: {gift_metadata}")
 
                 shipping_address = ShippingAddress.objects.get(id=shipping_id)
-
                 checkout_data = {
                     'payment_method_types': ['card'],
                     'mode': 'subscription' if is_subscription else 'payment',
@@ -185,6 +211,7 @@ def handle_checkout(request, price_id):
     Handles checkout for non-gift one-off purchases.
     Goes straight to Stripe without showing a form.
     """
+    logger.info(f"[DEBUG] Session content at handle_checkout entry: {request.session.items()}")
     logger.info(f"{request.user} proceeding to checkout for one-off order")
     shipping_address, redirect_response = get_user_default_shipping_address(
         request
@@ -194,6 +221,7 @@ def handle_checkout(request, price_id):
     metadata = {
         'user_id': request.user.id,
         'shipping_address_id': shipping_address.id if shipping_address else None,
+        'gift': 'false'
     }
 
     # ✅ Now log after metadata is ready
@@ -208,7 +236,10 @@ def handle_checkout(request, price_id):
                 'price': price_id,
                 'quantity': 1,
             }],
-            metadata={'user_id': request.user.id},
+            metadata={
+                'user_id': request.user.id,
+                'shipping_address_id': shipping_address.id
+                },
             payment_intent_data={
                 'metadata': {'user_id': request.user.id},
                 'shipping': build_shipping_details(shipping_address),
@@ -226,7 +257,7 @@ def handle_checkout(request, price_id):
             "There was a problem connecting to the payment service."
             "Please try again shortly."
         )
-        return redirect('order_start')
+        return redirect('select_purchase_type')
 
 
 @login_required
@@ -239,12 +270,28 @@ def create_subscription_checkout(request, price_id):
     # Get shipping ID from session
     shipping_id = request.session.get('checkout_shipping_id')
     if not shipping_id:
-        logger.warning("No shipping address selected for subscription.")
+        plan = request.session.get('plan')
+        if not plan:
+            logger.warning(f"Plan not found in session for user {request.user}.")
+            alert(request, "error", "Please select a valid subscription plan.")
+            return redirect('select_purchase_type')
+
+        logger.warning(f"No shipping address selected for subscription plan '{plan}'.")
         alert(request, "error", "Please select a shipping address.")
-        return redirect('order_start')
+        return redirect('choose_shipping_address', plan=plan)
     
+    # 🚀 Step 1: Determine if it's a gift
     is_gift = request.GET.get('gift', 'false').lower() == 'true'
 
+    # ✅ Store it in the session (same as one-off logic)
+    if is_gift:
+        request.session['is_gift'] = True
+    else:
+        request.session['is_gift'] = False
+    request.session.modified = True
+    logger.info(f"[SESSION DEBUG] Subscription session — is_gift set to {is_gift}")
+
+    # 🚀 Step 2: Collect gift details if it's a gift
     if is_gift:
         recipient_name = request.POST.get('recipient_name', '')
         recipient_email = request.POST.get('recipient_email', '')
@@ -253,28 +300,33 @@ def create_subscription_checkout(request, price_id):
     else:
         recipient_name = recipient_email = sender_name = gift_message = ''
 
+    # 🚀 Step 3: Build metadata
     metadata = {
         'user_id': request.user.id,
         'shipping_address_id': shipping_id,
-        'is_gift': json.dumps(is_gift),
+        'gift': 'true' if is_gift else 'false',
         'recipient_name': recipient_name,
         'recipient_email': recipient_email,
         'sender_name': sender_name,
+        'gift_message': gift_message
     }
-    
-    logger.info(f"[SUBSCRIPTION] Creating session with metadata: {metadata}")
+
+    # ✅ Add debug log after metadata is complete
+    logger.info(f"[DEBUG] Subscription session creation — is_gift={is_gift}, metadata={metadata}")
 
     try:
         address = ShippingAddress.objects.get(id=shipping_id)
 
         if not address:
             logger.error(f"No address found for ID {shipping_id}")
+            alert(request, "error", "Shipping address not found.")
+            return redirect('choose_shipping_address')
         else:
             logger.info(f"Found Address: {address}")
 
-        # ✅ Step 1: Check if customer ID already exists for the user
+        # Step 1: Check if customer ID already exists for the user
         if not request.user.profile.stripe_customer_id:
-            # ⬇️ If not, create a new customer and save it
+            # ⬇If not, create a new customer and save it
             customer = stripe.Customer.create(
                 email=request.user.email,
                 shipping={
@@ -463,11 +515,25 @@ def choose_shipping_address(request, plan):
             alert(request, "error", "Please select an address.")
             return redirect('choose_shipping_address', plan=plan)
 
+        if not request.user.addresses.filter(id=selected_id).exists():
+            logger.warning(f"Address ID {selected_id} not found for user {request.user}")
+            alert(request, "error", "Invalid address selected.")
+            return redirect('choose_shipping_address', plan=plan)
+
         logger.info(
             f"{request.user} selected shipping address ID "
             f"{selected_id} for plan {plan}, gift={gift}"
         )
         request.session['checkout_shipping_id'] = int(selected_id)
+
+        if gift:
+            request.session['is_gift'] = True
+        else:
+            request.session['is_gift'] = False
+        request.session.modified = True
+
+        logger.info(f"[SESSION DEBUG] After address selection, session data: {request.session.items()}")
+
 
         if gift:
             return redirect('gift_message', plan=plan)

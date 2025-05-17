@@ -14,9 +14,12 @@ Relies on:
 - Django ORM (orders, users, subscriptions)
 - HobbyHub custom mailers
 """
+import time
 import stripe
 import logging
+from django.db import connection
 from django.utils import timezone
+from django.db import transaction
 from django.contrib.auth.models import User
 from django.db import IntegrityError, transaction
 
@@ -50,11 +53,24 @@ def handle_checkout_session_completed(session):
     user_id = metadata.get('user_id')
     address_id = metadata.get('shipping_address_id')
 
-    # Explicitly force it to Boolean
-    is_gift = bool(metadata.get('recipient_email'))
-    logger.info(f"[WEBHOOK] Parsed is_gift as: {is_gift}")
+    # 🔍 Check the explicit gift flag
+    gift_flag = metadata.get('gift', 'false').lower() == 'true'
+    is_gift = gift_flag
+    logger.info(f"[WEBHOOK] Gift parsing logic — gift flag from metadata: {gift_flag}")
 
+    recipient_email = metadata.get('recipient_email', '')
+    sender_name = metadata.get('sender_name', '')
+    recipient_name = metadata.get('recipient_name', '')
 
+    if not user_id or not address_id:
+        logger.error("User ID or Address ID missing from metadata.")
+        return
+
+    logger.info(f"[WEBHOOK] Gift parsing logic — recipient_email: {recipient_email}, "
+                f"sender_name: {sender_name}, recipient_name: {recipient_name}, "
+                f"parsed is_gift: {is_gift}")
+
+    logger.info(f"[WEBHOOK] Gift parsing logic — recipient_email: {recipient_email}, parsed is_gift: {is_gift}")
 
     logger.info(f"[WEBHOOK] Metadata received from Stripe: {metadata}")
     logger.info(f"[WEBHOOK] Subscription ID received: {session.get('subscription')}")
@@ -73,6 +89,15 @@ def handle_checkout_session_completed(session):
     except User.DoesNotExist:
         logger.error(f"User with ID {user_id} not found")
         return
+    
+    box = Box.objects.filter(is_archived=False).order_by('-shipping_date').first()
+    if not box:
+        logger.error(f"[CRITICAL] No active boxes found for Order creation. Retrying in 2 seconds.")
+        time.sleep(2)
+        box = Box.objects.filter(is_archived=False).order_by('-shipping_date').first()
+        if not box:
+            logger.critical(f"[CRITICAL] Retry failed. No active boxes available. This order will be missing a Box ID and Shipping Date.")
+
 
     if mode == 'subscription':
         try:
@@ -89,29 +114,58 @@ def handle_checkout_session_completed(session):
             logger.info(f"Retrieved subscription: {sub_id}, price_id: {price_id}")
             
             # Create Subscription Meta
-            StripeSubscriptionMeta.objects.create(
-                user=user,
-                stripe_subscription_id=sub_id,
-                stripe_price_id=price_id,
-                shipping_address_id=address_id,
-                is_gift=is_gift
-            )
+            try:
+                shipping_address = ShippingAddress.objects.get(id=address_id, user=user)
+            except ShippingAddress.DoesNotExist:
+                logger.error(f"No address found for user {user.id} with address_id={address_id}")
+                return
+
+            with transaction.atomic():
+
+                sub_meta, created = StripeSubscriptionMeta.objects.update_or_create(
+                    stripe_subscription_id=sub_id,
+                    defaults={
+                        'is_gift': is_gift,
+                        'shipping_address_id': address_id,
+                        'user_id': user_id
+                    }
+                )
+
+            # Extract directly from metadata for email only
+            recipient_email = metadata.get('recipient_email')
+            recipient_name = metadata.get('recipient_name', 'Friend')
+            sender_name = metadata.get('sender_name', 'Someone')
+            gift_message = metadata.get('gift_message', '')
+
+            # Send the appropriate emails
+            if is_gift and recipient_email:
+                send_gift_notification_to_recipient(
+                    recipient_email,
+                    sender_name,
+                    gift_message,
+                    recipient_name
+                )
+                send_gift_confirmation_to_sender(user, recipient_name)
+                logger.info(f"[EMAIL] Gift confirmation sent to {recipient_email}")
+            else:
+                # You need `plan_name` here. Make sure it's defined earlier in your code.
+                _, plan_name = PLAN_MAP.get(price_id, (None, "Unknown Plan"))
+                send_subscription_confirmation_email(user, plan_name)
+                logger.info(f"[EMAIL] Subscription confirmation email sent to {user.email} for {plan_name}")
+
+                if created:
+                    logger.info(f"[CREATED] StripeSubscriptionMeta for {sub_id} with is_gift={is_gift}")
+                else:
+                    logger.warning(f"[EXISTS] StripeSubscriptionMeta for {sub_id} already exists, skipping creation.")
+
+            if not created:
+                sub_meta.stripe_price_id = price_id
+                sub_meta.shipping_address = shipping_address
+                sub_meta.is_gift = is_gift
+                sub_meta.save()
+
             logger.info(f"[CREATED] StripeSubscriptionMeta for {sub_id} with is_gift={is_gift}")
             logger.info(f"Created StripeSubscriptionMeta for {sub_id}")
-
-            # Create Order
-            box = Box.objects.filter(is_archived=False).order_by('-shipping_date').first()
-            Order.objects.create(
-                user=user,
-                stripe_subscription_id=sub_id,
-                shipping_address_id=address_id,
-                box=box,
-                order_date=timezone.now().date(),
-                scheduled_shipping_date=box.shipping_date if box else None,
-                status='processing',
-                is_gift=is_gift
-            )
-            logger.info(f"[CREATED] Order for subscription {sub_id} with is_gift={is_gift}")
 
             try:
                 _, plan_name = PLAN_MAP.get(price_id, (None, "Unknown Plan"))
@@ -135,103 +189,120 @@ def handle_checkout_session_completed(session):
                     logger.info(f"[EMAIL] Subscription confirmation email sent to {user.email} for {plan_name}")
             except Exception as e:
                 logger.error(f"Error in creating subscription/order: {e}")
-
+                raise
 
         except Exception as e:
             logger.error(f"Error in creating subscription/order: {e}")
 
-
     elif mode == 'payment':
         try:
-            if 'payment_intent' not in session or not session['payment_intent']:
-                session = stripe.checkout.Session.retrieve(
-                    session["id"],
-                    expand=["payment_intent"]
-                )
-
-            print("Stripe Session Object: ", session)
-            # Get the payment intent ID from the session
-            payment_intent_id = session['payment_intent']
-
-            if Payment.objects.filter(payment_intent_id=payment_intent_id).exists():
-                logger.warning(f"[SKIP] PaymentIntent {payment_intent_id} already handled, skipping.")
+            # ➡️ Fetch the payment_intent_id
+            payment_intent_id = session.get('payment_intent')
+            if not payment_intent_id:
+                logger.error(f"No payment_intent_id found for session {session.get('id')}")
                 return
-
+            
+            # ➡️ Check if the payment already exists
+            if Payment.objects.filter(payment_intent_id=payment_intent_id).exists():
+                logger.info(f"[SKIP] PaymentIntent {payment_intent_id} already processed, skipping.")
+                return
+            
+            # ➡️ Retrieve the PaymentIntent from Stripe
             payment_intent = stripe.PaymentIntent.retrieve(payment_intent_id)
             shipping_info = payment_intent.shipping
 
-            if not shipping_info:
-                logger.info("No shipping info in payment intent")
+            # ➡️ Validate shipping info
+            if not shipping_info or not shipping_info.address:
+                logger.error(f"No shipping info found in PaymentIntent {payment_intent_id}")
                 return
             
-            address_id = metadata.get('shipping_address_id')
-            address = ShippingAddress.objects.filter(user=user, id=address_id).first()
+            # ➡️ Attempt to get the Shipping Address from DB
+            try:
+                shipping_address = ShippingAddress.objects.get(id=address_id, user=user)
+            except ShippingAddress.DoesNotExist:
+                logger.error(f"No address found for user {user.id} with address_id={address_id}")
+                return
 
-            # If the ID lookup fails, fallback to postcode
-            if not address:
-                postcode = shipping_info['address']['postal_code']
-                address = ShippingAddress.objects.filter(
-                    user=user,
-                    postcode__iexact=postcode  # <-- Case-insensitive search
-                ).first()
-
+            # ➡️ Extract metadata directly
             recipient_email = metadata.get('recipient_email')
+            recipient_name = metadata.get('recipient_name', 'Friend')
             sender_name = metadata.get('sender_name', 'Someone')
             gift_message = metadata.get('gift_message', '')
-            amount_total = session.get('amount_total', 0)
 
-            try:
-                with transaction.atomic():
-                    order = Order.objects.select_for_update().filter(stripe_payment_intent_id=payment_intent_id).first()
-                    if order:
-                        logger.warning(f"[SKIP] PaymentIntent {payment_intent_id} already exists.")
-                        return
-
-                    # If no order exists, we create it
-                    order = Order.objects.create(
-                        user=user,
-                        shipping_address=address,
-                        box=None,
-                        stripe_subscription_id=None,
-                        stripe_payment_intent_id=payment_intent_id,
-                        scheduled_shipping_date=None,
-                        status='processing'
-                    )
-
-                    Payment.objects.create(
-                        user=user,
-                        order=order,
-                        payment_date=timezone.now(),
-                        amount=amount_total / 100,
-                        status='paid',
-                        payment_method='card',
-                        payment_intent_id=payment_intent.id,
-                    )
-                    logger.warning(f"[CREATED] One-off order ID {order.id} and payment {payment_intent.id} for user {user.id}")
-
-            except IntegrityError as e:
-                logger.error(f"IntegrityError detected: {e}")
-
-
-            logger.warning(f"[CREATED] One-off order ID {order.id} and payment {payment_intent.id} for user {user.id}")
-
-            if is_gift and recipient_email:
-                recipient_name = metadata.get('recipient_name', 'Friend')
-                send_gift_notification_to_recipient(
-                    recipient_email,
-                    sender_name,
-                    gift_message,
-                    recipient_name
+            # ➡️ Transaction-safe creation of Order and Payment
+            with transaction.atomic():
+                order, created = Order.objects.get_or_create(
+                    stripe_payment_intent_id=payment_intent_id,
+                    defaults={
+                        'user': user,
+                        'shipping_address': shipping_address,
+                        'box': box,
+                        'order_date': timezone.now().date(),
+                        'scheduled_shipping_date': box.shipping_date if box else None,
+                        'status': 'processing',
+                        'is_gift': is_gift
+                    }
                 )
-                send_gift_confirmation_to_sender(user, recipient_name)
-                logger.info(f"Gift confirmation sent to {recipient_email}")
-            else:
-                send_order_confirmation_email(user, order.id)
-                logger.info(f"Order confirmation sent to {user.email}")
 
+                # ✅ Always refresh from DB, even if it wasn't created (could have been updated)
+                order.refresh_from_db()
+                logger.info(f"[POST-REFRESH] Order {order.id} - Box ID: {order.box_id}, Scheduled Shipping Date: {order.scheduled_shipping_date}")
+
+                if not order.box_id:
+                    logger.warning(f"[DB WARNING] Order {order.id} was created without a Box ID. Expected Box ID: {box.id if box else 'None'}")
+
+                if created:
+                    logger.info(f"[CREATED] Order {order.id} for payment intent {payment_intent_id} with is_gift={is_gift}")
+                else:
+                    if is_gift and not order.is_gift:
+                        logger.warning(f"[FORCE UPDATE] Order {order.id} -> is_gift=True (Webhook Force)")
+                        order.is_gift = True
+                        order.save(update_fields=['is_gift'])
+                        order.refresh_from_db()
+                        if not order.is_gift:
+                            logger.error(f"[DB MISMATCH] Order {order.id} still reports is_gift=False after save.")
+                        else:
+                            logger.info(f"[DB SUCCESS] Order {order.id} is_gift=True now reflected in DB")
+
+
+            # ➡️ Create Payment Record
+            if not Payment.objects.filter(payment_intent_id=payment_intent_id).exists():
+                Payment.objects.create(
+                    user=user,
+                    order=order,
+                    payment_date=timezone.now(),
+                    amount=payment_intent.amount_received / 100,  # Stripe sends in pence
+                    status='paid',
+                    payment_method='card',
+                    payment_intent_id=payment_intent_id,
+                )
+                logger.info(f"[CREATED] One-off order ID {order.id} and payment {payment_intent_id} for user {user.id}")
+            else:
+                logger.warning(f"[SKIP] PaymentIntent {payment_intent_id} already processed, skipping payment creation.")
+
+            # ➡️ Send the appropriate emails
+            if is_gift:
+                if recipient_email and recipient_name:
+                    # Send recipient and sender notifications
+                    send_gift_notification_to_recipient(
+                        recipient_email,
+                        sender_name or "Someone",
+                        gift_message or "No message provided.",
+                        recipient_name
+                    )
+                    send_gift_confirmation_to_sender(user, recipient_name)
+                    logger.info(f"[EMAIL] Gift confirmation sent to {recipient_email}")
+                else:
+                    # 🚨 **Graceful logging for incomplete data**
+                    logger.warning(f"[EMAIL WARNING] Gift selected but recipient information is incomplete: "
+                                f"Email='{recipient_email}', Name='{recipient_name}'")
 
         except Exception as e:
             logger.error(f"Error handling one-off payment: {e}")
+
+        except Exception as e:
+            logger.error(f"Error handling one-off payment: {e}")
+
 
     else:
         logger.error(f"Unhandled checkout mode: {mode}")
@@ -256,16 +327,36 @@ def handle_invoice_payment_succeeded(invoice):
     try:
         # Fetch the customer from Stripe
         customer = stripe.Customer.retrieve(customer_id)
-        user = User.objects.get(email=customer.get('email'))
+        email = customer.get('email')
+        if not email:
+            logger.error(f"No email found for Stripe customer {customer.id} for invoice {invoice.get('id')}")
+            return
+        
+        user = User.objects.get(email=email)
 
         # Fetch associated subscription metadata
-        sub_meta = StripeSubscriptionMeta.objects.filter(
-            stripe_subscription_id=subscription_id
-        ).select_related('shipping_address').first()
+        sub_meta, created = StripeSubscriptionMeta.objects.get_or_create(
+            stripe_subscription_id=subscription_id,
+            defaults={
+                'user': user,
+                'stripe_price_id': invoice['lines']['data'][0]['price']['id'],
+                'shipping_address': None,  # Update when available
+                'is_gift': False
+            }
+        )
 
-        if not sub_meta:
-            logger.error(f"No StripeSubscriptionMeta found for sub ID {subscription_id}")
+        # Fetch the shipping address from sub_meta
+        shipping_address = sub_meta.shipping_address
+        if not shipping_address:
+            logger.error(f"No shipping address found for subscription {subscription_id}")
             return
+
+        if not created:
+            # Sync the data if it already existed
+            sub_meta.stripe_price_id = invoice['lines']['data'][0]['price']['id']
+            sub_meta.shipping_address = shipping_address
+            sub_meta.is_gift = sub_meta.is_gift
+            sub_meta.save()
 
         shipping = sub_meta.shipping_address
         if not shipping:
@@ -280,23 +371,29 @@ def handle_invoice_payment_succeeded(invoice):
         )
 
         # ➡️ Fetch or create the order
-        order, created = Order.objects.get_or_create(
-            stripe_subscription_id=subscription_id,
-            defaults={
-                'user': user,
-                'shipping_address': shipping,
-                'box': box,
-                'order_date': payment_date.date(),
-                'scheduled_shipping_date': box.shipping_date if box else None,
-                'status': 'processing',
-                'is_gift': sub_meta.is_gift   # <-- Ensure it is stored here
-            }
-        )
+        try:
+            order, created = Order.objects.get_or_create(
+                stripe_subscription_id=subscription_id,
+                defaults={
+                    'user': user,
+                    'shipping_address': shipping_address,
+                    'box': box,
+                    'order_date': payment_date.date(),
+                    'scheduled_shipping_date': box.shipping_date if box else None,
+                    'status': 'processing',
+                    'is_gift': sub_meta.is_gift
+                }
+            )
+            if created:
+                logger.info(f"[CREATED] Order {order.id} for subscription {subscription_id} with is_gift={sub_meta.is_gift}")
+            else:
+                logger.warning(f"[EXISTS] Order {order.id} already exists for subscription {subscription_id}")
+        except Exception as e:
+            logger.error(f"Failed to create Order for subscription {subscription_id}: {e}")
 
-        if created:
-            logger.info(f"[CREATED] Order {order.id} for subscription {subscription_id} with is_gift={sub_meta.is_gift}")
-        else:
-            logger.warning(f"[EXISTS] Order {order.id} already exists for subscription {subscription_id}")
+        if not invoice.get('payment_intent'):
+            logger.error(f"No payment_intent found for invoice {invoice.get('id')}")
+            return
 
         # ➡️ Always create a Payment record
         payment, created = Payment.objects.get_or_create(
@@ -359,13 +456,17 @@ def handle_invoice_upcoming(invoice):
     """
     next_renewal_ts = invoice.get('next_payment_attempt')
     if not next_renewal_ts:
-        logger.info("No next_payment_attempt found.")
+        logger.error("No next_payment_attempt found. Cannot proceed with invoice renewal.")
         return
 
-    next_renewal = timezone.datetime.fromtimestamp(
-        next_renewal_ts,
-        tz=timezone.utc
-    )
+    try:
+        next_renewal = timezone.datetime.fromtimestamp(
+            next_renewal_ts,
+            tz=timezone.utc
+        )
+    except (ValueError, TypeError):
+        logger.error(f"Invalid timestamp for renewal on invoice {invoice.get('id')}: {next_renewal_ts}")
+        return
 
     try:
         customer = stripe.Customer.retrieve(invoice.get('customer'))

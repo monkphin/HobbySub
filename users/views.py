@@ -265,9 +265,10 @@ def add_address(request):
                         user=request.user,
                         is_default=True
                     ).update(is_default=False)
-
-                if ShippingAddress.objects.filter(user=request.user).count() == 0:
+ 
+                if not gift and not ShippingAddress.objects.filter(user=request.user, is_default=True).exists():
                     address.is_default = True
+
 
             address.save()
 

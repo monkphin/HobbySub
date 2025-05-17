@@ -33,6 +33,7 @@ class StripeSubscriptionMeta(models.Model):
         blank=True,
         null=True
     )
+    shipping_address = models.ForeignKey(ShippingAddress, on_delete=models.CASCADE)
     is_gift = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     cancelled_at = models.DateTimeField(null=True, blank=True)
