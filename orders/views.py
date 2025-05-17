@@ -398,21 +398,25 @@ def order_cancel(request):
     )
     return render(request, 'orders/order_cancel.html')
 
-
 @login_required
 def order_history(request):
-    all_orders = Order.objects.select_related("shipping_address").filter(
+    # 🛠️ Force refresh the queryset as a list to avoid stale data
+    all_orders = list(Order.objects.select_related("shipping_address").filter(
         user=request.user
-    ).order_by('-order_date')    
+    ).order_by('-order_date', '-id'))
+
     payments = Payment.objects.filter(order__in=all_orders)
     subscriptions = StripeSubscriptionMeta.objects.filter(user=request.user)
+
     sub_map = {
         sub.stripe_subscription_id: {
             'sub': sub,
             'label': get_subscription_duration_display(sub),
             'status': get_subscription_status(sub),
+            'is_gift': sub.is_gift
         } for sub in subscriptions
     }
+
     payments_by_order = {p.order_id: p for p in payments}
 
     sub_orders = [o for o in all_orders if o.stripe_subscription_id]

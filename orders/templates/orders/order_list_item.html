@@ -1,69 +1,89 @@
 {% load static %}
 {% load custom_filters %}
 
+<!-- Order List Item -->
 <li class="collection-item">
+
+    <!-- 🔎 Main Order Information -->
     <strong>Order #{{ order.id }}</strong><br>
     <strong>Status:</strong> {{ order.status|title }}<br>
     <strong>Order Date:</strong> {{ order.order_date|date:"F j, Y" }}<br>
-    {% if order.stripe_subscription_id %}
-      {% with sub_map|get_item:order.stripe_subscription_id as sub_info %}
-        <p><strong>Plan:</strong> {{ sub_info.label }}</p>
-      {% endwith %}
+    <strong>Gift:</strong> {{ order.is_gift|yesno:"Yes,No" }}<br>    
+
+  
+    <!-- 📦 Shipping Information -->
+    <strong>Shipping To:</strong> 
+    {{ order.shipping_address.recipient_f_name }} 
+    {{ order.shipping_address.recipient_l_name }}, 
+    {{ order.shipping_address.postcode }}<br>
+
+    {% if order.scheduled_shipping_date %}
+        <strong>Estimated Shipping Date:</strong> {{ order.scheduled_shipping_date|date:"F j, Y" }}<br>
     {% endif %}
-  
-    <strong>Shipping To:</strong> {{ order.shipping_address.recipient_f_name }} {{ order.shipping_address.recipient_l_name }}, {{ order.shipping_address.postcode }}<br>
+    
+    <!-- 🎯 Action Buttons -->
     <div class="btn-group">
-      <a class="btn-small modal-trigger" href="#order-modal-{{ order.id }}">
-        View Details
-      </a>
-      {% if order.stripe_subscription_id %}
-        {% with sub_map|get_item:order.stripe_subscription_id as sub_info %}
-          {% if not sub_info.sub.cancelled_at %}
-            <button class="btn-small red lighten-1 white-text cancel-subscription-btn" data-subscription-id="{{ sub_info.sub.stripe_subscription_id }}">
-              Cancel Subscription
-            </button>   
-          {% else %}
-            <p><strong>Status:</strong> <span class="red-text text-darken-2">Cancelled on {{ sub_info.sub.cancelled_at|date:"d M Y" }}</span></p>
-          {% endif %}
-        {% endwith %}
-      {% endif %}
-    </div>
-  </li>
-  
-  <!-- Modal for Order Details -->
-  <div id="order-modal-{{ order.id }}" class="modal">
-    <div class="modal-content">
-      <h4>Order #{{ order.id }}</h4>
-      <p><strong>Status:</strong> {{ order.status|title }}</p>
-      <p><strong>Order Date:</strong> {{ order.order_date|date:"F j, Y" }}</p>
-      {% with payments_by_order|get_item:order.id as payment %}
-        {% if payment %}
-          <p><strong>Payment:</strong> £{{ payment.amount }} — {{ payment.status|title }}</p>
-          <p><strong>Date:</strong> {{ payment.payment_date|date:"M d, Y H:i" }}</p>
-        {% else %}
-          <p><strong>Payment:</strong> Not recorded</p>
+        <a class="btn-small modal-trigger" href="#order-modal-{{ order.id }}">
+            View Details
+        </a>
+        
+        {% if order.stripe_subscription_id %}
+            {% with sub_map|get_item:order.stripe_subscription_id as sub_info %}
+                {% if sub_info and not sub_info.sub.cancelled_at %}
+                    <button class="btn-small red lighten-1 white-text cancel-subscription-btn" data-subscription-id="{{ sub_info.sub.stripe_subscription_id }}">
+                        Cancel Subscription
+                    </button>   
+                {% elif sub_info %}
+                    <p><strong>Status:</strong> 
+                        <span class="red-text text-darken-2">
+                            Cancelled on {{ sub_info.sub.cancelled_at|date:"d M Y" }}
+                        </span>
+                    </p>
+                {% endif %}
+            {% endwith %}
         {% endif %}
-      {% endwith %}
-      <p><strong>Shipping Address:</strong><br>
-        {{ order.shipping_address.recipient_f_name }} {{ order.shipping_address.recipient_l_name }}<br>
-        {{ order.shipping_address.address_line_1 }}<br>
-        {% if order.shipping_address.address_line_2 %}
-          {{ order.shipping_address.address_line_2 }}<br>
-        {% endif %}
-        {{ order.shipping_address.town_or_city }}<br>
-        {{ order.shipping_address.county }}<br>
-        {{ order.shipping_address.postcode }}<br>
-        {{ order.shipping_address.country.name }}<br>
-        {{ order.shipping_address.phone_number }}
-      </p>
-      {% if order.scheduled_shipping_date %}
-        <p><strong>Estimated Shipping Date:</strong> {{ order.scheduled_shipping_date|date:"F j, Y" }}</p>
-      {% endif %}
-      {% if order.box %}
-        <p><strong>Box:</strong> {{ order.box.name }}</p>
-      {% endif %}
     </div>
-    <div class="modal-footer btn-group">
-      <a href="#!" class="modal-close btn-flat">Close</a>
-    </div>
+</li>
+
+<!-- 🔎 Modal for Order Details -->
+<div id="order-modal-{{ order.id }}" class="modal">
+  <div class="modal-content">
+    <h4>Order #{{ order.id }}</h4>
+    <p><strong>Status:</strong> {{ order.status|title }}</p>
+    <p><strong>Order Date:</strong> {{ order.order_date|date:"F j, Y" }}</p>
+
+    {% with payments_by_order|get_item:order.id as payment %}
+      {% if payment %}
+        <p><strong>Payment:</strong> £{{ payment.amount }} — {{ payment.status|title }}</p>
+        <p><strong>Date:</strong> {{ payment.payment_date|date:"M d, Y H:i" }}</p>
+      {% else %}
+        <p><strong>Payment:</strong> Not recorded</p>
+      {% endif %}
+    {% endwith %}
+    
+    <p><strong>Shipping Address:</strong><br>
+      {{ order.shipping_address.recipient_f_name }} {{ order.shipping_address.recipient_l_name }}<br>
+      {{ order.shipping_address.address_line_1 }}<br>
+      {% if order.shipping_address.address_line_2 %}
+        {{ order.shipping_address.address_line_2 }}<br>
+      {% endif %}
+      {{ order.shipping_address.town_or_city }}<br>
+      {{ order.shipping_address.county }}<br>
+      {{ order.shipping_address.postcode }}<br>
+      {{ order.shipping_address.country.name }}<br>
+      {{ order.shipping_address.phone_number }}
+    </p>
+    
+    {% if order.scheduled_shipping_date %}
+      <p><strong>Estimated Shipping Date:</strong> {{ order.scheduled_shipping_date|date:"F j, Y" }}</p>
+    {% endif %}
+    
+    {% if order.box %}
+      <p><strong>Box:</strong> {{ order.box.name }}</p>
+    {% endif %}
   </div>
+  
+  <div class="modal-footer btn-group">
+    <a href="#!" class="modal-close btn-flat">Close</a>
+  </div>
+</div>

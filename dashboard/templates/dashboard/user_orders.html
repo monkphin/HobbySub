@@ -19,6 +19,7 @@
           <th>Order Date</th>
           <th>Payment Status</th>
           <th>Order Status</th>
+          <th>Is Gift</th>
           <th>Subscription Status</th>
           <th>Box Name</th>
         </tr>
@@ -76,6 +77,11 @@
                       </div>
                   </form>
               {% endif %}
+          </td>
+
+          <!-- Is Gift Logic -->
+          <td>
+          {{ order.is_gift|yesno:"Yes,No" }}
           </td>
 
           <!-- Subscription Logic -->
