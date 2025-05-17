@@ -137,7 +137,7 @@ def send_password_reset_email(user, domain, protocol='https'):
 def send_order_confirmation_email(user, order_id):
     """Send order confirmation email."""
     send_user_email(
-        subject="Order Confirmation",
+        subject=f"Order Confirmation - Order #{order_id}",
         message=(
             f"Thanks for your order #{order_id}, it's now being processed."
         ),
