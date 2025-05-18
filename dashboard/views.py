@@ -6,33 +6,36 @@ Custom admin dashboard views for managing:
 - Products (CRUD, orphan management).
 - Users (admin-only edit/deactivation).
 - Orders and subscriptions (view history per user).
-
 All views are protected with @staff_member_required.
 Uses MaterializeCSS-compatible forms and a custom `alert()` utility for
 messaging.
 """
 
-# Django/External Imports
-from django.contrib.admin.views.decorators import staff_member_required
-from django.shortcuts import render, redirect, get_object_or_404
-from django.views.decorators.http import require_POST
-from django.contrib.auth import get_user_model
-from django.contrib.auth import authenticate
-from cloudinary.uploader import destroy
-from django.utils.timezone import now
-from django.http import JsonResponse
-from django.utils import timezone
-import logging
-import stripe
 import json
+import logging
 
-# Local Imports
-from hobbyhub.utils import alert, get_subscription_duration_display, get_subscription_status
+import stripe
+from cloudinary.uploader import destroy
+# Django/External Imports
+from django.contrib.auth import authenticate, get_user_model
+from django.http import JsonResponse
+from django.shortcuts import get_object_or_404, redirect, render
+from django.utils import timezone
+from django.utils.timezone import now
+from django.views.decorators.http import require_POST
+
 from boxes.models import Box, BoxProduct
+from hobbyhub.mail import (send_auto_archive_notification,
+                           send_order_status_update_email,
+                           send_password_reset_email,
+                           send_shipping_confirmation_email)
+# Local Imports
+from hobbyhub.utils import (alert, get_subscription_duration_display,
+                            get_subscription_status)
+from orders.models import Order, Payment, StripeSubscriptionMeta
+
 from .decorators import custom_staff_required
 from .forms import BoxForm, ProductForm, UserEditForm
-from hobbyhub.mail import send_shipping_confirmation_email, send_auto_archive_notification, send_password_reset_email, send_order_status_update_email
-from orders.models import Order, Payment, StripeSubscriptionMeta
 
 logger = logging.getLogger(__name__)
 
@@ -79,7 +82,7 @@ def add_box(request):
         if form.is_valid():
             try:
                 new_box = form.save(commit=False)  # Do not commit yet
-                
+
                 # Auto-archive if date is in the past
                 if new_box.shipping_date < now().date():
                     new_box.is_archived = True
@@ -87,23 +90,36 @@ def add_box(request):
                 # Save to DB
                 new_box.save()
                 alert(request, "success", "Box successfully created.")
-                logger.info(f"Admin {request.user} created box: {new_box.name}")
-                
+                logger.info(
+                    f"Admin {request.user} created box: {new_box.name}"
+                )
+
                 # Send the email
                 if new_box.is_archived:
                     send_auto_archive_notification(new_box)
-                    
+
                 return redirect('edit_box_products', box_id=new_box.id)
-            
+
             except Exception as e:
                 import traceback
                 tb = traceback.format_exc()
                 logger.error(f"Failed to create box: {e}\nTraceback:\n{tb}")
-                alert(request, "error", f"There was a problem creating the box: {e}")
+                alert(
+                    request,
+                    "error",
+                    f"There was a problem creating the box: {e}"
+                )
         else:
             # If the form is not valid, we should log the errors for clarity
             logger.error(f"Form is not valid: {form.errors}")
-            alert(request, "error", f"There was a problem creating the box. Please check the form inputs.")
+            alert(
+                request,
+                "error",
+                (
+                    "There was a problem creating the box. "
+                    "Please check the form inputs."
+                )
+            )
     else:
         form = BoxForm()
     return render(
@@ -126,28 +142,29 @@ def edit_box(request, box_id):
     - Displays error messages on invalid submissions.
     """
     box = get_object_or_404(Box, pk=box_id)
-    
+
     if request.method == 'POST':
         form = BoxForm(request.POST, request.FILES, instance=box)
-        
+
         if form.is_valid():
             try:
                 updated_box = form.save(commit=False)
-                
+
                 # Save the box
                 updated_box.save()
-                
+
                 logger.info(
-                    f"Admin {request.user} edited box: {updated_box.name} (ID: {updated_box.id})"
+                    f"Admin {request.user} edited box: "
+                    f"{updated_box.name} (ID: {updated_box.id})"
                 )
                 alert(request, "success", "Box successfully edited.")
-                
+
                 # Email notification if auto-archived
                 if updated_box.is_archived:
                     send_auto_archive_notification(updated_box)
-                
+
                 return redirect('box_admin')
-            
+
             except Exception as e:
                 import traceback
                 tb = traceback.format_exc()
@@ -198,11 +215,19 @@ def delete_box(request, box_id):
             if box.image:
                 result = destroy(box.image.public_id)
                 if result.get('result') == 'ok':
-                    logger.info(f"Cloudinary image deleted for box: {box.name}")
-            
+                    logger.info(
+                        f"Cloudinary image deleted for box: {box.name}"
+                    )
+
             box.delete()
-            alert(request, "success", f"Box '{box.name}' successfully deleted.")
-            logger.info(f"Admin {request.user} deleted box: {box.name} (ID: {box_id})")
+            alert(
+                request,
+                "success",
+                f"Box '{box.name}' successfully deleted."
+            )
+            logger.info(
+                f"Admin {request.user} deleted box: {box.name} (ID: {box_id})"
+            )
             return JsonResponse({"success": True})
 
         except Exception as e:
@@ -231,7 +256,12 @@ def edit_box_products(request, box_id):
         if selected_products:
             # Update the selected orphaned products to this box
             BoxProduct.objects.filter(id__in=selected_products).update(box=box)
-            alert(request, "success", f"Successfully added {len(selected_products)} orphaned products to '{box.name}'.")
+            alert(
+                request,
+                "success",
+                f"Successfully added {len(selected_products)} "
+                f"orphaned products to '{box.name}'."
+            )
             return redirect('edit_box_products', box_id=box_id)
         else:
             alert(request, "error", "No orphaned products were selected.")
@@ -260,13 +290,19 @@ def assign_orphaned_to_box(request, box_id):
     if request.method == 'POST':
         product_ids = request.POST.getlist('product_ids')
         if product_ids:
-            products = BoxProduct.objects.filter(id__in=product_ids, box__isnull=True)
+            products = BoxProduct.objects.filter(
+                id__in=product_ids, box__isnull=True
+            )
             products.update(box=box)
-            alert(request, "success", f"{products.count()} products successfully added to '{box.name}'.")
+            alert(
+                request,
+                "success",
+                f"{products.count()} products "
+                f"successfully added to '{box.name}'."
+            )
         else:
             alert(request, "error", "No products selected.")
     return redirect('edit_box_products', box_id=box_id)
-
 
 
 @custom_staff_required
@@ -362,7 +398,7 @@ def edit_product(request, product_id):
 
     # Track the original state before editing
     was_orphaned = product.box is None
-    
+
     if request.method == 'POST':
         form = ProductForm(request.POST, request.FILES, instance=product)
         if form.is_valid():
@@ -372,15 +408,20 @@ def edit_product(request, product_id):
                 f"'{product.name}' (ID: {product.id})"
             )
             alert(request, "success", "Products successfully edited.")
-            
+
             # If it has a box, redirect back to the box view
             if product.box:
                 return redirect('edit_box_products', box_id=product.box.id)
-            
-            # If it is now orphaned, but was not orphaned before, show the message
+
+            # If it is now orphaned, but was not orphaned before,
+            # show the message
             if not was_orphaned:
-                alert(request, "warning", "Product is now orphaned (no box linked).")
-                
+                alert(
+                    request,
+                    "warning",
+                    "Product is now orphaned (no box linked)."
+                )
+
             return redirect('box_admin')
         else:
             alert(
@@ -429,8 +470,15 @@ def delete_product(request, product_id):
         try:
             # Delete the product
             product.delete()
-            alert(request, "success", f"Product '{product.name}' successfully deleted.")
-            logger.info(f"Admin {request.user} deleted product: {product.name} (ID: {product_id})")
+            alert(
+                request,
+                "success",
+                f"Product '{product.name}' successfully deleted."
+            )
+            logger.info(
+                f"Admin {request.user} "
+                f"deleted product: {product.name} (ID: {product_id})"
+            )
             return JsonResponse({"success": True})
 
         except Exception as e:
@@ -439,7 +487,6 @@ def delete_product(request, product_id):
                 "success": False,
                 "error": "An error occurred during deletion."
             }, status=500)
-
 
 
 @custom_staff_required
@@ -503,33 +550,48 @@ def manage_orphaned_products(request):
 
     action = request.POST.get('action')
     product_ids = request.POST.getlist('product_ids')
-    
+
     # Log the action and product IDs
     print(f"=== DEBUGGING: Action received -> {action}")
     print(f"=== DEBUGGING: Product IDs received -> {product_ids}")
 
     if action not in ['reassign', 'delete']:
         alert(request, "error", "Invalid action.")
-        print("=== DEBUGGING: Invalid action encountered, redirecting to box_admin ===")
+        print(
+            "=== DEBUGGING: Invalid action encountered, "
+            "redirecting to box_admin ==="
+        )
         return redirect('box_admin')
 
     if not product_ids:
         alert(request, "error", "No products selected.")
-        print("=== DEBUGGING: No products selected, redirecting to box_admin ===")
+        print(
+            "=== DEBUGGING: No products selected, "
+            "redirecting to box_admin ==="
+        )
         return redirect('box_admin')
 
     if action == 'reassign':
-        print(f"=== DEBUGGING: Redirecting to reassign_orphaned_products with IDs: {product_ids} ===")
+        print(
+            f"=== DEBUGGING: Redirecting to reassign_orphaned_products "
+            f"with IDs: {product_ids} ==="
+        )
         # Redirect to reassign page
-        return redirect('reassign_orphaned_products', product_ids=",".join(product_ids))
+        return redirect(
+            'reassign_orphaned_products',
+            product_ids=",".join(product_ids)
+        )
 
     elif action == 'delete':
         print(f"=== DEBUGGING: Deleting products with IDs: {product_ids} ===")
         # Batch delete
         BoxProduct.objects.filter(id__in=product_ids).delete()
-        alert(request, "success", f"Deleted {len(product_ids)} orphaned products.")
+        alert(
+            request,
+            "success",
+            f"Deleted {len(product_ids)} orphaned products."
+        )
         return redirect('box_admin')
-
 
 
 @custom_staff_required
@@ -544,7 +606,11 @@ def reassign_orphaned_products(request, product_ids):
         box_id = request.POST.get('box_id')
         box = get_object_or_404(Box, pk=box_id)
         products.update(box=box)
-        alert(request, "success", f"{products.count()} products reassigned to '{box.name}'.")
+        alert(
+            request,
+            "success",
+            f"{products.count()} products reassigned to '{box.name}'."
+        )
         return redirect('box_admin')
 
     boxes = Box.objects.all()
@@ -552,7 +618,6 @@ def reassign_orphaned_products(request, product_ids):
         'products': products,
         'boxes': boxes
     })
-
 
 
 @custom_staff_required
@@ -597,21 +662,46 @@ def edit_user(request, user_id):
             print(f"Received form data: {form_data}")
 
             # Authenticate admin user
-            admin_user = authenticate(username=request.user.username, password=password)
+            admin_user = authenticate(
+                username=request.user.username,
+                password=password
+            )
             if not admin_user:
-                logger.warning(f"Password attempt failed for {request.user.username}")
-                return JsonResponse({"success": False, "error": "Password is incorrect."}, status=403)
+                logger.warning(
+                    f"Password attempt failed for {request.user.username}"
+                )
+                return JsonResponse(
+                    {
+                        "success": False,
+                        "error": "Password is incorrect."
+                    },
+                    status=403
+                )
 
             # Update the form data
             form = UserEditForm(form_data, instance=user)
             if form.is_valid():
                 form.save()
-                logger.info(f"Admin {request.user} updated user: {user.username} (ID: {user.id})")
-                alert(request, "success", f"User '{user.username}' updated successfully.")
-                return JsonResponse({"success": True, "message": f"User '{user.username}' updated successfully."})
+                logger.info(
+                    f"Admin {request.user} "
+                    f"updated user: {user.username} (ID: {user.id})"
+                )
+                alert(
+                    request,
+                    "success",
+                    f"User '{user.username}' updated successfully."
+                )
+                return JsonResponse({
+                    "success": True,
+                    "message": f"User '{user.username}' updated successfully."
+                })
             else:
                 logger.error(f"Form errors: {form.errors}")
-                return JsonResponse({"success": False, "error": "Form data is invalid."}, status=400)
+                return JsonResponse(
+                    {"success": False,
+                     "error": "Form data is invalid."},
+                    status=400
+                )
 
     # Regular GET request
     form = UserEditForm(instance=user)
@@ -633,17 +723,29 @@ def admin_initiated_password_reset(request, user_id):
     Admin triggers a password reset email for the selected user.
     """
     if request.method != 'POST':
-        return JsonResponse({"success": False, "error": "Invalid request method."}, status=405)
+        return JsonResponse(
+            {
+                "success": False,
+                "error": "Invalid request method."
+            },
+            status=405
+        )
 
     # Extract password from the JSON payload
     data = json.loads(request.body)
     password = data.get('password')
 
     # Authenticate the admin
-    admin_user = authenticate(username=request.user.username, password=password)
-    
+    admin_user = authenticate(
+        username=request.user.username,
+        password=password
+    )
+
     if not admin_user:
-        logger.warning(f"Password reset attempt with incorrect password by {request.user.username}")
+        logger.warning(
+            f"Password reset attempt "
+            f"with incorrect password by {request.user.username}"
+        )
         return JsonResponse({
             "success": False,
             "error": "Incorrect password."
@@ -661,7 +763,9 @@ def admin_initiated_password_reset(request, user_id):
 
     # Check if the user is active
     if not user.is_active:
-        logger.warning(f"Attempted password reset for deactivated user: {user.username}")
+        logger.warning(
+            f"Attempted password reset for deactivated user: {user.username}"
+        )
         return JsonResponse({
             "success": False,
             "error": "User account is deactivated."
@@ -671,9 +775,15 @@ def admin_initiated_password_reset(request, user_id):
     send_password_reset_email(user, domain=request.get_host())
 
     # Log the action for auditing
-    logger.info(f"Admin {request.user.username} initiated password reset for user {user.username}")
-    
-    return JsonResponse({"success": True, "message": f"Password reset email sent to {user.email}."})
+    logger.info(
+        f"Admin {request.user.username} "
+        f"initiated password reset for user {user.username}"
+    )
+
+    return JsonResponse({
+        "success": True,
+        "message": f"Password reset email sent to {user.email}."
+    })
 
 
 @custom_staff_required
@@ -686,9 +796,18 @@ def admin_toggle_user_state(request, user_id):
         password = data.get('password')
 
         # Authenticate the admin
-        admin_user = authenticate(username=request.user.username, password=password)
+        admin_user = authenticate(
+            username=request.user.username,
+            password=password
+        )
         if not admin_user:
-            return JsonResponse({"success": False, "error": "Password is incorrect."}, status=403)
+            return JsonResponse(
+                {
+                    "success": False,
+                    "error": "Password is incorrect."
+                },
+                status=403
+            )
 
         # Get the user and toggle the state
         user = get_object_or_404(User, pk=user_id)
@@ -697,11 +816,15 @@ def admin_toggle_user_state(request, user_id):
 
         # Log the action
         state = "activated" if user.is_active else "deactivated"
-        logger.info(f"Admin {request.user.username} {state} user {user.username}")
+        logger.info(
+            f"Admin {request.user.username} {state} user {user.username}"
+        )
 
         alert(request, "success", f"User '{user.username}' has been {state}.")
-        return JsonResponse({"success": True, "message": f"User '{user.username}' has been {state}."})
-
+        return JsonResponse({
+            "success": True,
+            "message": f"User '{user.username}' has been {state}."
+        })
 
 
 @custom_staff_required
@@ -745,6 +868,7 @@ def user_orders(request, user_id):
         }
     )
 
+
 @custom_staff_required
 def update_order_status(request, order_id):
     """
@@ -754,7 +878,7 @@ def update_order_status(request, order_id):
 
     if request.method == 'POST':
         new_status = request.POST.get('status')
-        
+
         if new_status == 'cancelled' and order.stripe_subscription_id:
             # Call Stripe to cancel
             try:
@@ -764,30 +888,63 @@ def update_order_status(request, order_id):
                 )
                 order.status = 'cancelled'
                 order.save()
-                alert(request, "success", "Subscription successfully marked as cancelled.")
-                
-                # 🔥 Send email notification for cancellation
-                send_order_status_update_email(order.user, order.id, 'cancelled')
-                
-                # 🔔 Fire a toast notification
-                alert(request, "success", "Subscription has been cancelled and email notification sent.")
-                
+                alert(
+                    request,
+                    "success",
+                    "Subscription successfully marked as cancelled."
+                )
+
+                # Send email notification for cancellation
+                send_order_status_update_email(
+                    order.user,
+                    order.id,
+                    'cancelled'
+                )
+
+                # Fire a toast notification
+                alert(
+                    request,
+                    "success",
+                    "Subscription has been cancelled and email "
+                    "notification sent."
+                )
+
             except Exception as e:
                 logger.error(f"Failed to cancel subscription: {e}")
                 alert(request, "error", "Failed to cancel the subscription.")
-        
+
+        elif new_status == 'shipped':
+            order.status = 'shipped'
+            order.save()
+            alert(
+                request,
+                "success",
+                f"Order #{order.id} status updated to Shipped."
+            )
+
+            # 🎯 Send the shipping confirmation email here
+            send_shipping_confirmation_email(order.user, order.box)
+
+            # Log the email event
+            logger.info(
+                f"Shipping confirmation email sent for order #{order.id} "
+                f"to user {order.user.email}."
+            )
+
         elif new_status == 'cancelled':
             # If it's just a plain order, mark as cancelled
             order.status = 'cancelled'
             order.save()
             alert(request, "success", f"Order #{order.id} has been cancelled.")
-            
-            # 🔥 Send email notification for cancellation
+
+            # Send email notification for cancellation
             send_order_status_update_email(order.user, order.id, 'cancelled')
-            
-            # 🔔 Fire a toast notification
-            alert(request, "success", "Order has been cancelled and email notification sent.")
-        
+
+            # Fire a toast notification
+            alert(
+                request, "success",
+                "Order has been cancelled and email notification sent.")
+
         elif new_status in dict(Order.STATUS_CHOICES):
             order.status = new_status
             order.save()
@@ -796,13 +953,17 @@ def update_order_status(request, order_id):
                 "success",
                 f"Order #{order.id} status updated to {new_status.title()}."
             )
-            
-            # 🔥 Send email notification for status change
+
+            # Send email notification for status change
             send_order_status_update_email(order.user, order.id, new_status)
-            
-            # 🔔 Fire a toast notification
-            alert(request, "success", f"Order status updated to {new_status.title()} and email sent.")
-            
+
+            # Fire a toast notification
+            alert(
+                request,
+                "success",
+                f"Order status updated to {new_status.title()} and email sent."
+            )
+
         else:
             alert(request, "error", "Invalid status selected.")
 
@@ -820,7 +981,10 @@ def admin_cancel_subscription(request, user_id):
     subscription_id = data.get('subscription_id')
 
     if not subscription_id:
-        return JsonResponse({'success': False, 'error': 'Subscription ID not provided.'})
+        return JsonResponse({
+            'success': False,
+            'error': 'Subscription ID not provided.'
+        })
 
     if authenticate(username=request.user.username, password=password):
         try:
@@ -839,12 +1003,25 @@ def admin_cancel_subscription(request, user_id):
             sub.save()
 
             # Log and alert
-            logger.info(f"Admin {request.user} cancelled subscription {subscription_id} for user ID {user_id}")
-            return JsonResponse({'success': True, 'message': 'Subscription will cancel at period end.'})
+            logger.info(
+                f"Admin {request.user} "
+                f"cancelled subscription {subscription_id} "
+                f"for user ID {user_id}"
+            )
+            return JsonResponse({
+                'success': True,
+                'message': 'Subscription will cancel at period end.'
+            })
 
         except StripeSubscriptionMeta.DoesNotExist:
-            logger.warning(f"Attempted to cancel subscription {subscription_id} for user ID {user_id}, but it was not found.")
-            return JsonResponse({'success': False, 'error': 'No active subscription found to cancel.'})
+            logger.warning(
+                f"Attempted to cancel subscription {subscription_id} "
+                f"for user ID {user_id}, but it was not found."
+            )
+            return JsonResponse({
+                'success': False,
+                'error': 'No active subscription found to cancel.'
+            })
 
     else:
         return JsonResponse({'success': False, 'error': 'Incorrect password'})

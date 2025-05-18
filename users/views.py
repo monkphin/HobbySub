@@ -5,55 +5,65 @@ Handles user account management,
 shipping address operations, password changes, and Stripe webhooks.
 """
 
-# Django/External imports
-from django.contrib.auth import (
-    logout,
-    update_session_auth_hash,
-    authenticate,
-    get_user_model,
-)
-from django.utils.http import url_has_allowed_host_and_scheme, urlsafe_base64_decode
-from django.views.decorators.csrf import csrf_exempt, csrf_protect
-from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib.auth.tokens import default_token_generator
-from django.contrib.auth.decorators import login_required
-from django.views.decorators.http import require_POST
-from django.http import HttpResponse, JsonResponse
-from django.contrib.auth.models import User
-from urllib.parse import urlparse, parse_qs
-from django.utils.encoding import force_str
-from stripe import error as stripe_error
-from django.core.signing import Signer
-from django.contrib import messages
-from django.conf import settings
-import logging
-import stripe
 import json
+import logging
+from urllib.parse import parse_qs, urlparse
 
+import stripe
+from django.conf import settings
+from django.contrib import messages
 
-# Local imports
+from django.contrib.auth import (
+    get_user_model,
+    authenticate,
+    logout,
+    update_session_auth_hash
+)
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth.tokens import default_token_generator
+from django.core.signing import Signer
+from django.http import HttpResponse, JsonResponse
+from django.shortcuts import get_object_or_404, redirect, render
+from django.utils.encoding import force_str
+
+from django.utils.http import (
+    url_has_allowed_host_and_scheme,
+    urlsafe_base64_decode
+)
+
+from django.views.decorators.csrf import csrf_exempt, csrf_protect
+from django.views.decorators.http import require_POST
+
 from hobbyhub.mail import (
-    send_account_update_email,
-    send_email_change_notifications,
-    send_address_change_email,
-    send_password_change_email,
     send_account_deletion_email,
+    send_account_update_email,
+    send_address_change_email,
+    send_email_change_notifications,
+    send_password_change_email,
     send_password_reset_email
-    )
+)
+
 from hobbyhub.stripe_handlers import (
     handle_checkout_session_completed,
-    handle_invoice_payment_succeeded,
     handle_invoice_payment_failed,
-    handle_invoice_upcoming,
+    handle_invoice_payment_succeeded,
+    handle_invoice_upcoming
 )
-from .forms import AddAddressForm, ChangePassword, UserEditForm, PasswordResetRequestForm, SetNewPasswordForm
-from .models import ShippingAddress
+
 from hobbyhub.utils import alert
+
+from .forms import (
+    AddAddressForm,
+    ChangePassword,
+    PasswordResetRequestForm,
+    SetNewPasswordForm,
+    UserEditForm
+)
+from .models import ShippingAddress
 
 logger = logging.getLogger(__name__)
 User = get_user_model()
 signer = Signer()
-
 
 
 @login_required
@@ -64,7 +74,9 @@ def account_view(request):
     user = request.user
     addresses = user.addresses.all()
 
-    personal_addresses = addresses.filter(is_gift_address=False).order_by('-is_default')
+    personal_addresses = (
+        addresses.filter(is_gift_address=False).order_by('-is_default')
+    )
     gift_addresses = addresses.filter(is_gift_address=True)
 
     context = {
@@ -92,6 +104,7 @@ def edit_account(request):
 
     return render(request, 'users/edit_account.html', {'form': form})
 
+
 @csrf_protect
 @login_required
 @require_POST
@@ -102,18 +115,32 @@ def change_email(request):
     """
     try:
         if request.content_type != 'application/json':
-            return JsonResponse({'success': False, 'error': 'Invalid content type: ' + request.content_type}, status=400)
+            return JsonResponse({
+                'success': False,
+                'error': f"Invalid content type: {request.content_type}"
+            }, status=400)
 
         data = json.loads(request.body)
         new_email = data.get('new_email')
         password = data.get('password')
 
         if not new_email or not password:
-            return JsonResponse({'success': False, 'error': 'Missing email or password.'}, status=400)
+            return JsonResponse(
+                {
+                    'success': False, 'error': 'Missing email or password.'
+                }, status=400
+            )
 
-        user = authenticate(request, username=request.user.username, password=password)
+        user = authenticate(
+            request,
+            username=request.user.username,
+            password=password
+        )
         if user is None:
-            return JsonResponse({'success': False, 'error': 'Incorrect password.'}, status=401)
+            return JsonResponse(
+                {'success': False, 'error': 'Incorrect password.'},
+                status=401
+            )
 
         # Store the old email
         old_email = user.email
@@ -121,14 +148,18 @@ def change_email(request):
         user.save()
 
         # CALLING THE FUNCTION FROM `mail.py`
-        from hobbyhub.mail import send_email_change_notifications
         send_email_change_notifications(user, old_email, new_email)
 
-        logger.info(f"Email change confirmed: {old_email} → {new_email} for user {user.username}")
+        logger.info(
+            f"Email change confirmed: {old_email} → {new_email} "
+            f"for user {user.username}"
+        )
         return JsonResponse({'success': True})
 
     except json.JSONDecodeError as e:
-        return JsonResponse({'success': False, 'error': f'JSON error: {str(e)}'}, status=400)
+        return JsonResponse(
+            {'success': False, 'error': f'JSON error: {str(e)}'}, status=400
+        )
 
 
 @login_required
@@ -151,7 +182,6 @@ def change_password(request):
         form = ChangePassword(user=request.user)
 
     return render(request, 'users/change_password.html', {'form': form})
-
 
 
 def password_reset_request(request):
@@ -191,7 +221,9 @@ def password_reset_confirm(request, uidb64, token):
                 return redirect('password_reset_complete')
         else:
             form = SetNewPasswordForm()
-        return render(request, 'users/password_reset_confirm.html', {'form': form})
+        return render(
+            request, 'users/password_reset_confirm.html', {'form': form}
+        )
     else:
         return HttpResponse("Password reset link is invalid!", status=400)
 
@@ -226,8 +258,16 @@ def secure_delete_account(request):
             send_account_deletion_email(user_email)
             return JsonResponse({'success': True})
         except Exception as e:
-            logger.error(f"Account deletion failed for user {user.username}: {e}")
-            return JsonResponse({'success': False, 'error': 'Deletion failed. Please try again.'}, status=500)
+            logger.error(
+                f"Account deletion failed for user {user.username}: {e}"
+            )
+            return JsonResponse(
+                {
+                    'success': False,
+                    'error': 'Deletion failed. Please try again.'
+                },
+                status=500
+            )
     else:
         return JsonResponse({'success': False, 'error': 'Incorrect password'})
 
@@ -265,15 +305,17 @@ def add_address(request):
                         user=request.user,
                         is_default=True
                     ).update(is_default=False)
- 
-                if not gift and not ShippingAddress.objects.filter(user=request.user, is_default=True).exists():
-                    address.is_default = True
 
+                if not gift and not ShippingAddress.objects.filter(
+                    user=request.user, is_default=True
+                ).exists():
+                    address.is_default = True
 
             address.save()
 
             logger.info(
-                f"{request.user} added new address — default={address.is_default}"
+                f"{request.user} added new address — "
+                f"default={address.is_default}"
             )
             send_address_change_email(request.user, change_type="added")
             alert(request, "success", "Address added successfully.")
@@ -376,7 +418,10 @@ def secure_delete_address(request, address_id):
     password = data.get('password')
 
     if not password:
-        return JsonResponse({'success': False, 'error': 'Password is required'}, status=400)
+        return JsonResponse(
+            {'success': False, 'error': 'Password is required'},
+            status=400
+        )
 
     if authenticate(username=request.user.username, password=password):
         address = get_object_or_404(
@@ -384,14 +429,31 @@ def secure_delete_address(request, address_id):
             id=address_id,
             user=request.user
         )
+
+        # Prevent deletion if the address is linked to active orders/subs
+        if not address.can_be_deleted():
+            return JsonResponse(
+                {
+                    'success': False,
+                    'error': (
+                        "This address is linked to an active order or "
+                        "subscription and cannot be deleted."
+                    )
+                },
+                status=400
+            )
+
         was_default = address.is_default
         is_personal = not address.is_gift_address
 
         address.delete()
 
-        send_address_change_email(request.user, change_type="removed from your account")
+        send_address_change_email(
+            request.user,
+            change_type="removed from your account"
+        )
 
-        # If it was the default personal address, set a new one as default (if any remain)
+        # If it was the default personal address, set a new one as default
         if was_default and is_personal:
             remaining = ShippingAddress.objects.filter(
                 user=request.user,
@@ -401,15 +463,22 @@ def secure_delete_address(request, address_id):
                 new_default = remaining.first()
                 new_default.is_default = True
                 new_default.save()
-                messages.info(request, "Your remaining address has been set as default.")
+                messages.info(
+                    request,
+                    "Your remaining address has been set as default."
+                )
 
-                send_address_change_email(request.user, change_type="set as your default")
+                send_address_change_email(
+                    request.user,
+                    change_type="set as your default"
+                )
 
         return JsonResponse({'success': True})
     else:
-        return JsonResponse({'success': False, 'error': 'Incorrect password'}, status=401)
-
-
+        return JsonResponse(
+            {'success': False, 'error': 'Incorrect password'},
+            status=401
+        )
 
 
 @csrf_exempt

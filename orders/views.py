@@ -7,34 +7,31 @@ Handles order and checkout flows including:
 - Checkout success/cancel pages
 - Order history display
 """
+import json
+import logging
+
+import stripe
+from django.conf import settings
+from django.contrib.auth import authenticate
 # Django/External Imports
 from django.contrib.auth.decorators import login_required
-from django.views.decorators.http import require_POST
-from django.views.decorators.csrf import csrf_exempt
-from django.shortcuts import render, redirect
-from django.contrib.auth import authenticate
 from django.http import JsonResponse
-from django.utils import timezone
-from django.conf import settings
+from django.shortcuts import redirect, render
 from django.urls import reverse
-import logging
-import stripe
-import json
+from django.utils import timezone
+from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.http import require_POST
 
-
-# Local imports
-from hobbyhub.utils import (
-    alert,
-    get_user_default_shipping_address,
-    build_shipping_details,
-    get_gift_metadata,
-    get_subscription_duration_display,
-    get_subscription_status
-)
-from .models import Order, Payment, StripeSubscriptionMeta
 from hobbyhub.mail import send_subscription_cancelled_email
+# Local imports
+from hobbyhub.utils import (alert, build_shipping_details, get_gift_metadata,
+                            get_subscription_duration_display,
+                            get_subscription_status,
+                            get_user_default_shipping_address)
 from users.models import ShippingAddress
+
 from .forms import PreCheckoutForm
+from .models import Order, Payment, StripeSubscriptionMeta
 
 # Configure Stripe with secret API key
 stripe.api_key = settings.STRIPE_SECRET_KEY
@@ -86,7 +83,7 @@ def handle_purchase_type(request, plan):
         alert(request, "error", "Invalid selection.")
         return redirect('select_purchase_type')
 
-    # ✅ Force address selection if not already chosen
+    # Force address selection if not already chosen
     if 'checkout_shipping_id' not in request.session:
         logger.info(f"{request.user} selected plan={plan}, gift={gift}")
         url = reverse('choose_shipping_address', args=[plan])
@@ -95,19 +92,27 @@ def handle_purchase_type(request, plan):
 
     if gift:
         logger.info(f"{request.user} selected plan={plan}, gift={gift}")
-        request.session['is_gift'] = True   # ⬅️ Set it in the session
-        request.session.modified = True      # ✅ Explicitly mark the session as modified
-        logger.info(f"[DEBUG] Session content right after setting is_gift=True: {request.session.items()}")
+        request.session['is_gift'] = True
+        request.session.modified = True
+        logger.info(
+            "[DEBUG] Session content right after setting is_gift=True: "
+            f"{request.session.items()}"
+        )
         return redirect('gift_message', plan=plan)
     else:
         request.session['is_gift'] = False
-        request.session.modified = True  
-        logger.info(f"[DEBUG] Session content right after setting is_gift=False: {request.session.items()}")
+        request.session.modified = True
+        logger.info(
+            "[DEBUG] Session content right after setting is_gift=False: "
+            f"{request.session.items()}"
+        )
 
+    logger.info(
+        "[SESSION DEBUG] Session data after setting is_gift: "
+        f"{request.session.items()}"
+    )
 
-    logger.info(f"[SESSION DEBUG] Session data after setting is_gift: {request.session.items()}")
-
-    # ⬇️ Proceed to correct flow based on plan + gift flag
+    # Proceed to correct flow based on plan + gift flag
     if plan == "oneoff" and not gift:
         return handle_checkout(request, price_id)
 
@@ -120,15 +125,27 @@ def handle_purchase_type(request, plan):
 
 @login_required
 def gift_message(request, plan):
-    logger.info(f"[DEBUG] Session content at gift_message entry: {request.session.items()}")
-    logger.info(f"[SESSION CHECK] Session data at gift_message before refresh: {dict(request.session.items())}")
+    logger.info(
+        "[DEBUG] Session content at gift_message entry: "
+        f"{request.session.items()}"
+    )
+    logger.info(
+        "[SESSION CHECK] Session data at gift_message before refresh: "
+        f"{dict(request.session.items())}"
+    )
     request.session.modified = True
     request.session.save()  # 🚀 Force it to persist!
-    logger.info(f"[SESSION CHECK] Session data at gift_message after refresh: {dict(request.session.items())}")
+    logger.info(
+        "[SESSION CHECK] Session data at gift_message after refresh: "
+        f"{dict(request.session.items())}"
+    )
 
-    logger.info(f"[SESSION CHECK] Session data at gift_message: {request.session.items()}")
+    logger.info(
+        "[SESSION CHECK] Session data at gift_message: "
+        f"{request.session.items()}"
+    )
     logger.info(f"{request.user} is entering gift message for {plan} plan")
-    
+
     # Only redirect if shipping ID is not in session
     shipping_id = request.session.get('checkout_shipping_id')
     if not shipping_id:
@@ -163,12 +180,17 @@ def gift_message(request, plan):
                     request.user.id,
                     address_id=shipping_id
                 )
-                
-                is_gift = request.session.get('is_gift', False)  # 🚀 Retrieve it safely from the session
-                logger.info(f"[STRIPE CHECKOUT] Session-based is_gift value: {is_gift}")
+
+                is_gift = request.session.get('is_gift', False)
+                logger.info(
+                    f"[STRIPE CHECKOUT] Session-based is_gift value: {is_gift}"
+                )
 
                 gift_metadata['gift'] = 'true' if is_gift else 'false'
-                logger.info(f"[STRIPE CHECKOUT] Metadata before submission: {gift_metadata}")
+                logger.info(
+                    "[STRIPE CHECKOUT] Metadata before submission: "
+                    f"{gift_metadata}"
+                )
 
                 shipping_address = ShippingAddress.objects.get(id=shipping_id)
                 checkout_data = {
@@ -177,8 +199,12 @@ def gift_message(request, plan):
                     'line_items': [{'price': price_id, 'quantity': 1}],
                     'metadata': gift_metadata,
                     'customer_email': request.user.email,
-                    'success_url': request.build_absolute_uri('/orders/success/'),
-                    'cancel_url': request.build_absolute_uri('/orders/cancel/'),
+                    'success_url': request.build_absolute_uri(
+                        '/orders/success/'
+                    ),
+                    'cancel_url': request.build_absolute_uri(
+                        '/orders/cancel/'
+                    ),
                 }
 
                 if not is_subscription:
@@ -196,7 +222,11 @@ def gift_message(request, plan):
                 alert(request, "error", "Your card was declined.")
             except stripe.error.StripeError:
                 logger.error("General Stripe error", exc_info=True)
-                alert(request, "error", "There was a problem with the payment service.")
+                alert(
+                    request,
+                    "error",
+                    "There was a problem with the payment service."
+                )
         else:
             logger.error(f"Form errors: {form.errors}")
             alert(request, "error", "Please correct the errors in the form.")
@@ -211,22 +241,35 @@ def handle_checkout(request, price_id):
     Handles checkout for non-gift one-off purchases.
     Goes straight to Stripe without showing a form.
     """
-    logger.info(f"[DEBUG] Session content at handle_checkout entry: {request.session.items()}")
+    logger.info(
+        "[DEBUG] Session content at handle_checkout entry: "
+        f"{request.session.items()}"
+    )
     logger.info(f"{request.user} proceeding to checkout for one-off order")
+
     shipping_address, redirect_response = get_user_default_shipping_address(
         request
     )
     if redirect_response:
         return redirect_response
+
+    shipping_id = (
+        shipping_address.id if shipping_address else None
+    )
+
     metadata = {
         'user_id': request.user.id,
-        'shipping_address_id': shipping_address.id if shipping_address else None,
-        'gift': 'false'
+        'shipping_address_id': shipping_id,
+        'gift': 'false',
     }
 
-    # ✅ Now log after metadata is ready
-    logger.info(f"[SUBSCRIPTION] Metadata before session creation: {metadata}")
-    logger.info(f"[SUBSCRIPTION] Session Data: {dict(request.session.items())}")
+    # Now log after metadata is ready
+    logger.info(
+        f"[SUBSCRIPTION] Metadata before session creation: {metadata}"
+    )
+    logger.info(
+        f"[SUBSCRIPTION] Session Data: {dict(request.session.items())}"
+    )
 
     try:
         session = stripe.checkout.Session.create(
@@ -239,7 +282,7 @@ def handle_checkout(request, price_id):
             metadata={
                 'user_id': request.user.id,
                 'shipping_address_id': shipping_address.id
-                },
+            },
             payment_intent_data={
                 'metadata': {'user_id': request.user.id},
                 'shipping': build_shipping_details(shipping_address),
@@ -272,26 +315,32 @@ def create_subscription_checkout(request, price_id):
     if not shipping_id:
         plan = request.session.get('plan')
         if not plan:
-            logger.warning(f"Plan not found in session for user {request.user}.")
+            logger.warning(
+                f"Plan not found in session for user {request.user}."
+            )
             alert(request, "error", "Please select a valid subscription plan.")
             return redirect('select_purchase_type')
 
-        logger.warning(f"No shipping address selected for subscription plan '{plan}'.")
+        logger.warning(
+            f"No shipping address selected for subscription plan '{plan}'."
+        )
         alert(request, "error", "Please select a shipping address.")
         return redirect('choose_shipping_address', plan=plan)
-    
-    # 🚀 Step 1: Determine if it's a gift
+
+    # Step 1: Determine if it's a gift
     is_gift = request.GET.get('gift', 'false').lower() == 'true'
 
-    # ✅ Store it in the session (same as one-off logic)
+    # Store it in the session (same as one-off logic)
     if is_gift:
         request.session['is_gift'] = True
     else:
         request.session['is_gift'] = False
     request.session.modified = True
-    logger.info(f"[SESSION DEBUG] Subscription session — is_gift set to {is_gift}")
+    logger.info(
+        f"[SESSION DEBUG] Subscription session — is_gift set to {is_gift}"
+    )
 
-    # 🚀 Step 2: Collect gift details if it's a gift
+    # Step 2: Collect gift details if it's a gift
     if is_gift:
         recipient_name = request.POST.get('recipient_name', '')
         recipient_email = request.POST.get('recipient_email', '')
@@ -300,7 +349,7 @@ def create_subscription_checkout(request, price_id):
     else:
         recipient_name = recipient_email = sender_name = gift_message = ''
 
-    # 🚀 Step 3: Build metadata
+    # Step 3: Build metadata
     metadata = {
         'user_id': request.user.id,
         'shipping_address_id': shipping_id,
@@ -311,8 +360,11 @@ def create_subscription_checkout(request, price_id):
         'gift_message': gift_message
     }
 
-    # ✅ Add debug log after metadata is complete
-    logger.info(f"[DEBUG] Subscription session creation — is_gift={is_gift}, metadata={metadata}")
+    # Add debug log after metadata is complete
+    logger.info(
+        f"[DEBUG] Subscription session creation — is_gift={is_gift}, "
+        f"metadata={metadata}"
+    )
 
     try:
         address = ShippingAddress.objects.get(id=shipping_id)
@@ -330,7 +382,10 @@ def create_subscription_checkout(request, price_id):
             customer = stripe.Customer.create(
                 email=request.user.email,
                 shipping={
-                    'name': f"{address.recipient_f_name} {address.recipient_l_name}",
+                    'name': (
+                        f"{address.recipient_f_name} "
+                        f"{address.recipient_l_name}"
+                    ),
                     'address': {
                         'line1': address.address_line_1,
                         'line2': address.address_line_2 or '',
@@ -346,7 +401,9 @@ def create_subscription_checkout(request, price_id):
             logger.info(f"New Stripe Customer Created: {customer.id}")
         else:
             # ✅ Step 2: If it exists, just fetch it
-            customer = stripe.Customer.retrieve(request.user.profile.stripe_customer_id)
+            customer = stripe.Customer.retrieve(
+                request.user.profile.stripe_customer_id
+            )
             logger.info(f"Reusing Existing Stripe Customer: {customer.id}")
 
         # ⬇️ Proceed with checkout
@@ -359,13 +416,20 @@ def create_subscription_checkout(request, price_id):
                 'quantity': 1,
             }],
             metadata=metadata,
-            success_url=request.build_absolute_uri('/orders/success/?sub=monthly'),
+            success_url=request.build_absolute_uri(
+                '/orders/success/?sub=monthly'
+            ),
             cancel_url=request.build_absolute_uri('/orders/cancel/'),
         )
         return redirect(checkout_session.url, code=303)
     except stripe.error.StripeError as e:
         logger.error(f"Stripe error during subscription creation: {str(e)}")
-        alert(request, "error", "There was a problem connecting to the payment service. Please try again shortly.")
+        alert(
+            request,
+            "error",
+            "There was a problem connecting to the payment service. "
+            "Please try again shortly."
+        )
         return redirect('subscribe_options')
 
 
@@ -398,9 +462,9 @@ def order_cancel(request):
     )
     return render(request, 'orders/order_cancel.html')
 
+
 @login_required
 def order_history(request):
-    # 🛠️ Force refresh the queryset as a list to avoid stale data
     all_orders = list(Order.objects.select_related("shipping_address").filter(
         user=request.user
     ).order_by('-order_date', '-id'))
@@ -408,14 +472,34 @@ def order_history(request):
     payments = Payment.objects.filter(order__in=all_orders)
     subscriptions = StripeSubscriptionMeta.objects.filter(user=request.user)
 
-    sub_map = {
-        sub.stripe_subscription_id: {
-            'sub': sub,
-            'label': get_subscription_duration_display(sub),
-            'status': get_subscription_status(sub),
-            'is_gift': sub.is_gift
-        } for sub in subscriptions
-    }
+    sub_map = {}
+
+    for sub in subscriptions:
+        try:
+            # Fetch latest subscription details from Stripe
+            stripe_subscription = stripe.Subscription.retrieve(sub.stripe_subscription_id)
+            
+            # Convert the timestamp to a datetime object
+            from datetime import datetime
+            current_period_end = datetime.fromtimestamp(stripe_subscription["current_period_end"])
+
+            # Populate the sub_map with additional data
+            sub_map[sub.stripe_subscription_id] = {
+                'sub': sub,
+                'label': get_subscription_duration_display(sub),
+                'status': get_subscription_status(sub),
+                'is_gift': sub.is_gift,
+                'current_period_end': current_period_end
+            }
+        except Exception as e:
+            logger.error(f"Failed to retrieve subscription {sub.stripe_subscription_id}: {e}")
+            sub_map[sub.stripe_subscription_id] = {
+                'sub': sub,
+                'label': get_subscription_duration_display(sub),
+                'status': get_subscription_status(sub),
+                'is_gift': sub.is_gift,
+                'current_period_end': None  # Set to None if fetch fails
+            }
 
     payments_by_order = {p.order_id: p for p in payments}
 
@@ -431,6 +515,7 @@ def order_history(request):
     })
 
 
+
 @require_POST
 @login_required
 @csrf_exempt
@@ -443,7 +528,10 @@ def secure_cancel_subscription(request):
     subscription_id = data.get('subscription_id')
 
     if not subscription_id:
-        logger.error(f"Cancel subscription request with no subscription ID from user {request.user}")
+        logger.error(
+            "Cancel subscription request with no subscription ID from user "
+            f"{request.user}"
+        )
         return JsonResponse({
             'success': False,
             'error': 'Subscription ID not provided.'
@@ -472,7 +560,8 @@ def secure_cancel_subscription(request):
             )
 
             logger.info(
-                f"Subscription {subscription_id} cancelled for user {request.user}"
+                f"Subscription {subscription_id} cancelled "
+                f"for user {request.user}"
             )
             return JsonResponse({
                 'success': True,
@@ -482,7 +571,8 @@ def secure_cancel_subscription(request):
         except StripeSubscriptionMeta.DoesNotExist:
             logger.warning(
                 f"{request.user} "
-                f"tried to cancel {subscription_id} but no active subscription found"
+                f"tried to cancel {subscription_id} "
+                "but no active subscription found"
             )
             return JsonResponse({
                 'success': False,
@@ -520,7 +610,9 @@ def choose_shipping_address(request, plan):
             return redirect('choose_shipping_address', plan=plan)
 
         if not request.user.addresses.filter(id=selected_id).exists():
-            logger.warning(f"Address ID {selected_id} not found for user {request.user}")
+            logger.warning(
+                f"Address ID {selected_id} not found for user {request.user}"
+            )
             alert(request, "error", "Invalid address selected.")
             return redirect('choose_shipping_address', plan=plan)
 
@@ -536,8 +628,10 @@ def choose_shipping_address(request, plan):
             request.session['is_gift'] = False
         request.session.modified = True
 
-        logger.info(f"[SESSION DEBUG] After address selection, session data: {request.session.items()}")
-
+        logger.info(
+            "[SESSION DEBUG] After address selection, session data: "
+            f"{request.session.items()}"
+        )
 
         if gift:
             return redirect('gift_message', plan=plan)

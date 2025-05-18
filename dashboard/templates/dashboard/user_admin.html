@@ -13,6 +13,7 @@
         <th>Admin</th>
         <th>Active</th>
         <th>Actions</th>
+        <th>Stripe Account</th>
       </tr>
     </thead>
     <tbody>
@@ -30,10 +31,17 @@
           </td>
           <td>
             <div class="btn-group">
-              <a href="#" class="btn-small orange admin-password-reset-btn" data-id="{{ user.id }}">Reset Password</a>
-              <a href="{% url 'edit_user' user.id %}" class="btn-small blue">Edit</a>
               <a href="{% url 'user_orders' user.id %}" class="btn-small green">Orders</a>
-              {% if not user.is_superuser %}
+              <a href="{% url 'edit_user' user.id %}" class="btn-small blue">Edit</a>
+              <a href="#" class="btn-small orange admin-password-reset-btn" data-id="{{ user.id }}">Reset Password</a>
+              {% if user.is_superuser %}
+                <button 
+                  class="btn-small grey lighten-1 disabled tooltipped"
+                  data-tooltip="Admins cannot be deactivated"
+                  style="cursor: not-allowed;">
+                        Deactivate Account
+                </button>
+              {% else %}
                 <a href="#" 
                   class="btn-small admin-toggle-state-btn {% if not user.is_active %}activate-btn{% else %}deactivate-btn{% endif %}" 
                   data-id="{{ user.id }}">
@@ -46,13 +54,29 @@
               {% endif %}
             </div>
           </td>
+          <td>
+            {% if user.profile.stripe_customer_id %}
+              <a href="https://dashboard.stripe.com/test/customers/{{ user.profile.stripe_customer_id }}" 
+                target="_blank" 
+                class="btn-small grey darken-2">
+                  <i class="fa fa-cc-stripe" style="margin-right: 5px;"></i>
+                  View in Stripe
+              </a>
+            {% else %}
+              <span class="red-text">Not Linked</span>
+            {% endif %}
+          </td>
         </tr>
       {% empty %}
         <tr>
-          <td colspan="4">No users found.</td>
+          <td colspan="6">No users found.</td>
         </tr>
       {% endfor %}
     </tbody>
   </table>
+<p align="center">
+    To deactivate an admin account, please use Django's backend service. 
+    This is to ensure admins are not accidentally removed.
+</p>
 </div>
 {% endblock %}

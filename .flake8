@@ -1,0 +1,22 @@
+[flake8]
+exclude = 
+    .venv,
+    venv,
+    env,
+    .vscode,
+    node_modules,
+    migrations,
+    __pycache__,
+    .git,
+    .tox,
+    .eggs,
+    *.egg-info,
+    staticfiles,
+    media,
+    docs,
+    db_seed.py
+
+max-line-length = 120
+ignore = 
+    E203
+    W503

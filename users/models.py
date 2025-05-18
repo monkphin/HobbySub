@@ -5,9 +5,8 @@ Defines the ShippingAddress model, which stores user-associated delivery
 addresses for orders and subscriptions.
 """
 
-# Django Imports
-from django.db import models
 from django.contrib.auth.models import User
+from django.db import models
 from django_countries.fields import CountryField
 
 
@@ -86,14 +85,43 @@ class ShippingAddress(models.Model):
     is_gift_address = models.BooleanField(
         default=False,
         help_text="Check this box if this is an address used for a gift"
-        )
-    label = models.CharField(max_length=50, blank=True, help_text="e.g. Home, Work, Parents")
+    )
+    label = models.CharField(
+        max_length=50,
+        blank=True,
+        help_text="e.g. Home, Work, Parents"
+    )
 
     def __str__(self):
-        return f"{self.recipient_f_name} {self.recipient_l_name}—{self.postcode}"  # noqa
+        full_name = f"{self.recipient_f_name} {self.recipient_l_name}"
+        return f"{full_name} — {self.postcode}"
+    
+    def can_be_deleted(self):
+        """
+        Check if the address is linked to active orders or subscriptions.
+        """
+        # Lazy import inside the method to avoid circular import
+        from orders.models import Order, StripeSubscriptionMeta
+        
+        has_active_orders = Order.objects.filter(
+            shipping_address=self,
+            status__in=['pending', 'processing']
+        ).exists()
+
+        has_active_subscriptions = StripeSubscriptionMeta.objects.filter(
+            shipping_address=self,
+            cancelled_at__isnull=True
+        ).exists()
+
+        return not (has_active_orders or has_active_subscriptions)
+
 
 class UserProfile(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile')
+    user = models.OneToOneField(
+        User,
+        on_delete=models.CASCADE,
+        related_name='profile'
+    )
     stripe_customer_id = models.CharField(max_length=50, null=True, blank=True)
 
     def __str__(self):

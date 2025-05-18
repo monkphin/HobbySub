@@ -12,15 +12,24 @@
       <p>{{ address.country }}</p>
       <p><em>{{ address.phone_number }}</em></p>
     </div>
-  
+    {% if not address.can_be_deleted %}
+      <p class="red-text text-darken-2">
+        This address is linked to an active order or subscription.
+      </p>
+    {% endif %}
     <div class="card-action flex-actions">
       <a href="{% url 'edit_address' address.id %}" class="btn-small teal lighten-1 white-text">
         <i class="fas fa-edit left"></i> Edit
       </a>
-      <button class="btn-small red white-text delete-address-btn" data-id="{{ address.id }}" aria-label="Delete this address">
-        Delete Address
-      </button>  
-  
+      <button 
+        <button class="btn-small red white-text delete-address-btn" data-id="{{ address.id }}" aria-label="Delete this address"
+          {% if not address.can_be_deleted %} 
+              disabled 
+              title="This address is linked to an active order or subscription."
+          {% endif %}
+      >
+          Delete Address
+      </button> 
       {% if address.is_default %}
       <span class="grey-text text-darken-1">(Default Address)</span>
     {% elif not address.is_gift_address %}

@@ -10,20 +10,18 @@ Includes app-level URLconfs for:
 
 Admin interface also mounted at /admin/
 """
-from django.contrib.sitemaps.views import sitemap
-from home.sitemaps import StaticViewSitemap, BoxSitemap
-from django.views.generic import TemplateView
-from django.urls import path, include
-from django.views.static import serve
-from django.contrib import admin
 from django.conf import settings
-from django.urls import re_path
+from django.contrib import admin
+from django.contrib.sitemaps.views import sitemap
+from django.urls import include, path, re_path
+from django.views.static import serve
 
+from home.sitemaps import BoxSitemap, StaticViewSitemap
 
 sitemaps = {
-            'static': StaticViewSitemap,
-            'boxes': BoxSitemap,
-            }
+    'static': StaticViewSitemap,
+    'boxes': BoxSitemap,
+}
 
 
 urlpatterns = [
@@ -38,4 +36,4 @@ urlpatterns = [
         'path': 'robots.txt',
         'document_root': settings.STATIC_ROOT,
     }),
-    ]
+]

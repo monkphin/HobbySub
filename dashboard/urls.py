@@ -10,7 +10,6 @@ from django.urls import path
 # Local Imports
 from . import views
 
-
 urlpatterns = [
     # Box admin
     path('box_admin/', views.box_admin, name='box_admin'),
@@ -29,7 +28,11 @@ urlpatterns = [
         'box_admin/<int:box_id>/products/add/',
         views.add_product_to_box, name='add_product_to_box'
     ),
-    path('dashboard/box/<int:box_id>/assign_orphaned/', views.assign_orphaned_to_box, name='assign_orphaned_to_box'),
+    path(
+        'dashboard/box/<int:box_id>/assign_orphaned/',
+        views.assign_orphaned_to_box,
+        name='assign_orphaned_to_box'
+    ),
 
 
     # Product Admin
@@ -49,15 +52,31 @@ urlpatterns = [
         views.remove_product_from_box,
         name='remove_product_from_box'
     ),
-    path('manage_orphaned_products/', views.manage_orphaned_products, name='manage_orphaned_products'),
-    path('reassign_orphaned_products/<str:product_ids>/', views.reassign_orphaned_products, name='reassign_orphaned_products'),
+    path(
+        'manage_orphaned_products/',
+        views.manage_orphaned_products,
+        name='manage_orphaned_products'
+    ),
+    path(
+        'reassign_orphaned_products/<str:product_ids>/',
+        views.reassign_orphaned_products,
+        name='reassign_orphaned_products'
+    ),
 
 
     # User admin
     path('user_admin/', views.user_admin, name='user_admin'),
     path('user_admin/<int:user_id>/edit/', views.edit_user, name='edit_user'),
-    path('user_admin/password-reset/<int:user_id>/', views.admin_initiated_password_reset, name='admin_password_reset'),
-    path('user_admin/<int:user_id>/toggle-state/', views.admin_toggle_user_state, name='admin_toggle_user_state'),
+    path(
+        'user_admin/password-reset/<int:user_id>/',
+        views.admin_initiated_password_reset,
+        name='admin_password_reset'
+    ),
+    path(
+        'user_admin/<int:user_id>/toggle-state/',
+        views.admin_toggle_user_state,
+        name='admin_toggle_user_state'
+    ),
     path(
         'user_admin/<int:user_id>/orders/',
         views.user_orders,
@@ -68,5 +87,9 @@ urlpatterns = [
         views.update_order_status,
         name='update_order_status'
     ),
-    path('user_admin/<int:user_id>/cancel-subscription/', views.admin_cancel_subscription, name='admin_cancel_subscription'),
+    path(
+        'user_admin/<int:user_id>/cancel-subscription/',
+        views.admin_cancel_subscription,
+        name='admin_cancel_subscription'
+    ),
 ]

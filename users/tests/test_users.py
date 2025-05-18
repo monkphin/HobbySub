@@ -1,25 +1,25 @@
-from django.test import TestCase, RequestFactory
-from django.urls import reverse
-from django.contrib.auth.models import User
-from django.core import mail
-from django.utils.http import urlsafe_base64_encode
-from django.utils.encoding import force_bytes
-from users.models import ShippingAddress
-from users.views import account_view
 import json
 
+from django.contrib.auth.models import User
+from django.core import mail
+from django.test import RequestFactory, TestCase
+from django.urls import reverse
+from django.utils.encoding import force_bytes
+from django.utils.http import urlsafe_base64_encode
+from users.models import ShippingAddress, User
+from orders.models import Order, StripeSubscriptionMeta
 
 class TestUsersViews(TestCase):
 
     def setUp(self):
-        # ✅ Create the test user
+        # Create the test user
         self.user = User.objects.create_user(
             username='testuser',
             email='test@example.com',
             password='securepass'
         )
-        
-        # ✅ Create the address and assign to self
+
+        # Create the address and assign to self
         self.address = ShippingAddress.objects.create(
             user=self.user,
             recipient_f_name='Test',
@@ -39,7 +39,7 @@ class TestUsersViews(TestCase):
         request.user = self.user
         response = self.client.get(reverse('account'))
         self.assertEqual(response.status_code, 200)
-    
+
     def test_edit_account(self):
         data = {'username': 'updateduser'}
         response = self.client.post(reverse('edit_account'), data)
@@ -58,7 +58,9 @@ class TestUsersViews(TestCase):
             'is_default': False,
             'phone_number': '0123456789'
         }
-        response = self.client.post(reverse('edit_address', args=[self.address.id]), data)
+        response = self.client.post(
+            reverse('edit_address', args=[self.address.id]), data
+        )
         if response.status_code == 200:
             print(response.context['form'].errors)
         self.assertEqual(response.status_code, 302)
@@ -88,20 +90,29 @@ class TestUsersViews(TestCase):
             country='GB',
             is_default=False
         )
-        response = self.client.post(reverse('set_default_address', args=[new_address.id]))
+        response = self.client.post(
+            reverse('set_default_address', args=[new_address.id])
+        )
         self.assertEqual(response.status_code, 302)
         new_address.refresh_from_db()
         self.assertTrue(new_address.is_default)
 
     def test_secure_delete_address(self):
         data = {'password': 'securepass'}
-        response = self.client.post(reverse('secure_delete_address', args=[self.address.id]),
-                                    content_type='application/json', data=json.dumps(data))
+        response = self.client.post(
+            reverse('secure_delete_address', args=[self.address.id]),
+            content_type='application/json', data=json.dumps(data)
+        )
         self.assertEqual(response.status_code, 200)
-        self.assertFalse(ShippingAddress.objects.filter(id=self.address.id).exists())
+        self.assertFalse(
+            ShippingAddress.objects.filter(id=self.address.id).exists()
+        )
 
     def test_password_reset_request(self):
-        response = self.client.post(reverse('password_reset'), {'email': 'test@example.com'})
+        response = self.client.post(
+            reverse('password_reset'),
+            {'email': 'test@example.com'}
+        )
         self.assertEqual(response.status_code, 302)
         self.assertEqual(len(mail.outbox), 1)
         self.assertIn('Password reset on', mail.outbox[0].subject)
@@ -109,7 +120,9 @@ class TestUsersViews(TestCase):
     def test_password_reset_confirm(self):
         uid = urlsafe_base64_encode(force_bytes(self.user.pk))
         token = 'set-password-token'
-        response = self.client.get(reverse('password_reset_confirm', args=[uid, token]))
+        response = self.client.get(
+            reverse('password_reset_confirm', args=[uid, token])
+        )
         self.assertEqual(response.status_code, 200)
 
     def test_secure_delete_account(self):
@@ -120,3 +133,35 @@ class TestUsersViews(TestCase):
         self.assertEqual(response.status_code, 200)
         with self.assertRaises(User.DoesNotExist):
             User.objects.get(username='testuser')
+
+
+class ShippingAddressTest(TestCase):
+
+    def test_address_cannot_be_deleted_if_linked_to_order_or_subscription(self):
+        user = User.objects.create(username="testuser")
+        address = ShippingAddress.objects.create(
+            user=user, 
+            address_line_1="123 Test St",
+            town_or_city="Test City",
+            postcode="TEST123",
+            country="GB"
+        )
+
+        # Create a pending order linked to this address
+        Order.objects.create(
+            user=user,
+            shipping_address=address,
+            status='pending'
+        )
+
+        self.assertFalse(address.can_be_deleted())
+
+        # Create an active subscription
+        StripeSubscriptionMeta.objects.create(
+            user=user,
+            shipping_address=address,
+            stripe_subscription_id="sub_123",
+            cancelled_at=None
+        )
+
+        self.assertFalse(address.can_be_deleted())

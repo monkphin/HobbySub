@@ -5,23 +5,22 @@ Contains view logic for public-facing pages:
  - About and Contact pages
 """
 
+import logging
+from datetime import date
+
+from django.contrib import messages
+from django.contrib.auth import login
+from django.contrib.auth.models import User
+from django.core.signing import BadSignature, Signer
+from django.shortcuts import redirect, render
 # Django/External Imports
 from django.utils.http import url_has_allowed_host_and_scheme
-from django.shortcuts import redirect, render
-from django.core.signing import BadSignature
-from django.contrib.auth.models import User
-from django.core.signing import Signer
-from django.contrib.auth import login
-from django.contrib import messages
-from datetime import date
-import logging
 
 # Local Imports
 from boxes.models import Box
-from .forms import Register
-
 from hobbyhub.mail import send_registration_email
 
+from .forms import Register
 
 logger = logging.getLogger(__name__)
 signer = Signer()
@@ -40,8 +39,8 @@ def home(request):
     box = Box.objects.filter(
         is_archived=False,
         shipping_date__lte=today
-        ).order_by('-shipping_date').first()
-    
+    ).order_by('-shipping_date').first()
+
     box_contents = box.products.all() if box else []
 
     # Determine the next month and year
@@ -90,8 +89,14 @@ def register_user(request):
             user.save()
             send_registration_email(user, next_url)
             request.session['post_confirm_redirect'] = next_url
-            logger.info(f"Registration successful for {user.email}, confirmation sent")
-            messages.success(request, "Registration successful! Please check your email and click the confirmation link to activate your account.")
+            logger.info(
+                f"Registration successful for {user.email}, confirmation sent"
+            )
+            messages.success(
+                request,
+                "Registration successful! Please check your email and click "
+                "the confirmation link to activate your account."
+            )
             request.session['registered_email'] = user.email
             return redirect('check_email')
     else:
@@ -110,7 +115,7 @@ def check_email(request):
     email = request.session.get('registered_email', None)
     if email:
         request.session['registered_email'] = email
-    
+
     return render(request, 'home/check_email.html', {
         'email': email
     })
@@ -133,7 +138,10 @@ def confirm_email(request, token):
 
         messages.success(request, "Email confirmed! You're now logged in.")
 
-        if next_url and url_has_allowed_host_and_scheme(next_url, {request.get_host()}):
+        if next_url and url_has_allowed_host_and_scheme(
+            next_url,
+            {request.get_host()}
+        ):
             return redirect(next_url)
 
         return redirect('home')
@@ -141,18 +149,24 @@ def confirm_email(request, token):
     except (BadSignature, User.DoesNotExist):
         messages.error(request, "Invalid or expired confirmation link.")
         return redirect('home')
-    
+
 
 def resend_activation(request):
     email = request.GET.get('email')
     try:
         user = User.objects.get(email=email)
         if not user.is_active:
-            send_registration_email(user, request.session.get('post_confirm_redirect'))
-            messages.success(request, "Activation email resent. Please check your inbox.")
+            send_registration_email(
+                user,
+                request.session.get('post_confirm_redirect')
+            )
+            messages.success(
+                request,
+                "Activation email resent. Please check your inbox."
+            )
     except User.DoesNotExist:
         messages.error(request, "No account found with that email.")
-    
+
     return redirect('check_email')
 
 

@@ -13,13 +13,14 @@ Import and use these anywhere you need a reusable function that keeps views
 clean and DRY.
 """
 
+import logging
+
 # Django/External Imports
 from dateutil.relativedelta import relativedelta
-from django.shortcuts import redirect
-from django.contrib import messages
 from django.conf import settings
+from django.contrib import messages
+from django.shortcuts import redirect
 from django.urls import reverse
-import logging
 
 logger = logging.getLogger(__name__)
 
@@ -133,7 +134,6 @@ def get_gift_metadata(form, user_id, address_id=None):
         metadata['shipping_address_id'] = str(address_id)
 
     return metadata
-
 
 
 def get_subscription_duration_display(subscription):

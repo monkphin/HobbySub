@@ -1,7 +1,8 @@
 import pytest
-from django.urls import reverse
-from django.test import Client
 from django.contrib.auth.models import User
+from django.test import Client
+from django.urls import reverse
+
 
 @pytest.mark.django_db
 def test_register_form_required_fields():
@@ -12,6 +13,7 @@ def test_register_form_required_fields():
     response = client.post(reverse('register'), data={})
     assert "This field is required." in response.content.decode()
     assert response.status_code == 200
+
 
 @pytest.mark.django_db
 def test_register_form_max_length():
@@ -32,6 +34,7 @@ def test_register_form_max_length():
     assert "Ensure this value has at most 100 characters" in content
     assert response.status_code == 200
 
+
 @pytest.mark.django_db
 def test_register_form_invalid_email():
     """
@@ -49,6 +52,7 @@ def test_register_form_invalid_email():
         assert "Enter a valid email address." in response.content.decode()
         assert response.status_code == 200
 
+
 @pytest.mark.django_db
 def test_register_form_password_mismatch():
     """
@@ -63,6 +67,7 @@ def test_register_form_password_mismatch():
     })
     assert "The two password fields didn’t match." in response.content.decode()
     assert response.status_code == 200
+
 
 @pytest.mark.django_db
 def test_register_form_success():

@@ -2,11 +2,12 @@
 Django settings for hobbyhub project.
 """
 
-from dotenv import load_dotenv
 import os
 from pathlib import Path
-import dj_database_url
+
 import cloudinary
+import dj_database_url
+from dotenv import load_dotenv
 
 # === Base Directory & Environment ===
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -114,7 +115,6 @@ STORAGES = {
         'BACKEND': 'whitenoise.storage.CompressedManifestStaticFilesStorage',
     },
 }
-
 
 
 # === Cloudinary ===

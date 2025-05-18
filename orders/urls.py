@@ -7,10 +7,11 @@ Includes routes for one-off orders, subscriptions, order history, and checkout o
 # Django imports
 from django.urls import path
 
-# Local imports 
+# Local imports
 from . import views
-from .views import select_purchase_type, handle_purchase_type, gift_message, secure_cancel_subscription, order_success, order_cancel, order_history
-
+from .views import (gift_message, handle_purchase_type, order_cancel,
+                    order_history, order_success, secure_cancel_subscription,
+                    select_purchase_type)
 
 urlpatterns = [
     # Unified entry point for orders

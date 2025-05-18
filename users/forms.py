@@ -5,15 +5,12 @@ Form classes related to user registration, password changes,
 and managing shipping addresses.
 """
 
-# Django/Remote imports
-from django_countries.widgets import CountrySelectWidget
-from django.contrib.auth.forms import UserCreationForm
-from django.core.exceptions import ValidationError
-from django.contrib.auth.models import User
-from django import forms
 import re
 
-# 25cal imports
+from django import forms
+from django.contrib.auth.models import User
+from django.core.exceptions import ValidationError
+from django_countries.widgets import CountrySelectWidget
 from .models import ShippingAddress
 
 
@@ -22,9 +19,9 @@ class ChangePassword(forms.Form):
     Custom form for setting a new password with confirmation.
     """
     current_password = forms.CharField(
-            widget=forms.PasswordInput(attrs={'class': 'validate'}),
-            help_text="Enter your current password."
-        )
+        widget=forms.PasswordInput(attrs={'class': 'validate'}),
+        help_text="Enter your current password."
+    )
     password1 = forms.CharField(
         widget=forms.PasswordInput(attrs={'class': 'validate'}),
         help_text="Enter your new password."
@@ -72,7 +69,9 @@ class UserEditForm(forms.ModelForm):
 
     def clean_email(self):
         email = self.cleaned_data.get('email')
-        if User.objects.filter(email__iexact=email).exclude(pk=self.instance.pk).exists():
+        if User.objects.filter(
+            email__iexact=email
+        ).exclude(pk=self.instance.pk).exists():
             raise ValidationError("This email address is already in use.")
         return email
 
@@ -86,25 +85,33 @@ class AddAddressForm(forms.ModelForm):
         required=False,
         label="This is a gift recipient address"
     )
-    
+
     def clean_phone_number(self):
         phone = self.cleaned_data.get("phone_number", "").strip()
 
         # Must contain at least one digit
         if not re.search(r'\d', phone):
-            raise ValidationError("Phone number must include at least one digit.")
+            raise ValidationError(
+                "Phone number must include at least one digit."
+            )
 
         # Must only contain digits and common phone symbols
         if not re.match(r'^[\d\s\-\+\(\)]+$', phone):
-            raise ValidationError("Phone number must only contain digits and symbols like +, -, (, ).")
+            raise ValidationError(
+                "Phone number must only contain "
+                "digits and symbols like +, -, (, )."
+            )
 
         return phone
-    
+
     def clean_postcode(self):
         postcode = self.cleaned_data.get("postcode", "").strip()
         if not re.match(r'^[\w\s-]+$', postcode):
-            raise ValidationError("Enter a valid postal code using letters, numbers, or dashes.")
+            raise ValidationError(
+                "Enter a valid postal code using letters, numbers, or dashes."
+            )
         return postcode
+
     class Meta:
         model = ShippingAddress
         fields = [

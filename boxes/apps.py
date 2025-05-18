@@ -6,5 +6,7 @@ class BoxesConfig(AppConfig):
     default_auto_field = 'django.db.models.BigAutoField'
     name = 'boxes'
 
-    def ready(self):
-        import boxes.signals
+
+def ready(self):
+    """Import signals to register them."""
+    import boxes.signals  # noqa: F401

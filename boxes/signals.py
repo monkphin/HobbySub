@@ -2,13 +2,13 @@
 Signal handlers for cleaning up Cloudinary images when Box or BoxProduct
 instances are deleted.
 """
-from django.db.models.signals import post_delete
-from cloudinary.uploader import destroy
-from django.dispatch import receiver
 import logging
 
-from .models import Box, BoxProduct
+from cloudinary.uploader import destroy
+from django.db.models.signals import post_delete
+from django.dispatch import receiver
 
+from .models import Box, BoxProduct
 
 logger = logging.getLogger(__name__)
 

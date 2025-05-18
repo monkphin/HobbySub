@@ -5,6 +5,7 @@ Includes views for listing past boxes and viewing individual box details.
 """
 
 from django.urls import path
+
 from . import views
 
 # URL patterns for box-related views within the boxes app

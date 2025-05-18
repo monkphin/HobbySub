@@ -1,75 +1,84 @@
-from django.test import TestCase
-from unittest.mock import patch, MagicMock
-from django.core import mail
-from hobbyhub.mail import (
-    send_gift_notification_to_recipient,
-    send_gift_confirmation_to_sender,
-    send_order_confirmation_email,
-    send_subscription_confirmation_email,
-    send_payment_failed_email,
-    send_upcoming_renewal_email
-)
-from hobbyhub.utils import (
-    alert,
-    get_user_default_shipping_address,
-    build_shipping_details,
-    get_gift_metadata,
-    get_subscription_duration_display,
-    get_subscription_status
-)
+from datetime import timedelta
+from unittest.mock import MagicMock, patch
+
+from django.contrib.messages import get_messages
 from django.contrib.messages.middleware import MessageMiddleware
 from django.contrib.sessions.middleware import SessionMiddleware
-from django.test import RequestFactory
-from users.models import User, ShippingAddress
-from datetime import datetime, timedelta
-from django.utils import timezone
-from django.contrib.auth.models import AnonymousUser
-from unittest.mock import MagicMock
-
-
+from django.core import mail
 from django.test import RequestFactory, TestCase
-from django.contrib.messages import get_messages
+from django.utils import timezone
+
+from hobbyhub.mail import (send_gift_confirmation_to_sender,
+                           send_gift_notification_to_recipient,
+                           send_order_confirmation_email,
+                           send_payment_failed_email,
+                           send_subscription_confirmation_email,
+                           send_upcoming_renewal_email)
+from hobbyhub.utils import (alert, build_shipping_details, get_gift_metadata,
+                            get_subscription_duration_display,
+                            get_subscription_status,
+                            get_user_default_shipping_address)
+from users.models import ShippingAddress, User
 
 
 class TestMailFunctions(TestCase):
 
     def test_send_gift_notification_to_recipient(self):
-        send_gift_notification_to_recipient('test@example.com', 'Sender Name', 'Enjoy this!', 'Recipient Name')
+        send_gift_notification_to_recipient(
+            'test@example.com',
+            'Sender Name',
+            'Enjoy this!',
+            'Recipient Name'
+        )
         self.assertEqual(len(mail.outbox), 1)
         self.assertEqual(mail.outbox[0].to, ['test@example.com'])
         self.assertIn('Enjoy this!', mail.outbox[0].body)
 
     def test_send_gift_confirmation_to_sender(self):
-        user = User.objects.create(username="testuser", email="sender@example.com")
+        user = User.objects.create(
+            username="testuser",
+            email="sender@example.com"
+        )
         send_gift_confirmation_to_sender(user, 'Recipient Name')
         self.assertEqual(len(mail.outbox), 1)
         self.assertEqual(mail.outbox[0].to, ['sender@example.com'])
         self.assertIn('Recipient Name', mail.outbox[0].body)
 
     def test_send_order_confirmation_email(self):
-        user = User.objects.create(username="testuser", email="user@example.com")
+        user = User.objects.create(
+            username="testuser",
+            email="user@example.com"
+        )
         send_order_confirmation_email(user, 1234)
         self.assertEqual(len(mail.outbox), 1)
         self.assertIn('Order #1234', mail.outbox[0].subject)
 
     def test_send_subscription_confirmation_email(self):
-        user = User.objects.create(username="testuser", email="user@example.com")
+        user = User.objects.create(
+            username="testuser",
+            email="user@example.com"
+        )
         send_subscription_confirmation_email(user, "Monthly Plan")
         self.assertEqual(len(mail.outbox), 1)
         self.assertIn('Monthly Plan', mail.outbox[0].body)
 
     def test_send_payment_failed_email(self):
-        user = User.objects.create(username="testuser", email="user@example.com")
+        user = User.objects.create(
+            username="testuser",
+            email="user@example.com"
+        )
         send_payment_failed_email(user)
         self.assertEqual(len(mail.outbox), 1)
         self.assertIn('Payment Failed', mail.outbox[0].subject)
 
     def test_send_upcoming_renewal_email(self):
-        user = User.objects.create(username="testuser", email="user@example.com")
+        user = User.objects.create(
+            username="testuser",
+            email="user@example.com"
+        )
         send_upcoming_renewal_email(user, timezone.now() + timedelta(days=7))
         self.assertEqual(len(mail.outbox), 1)
         self.assertIn('Your subscription is set to renew', mail.outbox[0].body)
-
 
 
 class TestUtilsFunctions(TestCase):
@@ -79,7 +88,10 @@ class TestUtilsFunctions(TestCase):
         Setup user, address, and request for testing.
         """
         # Create test user and address
-        self.user = User.objects.create(username="testuser", email="user@example.com")
+        self.user = User.objects.create(
+            username="testuser",
+            email="user@example.com"
+        )
         self.address = ShippingAddress.objects.create(
             user=self.user,
             address_line_1="123 Test St",
@@ -117,10 +129,9 @@ class TestUtilsFunctions(TestCase):
         # Set the address as the default
         self.address.is_default = True
         self.address.save()
-        
+
         address, _ = get_user_default_shipping_address(self.request)
         self.assertEqual(address, self.address)
-
 
     def test_build_shipping_details(self):
         """
@@ -156,22 +167,22 @@ class TestUtilsFunctions(TestCase):
         self.assertEqual(metadata['user_id'], str(self.user.id))
         self.assertEqual(metadata['shipping_address_id'], str(self.address.id))
 
-
-
     def test_get_subscription_duration_display(self):
         # Mocking a StripeSubscriptionMeta instance
         mock_subscription = MagicMock()
         mock_subscription.stripe_price_id = 'price_123'
         mock_subscription.created_at = timezone.now() - timedelta(days=30)
-        
+
         # Mock PLAN_MAP to return the expected duration and label
-        with patch('hobbyhub.utils.PLAN_MAP', {'price_123': (3, "3-month plan")}):
+        with patch(
+            'hobbyhub.utils.PLAN_MAP',
+            {'price_123': (3, "3-month plan")}
+        ):
             display = get_subscription_duration_display(mock_subscription)
-        
+
         # Now assert that it contains the expected string
         self.assertIn("3-month plan", display)
         self.assertIn("ends", display)
-
 
     def test_get_subscription_status(self):
         # Mocking a StripeSubscriptionMeta instance
@@ -180,6 +191,6 @@ class TestUtilsFunctions(TestCase):
         mock_subscription.created_at = timezone.now() - timedelta(days=30)
 
         status = get_subscription_status(mock_subscription)
-        
+
         # Check the status is what we expect
         self.assertEqual(status, "Active")

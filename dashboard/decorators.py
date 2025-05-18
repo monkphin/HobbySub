@@ -1,5 +1,5 @@
 from django.shortcuts import render
-from django.http import HttpResponseForbidden
+
 
 def custom_staff_required(view_func):
     """

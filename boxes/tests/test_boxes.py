@@ -1,11 +1,12 @@
 import pytest
+from django.contrib.auth import get_user_model
+from django.test import Client
 from django.urls import reverse
 from django.utils import timezone
-from django.contrib.auth import get_user_model
 from boxes.models import Box
-from django.test import Client
 
 User = get_user_model()
+
 
 @pytest.mark.django_db
 class TestPastBoxesView:
@@ -15,7 +16,10 @@ class TestPastBoxesView:
         Sets up test data for each test.
         """
         self.client = Client()
-        self.user = User.objects.create(username="testuser", email="testuser@example.com")
+        self.user = User.objects.create(
+            username="testuser",
+            email="testuser@example.com"
+        )
         self.client.force_login(self.user)
         # Create archived and non-archived boxes
         self.archived_box_1 = Box.objects.create(
@@ -39,7 +43,8 @@ class TestPastBoxesView:
 
     def test_past_boxes_view_success(self):
         """
-        Test the past boxes view renders correctly and shows only archived boxes.
+        Test the past boxes view renders correctly and shows only archived
+        boxes.
         """
         response = self.client.get(reverse('past_boxes'))
         assert response.status_code == 200
@@ -55,7 +60,10 @@ class TestPastBoxesView:
         Box.objects.filter(is_archived=True).delete()
         response = self.client.get(reverse('past_boxes'))
         assert response.status_code == 200
-        assert "No past boxes available yet — check back soon!" in response.content.decode()
+        assert (
+            "No past boxes available yet — check back soon!"
+            in response.content.decode()
+        )
 
 
 @pytest.mark.django_db
@@ -66,7 +74,10 @@ class TestBoxDetailView:
         Sets up test data for each test.
         """
         self.client = Client()
-        self.user = User.objects.create(username="testuser", email="testuser@example.com")
+        self.user = User.objects.create(
+            username="testuser",
+            email="testuser@example.com"
+        )
         self.client.force_login(self.user)
         self.box = Box.objects.create(
             name="Detail Box",
@@ -89,5 +100,7 @@ class TestBoxDetailView:
         """
         Test that the box detail view returns 404 for a non-existing slug.
         """
-        response = self.client.get(reverse('box_detail', args=['non-existent-slug']))
+        response = self.client.get(
+            reverse('box_detail', args=['non-existent-slug'])
+        )
         assert response.status_code == 404

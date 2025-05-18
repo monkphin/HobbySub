@@ -2,18 +2,17 @@
 Handles plain text emailing for sending to users.
 """
 
-from dateutil.relativedelta import relativedelta
-from django.core.signing import Signer
-from django.core.mail import send_mail
 from urllib.parse import urlencode
-from django.conf import settings
-from django.urls import reverse
 
+from dateutil.relativedelta import relativedelta
+from django.conf import settings
+from django.core.mail import send_mail
+from django.core.signing import Signer
+from django.urls import reverse
 
 from .utils import PLAN_MAP
 
 signer = Signer()
-
 
 
 def send_user_email(subject, message, recipient_email):
@@ -35,12 +34,17 @@ def send_registration_email(user, next_url=None):
     """Send welcome + confirmation email after registration."""
     token = signer.sign(user.pk)
     base_url = settings.SITE_URL + reverse('confirm_email', args=[token])
-    confirmation_url = f"{base_url}?{urlencode({'next': next_url})}" if next_url else base_url
+    confirmation_url = (
+        f"{base_url}?{urlencode({'next': next_url})}"
+        if next_url
+        else base_url
+    )
 
     message = (
         f"Hi {user.username},\n\n"
         "Thanks for registering with Hobby Hub!\n\n"
-        f"Please confirm your email by clicking the link below:\n\n{confirmation_url}\n\n"
+        "Please confirm your email by clicking the link "
+        f"below:\n\n{confirmation_url}\n\n"
         "If you did not create this account, you can ignore this message."
     )
 
@@ -63,7 +67,7 @@ def send_account_update_email(user):
     )
 
 
-# Email address changed. 
+# Email address changed.
 def send_email_change_notifications(user, old_email, new_email):
     """
     Notify both old and new email addresses about the email change.
@@ -73,8 +77,10 @@ def send_email_change_notifications(user, old_email, new_email):
         subject="Your Hobby Hub account email was changed",
         message=(
             f"Hi {user.username},\n\n"
-            f"Your email address has been successfully updated to {new_email}.\n\n"
-            "If you did not perform this action, please contact support immediately."
+            "Your email address has been successfully updated "
+            f"to {new_email}.\n\n"
+            "If you did not perform this action, please contact support "
+            "immediately."
         ),
         recipient_email=new_email
     )
@@ -84,8 +90,10 @@ def send_email_change_notifications(user, old_email, new_email):
         subject="Your Hobby Hub account email was changed",
         message=(
             f"Hi {user.username},\n\n"
-            f"The email address associated with your Hobby Hub account was changed from {old_email} to {new_email}.\n\n"
-            "If you did not perform this action, please contact support immediately."
+            "The email address associated with your Hobby Hub account was "
+            f"changed from {old_email} to {new_email}.\n\n"
+            "If you did not perform this action, please contact support "
+            "immediately."
         ),
         recipient_email=old_email
     )
@@ -101,21 +109,31 @@ def send_password_change_email(user):
         recipient_email=user.email
     )
 
+
 # Password Reset
 def send_password_reset_email(user, domain, protocol='https'):
     """
     Sends a password reset email to the user.
     Includes a link to reset their password, valid for a short time.
     """
-    from django.utils.http import urlsafe_base64_encode
-    from django.utils.encoding import force_bytes
-    from django.urls import reverse
     from django.contrib.auth.tokens import default_token_generator
+    from django.urls import reverse
+    from django.utils.encoding import force_bytes
+    from django.utils.http import urlsafe_base64_encode
 
     uid = urlsafe_base64_encode(force_bytes(user.pk))
     token = default_token_generator.make_token(user)
 
-    reset_link = f"{protocol}://{domain}{reverse('password_reset_confirm', kwargs={'uidb64': uid, 'token': token})}"
+    reset_link = (
+        f"{protocol}://{domain}"
+        f"{reverse(
+            'password_reset_confirm',
+            kwargs={
+                'uidb64': uid,
+                'token': token
+            }
+        )}"
+    )
 
     message = (
         f"Hi {user.username},\n\n"
@@ -160,11 +178,11 @@ def send_gift_confirmation_to_sender(user, recipient_name):
 
 # Gift (Recipient)
 def send_gift_notification_to_recipient(
-        recipient_email,
-        sender_name,
-        gift_message,
-        recipient_name
-        ):
+    recipient_email,
+    sender_name,
+    gift_message,
+    recipient_name
+):
     """Notify recipient that a gift has been sent."""
     send_user_email(
         subject="You've received a gift from Hobby Hub!",
@@ -283,33 +301,40 @@ def send_subscription_cancelled_email(user, plan_id, start_date):
         recipient_email=user.email
     )
 
- # Auto archived box
+
+# Auto archived box
 def send_auto_archive_notification(box):
     """
     Sends an email notification to the admin when a box is auto-archived.
     """
     send_mail(
         'Box Auto-Archived',
-        f'The box "{box.name}" has been auto-archived because its date is in the past.',
+        f'The box "{box.name}" has been auto-archived because '
+        'its date is in the past.',
         settings.DEFAULT_FROM_EMAIL,
         ['admin@hobbysub.com'],
         fail_silently=False,
     )
-    
+
 
 def send_order_status_update_email(user, order_id, status):
     """
     Send an email notification to the user when their order status changes.
     """
     status_messages = {
-        'pending': "Your order is currently pending and will be processed soon.",
+        'pending': "Your order is currently pending and will be processed "
+        "soon.",
         'processing': "Your order is now being processed.",
         'shipped': "Your order has been shipped and is on its way to you.",
-        'cancelled': "Your order has been cancelled. If you have any questions, please contact support."
+        'cancelled': "Your order has been cancelled. If you have any "
+        "questions, please contact support."
     }
 
-    status_message = status_messages.get(status, "Your order status has been updated.")
-    
+    status_message = status_messages.get(
+        status,
+        "Your order status has been updated."
+    )
+
     send_user_email(
         subject=f"Order Update - Order #{order_id}",
         message=(

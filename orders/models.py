@@ -5,10 +5,11 @@ Defines database models for the orders app.
 Includes models for subscription metadata, individual orders, and payments.
 """
 
-from django.db import models
 from django.contrib.auth.models import User
-from users.models import ShippingAddress
+from django.db import models
+
 from boxes.models import Box
+from users.models import ShippingAddress
 
 
 class StripeSubscriptionMeta(models.Model):
@@ -24,7 +25,8 @@ class StripeSubscriptionMeta(models.Model):
     stripe_subscription_id = models.CharField(
         max_length=100,
         blank=True,
-        null=True
+        null=True,
+        unique=True
     )
     stripe_price_id = models.CharField(max_length=100)
     shipping_address = models.ForeignKey(
@@ -33,7 +35,6 @@ class StripeSubscriptionMeta(models.Model):
         blank=True,
         null=True
     )
-    shipping_address = models.ForeignKey(ShippingAddress, on_delete=models.CASCADE)
     is_gift = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     cancelled_at = models.DateTimeField(null=True, blank=True)
@@ -63,7 +64,7 @@ class Order(models.Model):
         on_delete=models.SET_NULL,
         blank=True,
         null=True
-        )
+    )
     box = models.ForeignKey(Box, on_delete=models.SET_NULL, null=True)
     stripe_subscription_id = models.CharField(
         max_length=100,
@@ -86,10 +87,8 @@ class Order(models.Model):
     )
     is_gift = models.BooleanField(default=False)
 
-
     def __str__(self):
         return f"Order #{self.id} - {self.status}"
-
 
 
 class Payment(models.Model):
@@ -109,8 +108,12 @@ class Payment(models.Model):
     amount = models.DecimalField(max_digits=8, decimal_places=2)
     status = models.CharField(max_length=20, choices=PAYMENT_STATUS)
     payment_method = models.CharField(max_length=50)
-    payment_intent_id = models.CharField(max_length=255, unique=True, null=True, blank=True)
-
+    payment_intent_id = models.CharField(
+        max_length=255,
+        unique=True,
+        null=True,
+        blank=True
+    )
 
     def __str__(self):
         if self.order:

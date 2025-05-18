@@ -2,10 +2,10 @@
 Views for displaying archived subscription boxes and individual box details.
 """
 
-# Django/External Imports
-from django.shortcuts import render, get_object_or_404
 import logging
 
+# Django/External Imports
+from django.shortcuts import get_object_or_404, render
 
 # Local Imports
 from boxes.models import Box

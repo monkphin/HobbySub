@@ -4,19 +4,11 @@ users/forms.py
 Form classes related to user registration, password changes,
 and managing shipping addresses.
 """
-
-# Django/Remote imports
-from django_countries.widgets import CountrySelectWidget
+from django import forms
 from django.contrib.auth.forms import UserCreationForm
+from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
-from django.contrib.auth.models import User
-from django import forms
-import re
 
-
-from django import forms
-from django.contrib.auth.models import User
-from django.contrib.auth.forms import UserCreationForm
 
 class Register(UserCreationForm):
     email = forms.EmailField(
@@ -38,7 +30,10 @@ class Register(UserCreationForm):
             'required': True,
             'autocomplete': 'username'
         }),
-        help_text="Required. 30 characters or fewer. Letters, digits, and @/./+/-/_ only."
+        help_text=(
+            "Required. 30 characters or fewer."
+            "Letters, digits, and @/./+/-/_ only."
+        )
     )
 
     first_name = forms.CharField(
@@ -67,7 +62,9 @@ class Register(UserCreationForm):
             'required': True,
             'autocomplete': 'new-password'
         }),
-        help_text="Your password must meet the site's minimum security requirements."
+        help_text=(
+            "Your password must meet the site's minimum security requirements."
+        )
     )
 
     password2 = forms.CharField(

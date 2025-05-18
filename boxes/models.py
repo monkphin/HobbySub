@@ -1,7 +1,6 @@
-from django import forms
+from cloudinary.models import CloudinaryField
 from django.db import models
 from django.utils.text import slugify
-from cloudinary.models import CloudinaryField
 
 
 class Box(models.Model):

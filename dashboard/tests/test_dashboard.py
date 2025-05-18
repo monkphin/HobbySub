@@ -1,5 +1,3 @@
-# dashboard/tests.py
-
 """
 Tests for Dashboard Forms and Views:
 - Validations for BoxForm creation and editing
@@ -8,31 +6,29 @@ Tests for Dashboard Forms and Views:
 - Integration tests for Create, Edit, and Image Handling in the dashboard
 """
 
-import pytest
+import json
 from datetime import timedelta
-from django.utils.timezone import now
-from django.urls import reverse
-from boxes.models import Box
-from dashboard.forms import BoxForm
-from django.core.files.uploadedfile import SimpleUploadedFile
-from django.contrib.auth import get_user_model
-from PIL import Image
 from io import BytesIO
 from unittest.mock import patch
+
+import pytest
+from django.contrib.auth import get_user_model
+from django.core.files.uploadedfile import SimpleUploadedFile
 from django.db.models import QuerySet
-import json
-from orders.models import Order
-from orders.models import StripeSubscriptionMeta
-from django.core import mail
+from django.urls import reverse
+from django.utils.timezone import now
+from PIL import Image
+
+from boxes.models import Box
+from dashboard.forms import BoxForm
+from orders.models import Order, StripeSubscriptionMeta
 from users.models import ShippingAddress
-
-
 
 User = get_user_model()
 
 
 # ============================
-# 🚀 Utility Functions
+# Utility Functions
 # ============================
 
 def generate_test_image():
@@ -43,11 +39,15 @@ def generate_test_image():
     image_file = BytesIO()
     image.save(image_file, 'JPEG')
     image_file.seek(0)
-    return SimpleUploadedFile("test_image.jpg", image_file.read(), content_type="image/jpeg")
+    return SimpleUploadedFile(
+        "test_image.jpg",
+        image_file.read(),
+        content_type="image/jpeg"
+    )
 
 
 # ============================
-# 🚀 FORM TEST CASES
+# FORM TEST CASES
 # ============================
 
 @pytest.mark.django_db
@@ -105,8 +105,8 @@ def test_box_form_auto_archive():
 
     assert form.is_valid()
     box = form.save()
-    box.refresh_from_db()  # Fetch the latest state from the DB
-    assert box.is_archived  # Past date should be archived
+    box.refresh_from_db()
+    assert box.is_archived
 
 
 @pytest.mark.django_db
@@ -130,8 +130,8 @@ def test_box_form_editing():
 
     assert form.is_valid()
     updated_box = form.save()
-    updated_box.refresh_from_db()  # Fetch the latest state from the DB
-    assert updated_box.is_archived  # New date is in the past
+    updated_box.refresh_from_db()
+    assert updated_box.is_archived
 
 
 @pytest.mark.django_db
@@ -140,7 +140,11 @@ def test_box_form_invalid_file():
     Test BoxForm with a non-image file upload.
     """
     # Uploading a plain text file instead of an image
-    invalid_file = SimpleUploadedFile("test.txt", b"file content", content_type="text/plain")
+    invalid_file = SimpleUploadedFile(
+        "test.txt",
+        b"file content",
+        content_type="text/plain"
+    )
     form = BoxForm(data={
         "name": "File Box",
         "description": "Invalid file upload",
@@ -154,7 +158,7 @@ def test_box_form_invalid_file():
 
 
 # ============================
-# 🔄 INTEGRATION TEST CASES
+# INTEGRATION TEST CASES
 # ============================
 
 @pytest.mark.django_db
@@ -175,7 +179,7 @@ def test_create_box(client, admin_user):
         "image": image
     })
 
-    assert response.status_code == 302  
+    assert response.status_code == 302
 
     # Verify the box was created correctly
     box = Box.objects.get(name="Test Box")
@@ -208,9 +212,12 @@ def test_edit_box_image_update(client, admin_user):
     assert box.image
 
     # Check if the public ID (or URL) exists, not the original file name
-    public_id = str(box.image.public_id) if hasattr(box.image, 'public_id') else str(box.image)
+    public_id = (
+        str(box.image.public_id)
+        if hasattr(box.image, 'public_id')
+        else str(box.image)
+    )
     assert len(public_id) > 0
-
 
 
 @pytest.mark.django_db
@@ -235,8 +242,9 @@ def test_edit_box_date_forward(client, admin_user):
     assert box.shipping_date == new_date
 
 # ============================
-# 🚀 USER ADMIN TEST CASES
+# USER ADMIN TEST CASES
 # ============================
+
 
 @pytest.mark.django_db
 def test_user_admin_overview(client, admin_user):
@@ -260,10 +268,16 @@ def test_toggle_user_state(client, admin_user):
     admin_user.save()
 
     client.force_login(admin_user)
-    user = User.objects.create(username="testuser", email="testuser@example.com", is_active=True)
-    response = client.post(reverse('admin_toggle_user_state', args=[user.id]),
-                            data=json.dumps({"password": "admin_password"}),
-                            content_type="application/json")
+    user = User.objects.create(
+        username="testuser",
+        email="testuser@example.com",
+        is_active=True
+    )
+    response = client.post(
+        reverse('admin_toggle_user_state', args=[user.id]),
+        data=json.dumps({"password": "admin_password"}),
+        content_type="application/json"
+    )
     user.refresh_from_db()
     assert not user.is_active
     assert response.status_code == 200
@@ -280,25 +294,29 @@ def test_admin_password_reset(mock_send_email, client, admin_user):
     admin_user.save()
 
     client.force_login(admin_user)
-    user = User.objects.create(username="testuser", email="testuser@example.com", is_active=True)
+    user = User.objects.create(
+        username="testuser",
+        email="testuser@example.com",
+        is_active=True
+    )
     user.set_password("admin_password")
     user.save()
 
     print("=== DEBUG === User setup completed and ready for password reset.")
-    
+
     response = client.post(reverse('admin_password_reset', args=[user.id]),
                            data=json.dumps({"password": "admin_password"}),
                            content_type="application/json")
-    
+
     print("=== DEBUG === Response status code:", response.status_code)
     print("=== DEBUG === Mock call count:", mock_send_email.call_count)
-    
+
     assert response.status_code == 200
     mock_send_email.assert_called_once_with(user, domain='testserver')
-    
+
 
 # ============================
-# 🔄 ORDER MANAGEMENT TEST CASES
+# ORDER MANAGEMENT TEST CASES
 # ============================
 
 @pytest.mark.django_db
@@ -306,11 +324,11 @@ def test_order_status_update(client, admin_user):
     """
     Tests that the order status can be updated correctly.
     """
-    # ✅ Make admin_user a staff member
+    # Make admin_user a staff member
     admin_user.is_staff = True
     admin_user.save()
-    
-    # ✅ Force login and ensure session is flushed properly
+
+    # Force login and ensure session is flushed properly
     client.force_login(admin_user)
     session = client.session
     session['user_id'] = admin_user.id
@@ -338,10 +356,15 @@ def test_order_status_update(client, admin_user):
         shipping_address=address
     )
 
-    response = client.post(reverse('update_order_status', args=[order.id]), data={'status': 'shipped'}, follow=True)  
+    response = client.post(
+        reverse('update_order_status', args=[order.id]),
+        data={'status': 'shipped'},
+        follow=True
+    )
 
-    # ✅ Check the final page status
+    # Check the final page status
     assert response.status_code == 200
+
 
 @pytest.mark.django_db
 @patch("stripe.Subscription.modify")
@@ -349,12 +372,12 @@ def test_admin_cancel_subscription(mock_modify, client, admin_user):
     """
     Tests an admin cancelling a user's subscription.
     """
-    # ✅ Make admin_user a staff member
+    # Make admin_user a staff member
     admin_user.is_staff = True
     admin_user.set_password('admin_password')
     admin_user.save()
 
-    # ✅ Create the shipping address
+    # Create the shipping address
     address = ShippingAddress.objects.create(
         user=admin_user,
         recipient_f_name='John',
@@ -367,33 +390,39 @@ def test_admin_cancel_subscription(mock_modify, client, admin_user):
         is_default=True
     )
 
-    # ✅ Now create the subscription with the address
+    # Now create the subscription with the address
     subscription = StripeSubscriptionMeta.objects.create(
         user=admin_user,
         stripe_subscription_id="sub_123456",
         stripe_price_id='price_abc',
-        shipping_address=address,  
+        shipping_address=address,
         cancelled_at=None
     )
 
     client.force_login(admin_user)
-    
-    # ✅ Send the POST request with the correct URL, now including the user ID
+
+    # Send the POST request with the correct URL, now including the user ID
     url = reverse('admin_cancel_subscription', args=[admin_user.id])
     response = client.post(url, data=json.dumps({
         'subscription_id': subscription.stripe_subscription_id,
         'password': 'admin_password'
     }), content_type='application/json')
 
-    # ✅ Assert the mock was called
-    mock_modify.assert_called_once_with('sub_123456', cancel_at_period_end=True)
+    # Assert the mock was called
+    mock_modify.assert_called_once_with(
+        'sub_123456',
+        cancel_at_period_end=True
+    )
 
-    # ✅ Check the response
+    # Check the response
     assert response.status_code == 200
     response_json = response.json()
     assert response_json['success'] is True
-    assert response_json['message'] == 'Subscription will cancel at period end.'
+    assert (
+        response_json['message']
+        == 'Subscription will cancel at period end.'
+    )
 
-    # ✅ Check that the subscription is marked as cancelled
+    # Check that the subscription is marked as cancelled
     subscription.refresh_from_db()
     assert subscription.cancelled_at is not None

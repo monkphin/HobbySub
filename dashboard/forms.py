@@ -11,17 +11,13 @@ users.
 All forms use MaterializeCSS-friendly widgets for consistent styling.
 """
 
+from datetime import date
+
+from django import forms
+from django.contrib.auth import get_user_model
 # Django Imports
 from django.core.exceptions import ValidationError
-from django.contrib.auth import get_user_model
-from django.utils.timezone import now
-from datetime import date
-from django import forms
-
-# Local Imports
-from hobbyhub.mail import send_auto_archive_notification
 from boxes.models import Box, BoxProduct
-from hobbyhub.utils import alert
 
 User = get_user_model()
 
@@ -33,17 +29,22 @@ class BoxForm(forms.ModelForm):
     UK and ISO date formats. Materialize-compatible widgets are used for
     styling.
     """
-
     def clean_name(self):
         name = self.cleaned_data['name']
-        if Box.objects.filter(name__iexact=name).exclude(pk=self.instance.pk).exists():
+        if (
+            Box.objects.filter(name__iexact=name)
+            .exclude(pk=self.instance.pk)
+            .exists()
+        ):
             raise forms.ValidationError("A box with this name already exists.")
         return name
 
     def clean_description(self):
         desc = self.cleaned_data.get('description', '')
         if len(desc) > 300:
-            raise forms.ValidationError("Description must be 300 characters or fewer.")
+            raise forms.ValidationError(
+                "Description must be 300 characters or fewer."
+            )
         return desc
 
     def clean_image(self):
@@ -56,20 +57,25 @@ class BoxForm(forms.ModelForm):
             if hasattr(image, 'content_type'):
                 # This means it's a freshly uploaded image
                 if not image.content_type.startswith('image/'):
-                    raise ValidationError("The uploaded file is not a valid image.")
+                    raise ValidationError(
+                        "The uploaded file is not a valid image."
+                    )
             else:
                 # If it's a CloudinaryResource, we need to trust it's valid
-                # You can extend this with Cloudinary's API call to double-check if needed
+                # You can extend this with Cloudinary's API call to
+                # double-check if needed
                 from cloudinary.api import resource
                 try:
                     metadata = resource(image.public_id)
                     if 'image' not in metadata.get('resource_type', ''):
-                        raise ValidationError("The saved file is not a valid image.")
+                        raise ValidationError(
+                            "The saved file is not a valid image."
+                        )
                 except Exception as e:
-                    raise ValidationError(f"Could not verify the image from Cloudinary: {e}")
-
+                    raise ValidationError(
+                        f"Could not verify the image from Cloudinary: {e}"
+                    )
         return image
-
 
     def save(self, commit=True):
         instance = super().save(commit=False)
