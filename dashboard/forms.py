@@ -15,12 +15,17 @@ from datetime import date
 
 from django import forms
 from django.contrib.auth import get_user_model
-# Django Imports
+from datetime import timedelta, date
 from django.core.exceptions import ValidationError
 from boxes.models import Box, BoxProduct
 
 User = get_user_model()
 
+
+def last_day_of_month(any_day):
+    """Return the last day of the month for the given date."""
+    next_month = any_day.replace(day=28) + timedelta(days=4)
+    return next_month - timedelta(days=next_month.day)
 
 class BoxForm(forms.ModelForm):
     """
@@ -80,8 +85,11 @@ class BoxForm(forms.ModelForm):
     def save(self, commit=True):
         instance = super().save(commit=False)
 
-        # Archive logic applied directly to the instance
-        if instance.shipping_date < date.today():
+        # Get the last day of the month for the shipping date
+        last_day = last_day_of_month(instance.shipping_date)
+
+        # Only archive if the current date is past the end of that month
+        if date.today() > last_day:
             instance.is_archived = True
         else:
             instance.is_archived = False
@@ -89,6 +97,7 @@ class BoxForm(forms.ModelForm):
         if commit:
             instance.save()
         return instance
+
 
     shipping_date = forms.DateField(
         input_formats=['%d/%m/%Y', '%Y-%m-%d'],

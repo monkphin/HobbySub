@@ -80,6 +80,7 @@
       <section class="section center-align">
         <h2 class=" text-darken-3">Coming Next Month!</h2>
         <h3>{{ next_box.name }}</h3>
+        <img src="{{ next_box.image.url }}" alt="{{ next_box.name }}" class="responsive-img z-depth-2" />
         <p class="grey-text">Ships {{ next_box.shipping_date|date:"d M Y" }}</p>
         <p class="grey-text text-darken-1">{{ next_box.description|truncatewords:20 }}</p>
       </section>

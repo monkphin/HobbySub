@@ -23,7 +23,7 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 from django.utils.timezone import now
 from django.views.decorators.http import require_POST
-
+from datetime import datetime, timedelta
 from boxes.models import Box, BoxProduct
 from hobbyhub.mail import (send_auto_archive_notification,
                            send_order_status_update_email,
@@ -82,10 +82,6 @@ def add_box(request):
         if form.is_valid():
             try:
                 new_box = form.save(commit=False)  # Do not commit yet
-
-                # Auto-archive if date is in the past
-                if new_box.shipping_date < now().date():
-                    new_box.is_archived = True
 
                 # Save to DB
                 new_box.save()

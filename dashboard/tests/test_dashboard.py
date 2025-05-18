@@ -96,7 +96,8 @@ def test_box_form_auto_archive():
     """
     Test auto-archiving of a box with a past date.
     """
-    past_date = now().date() - timedelta(days=5)
+    # Set the date to the previous month so it actually triggers the archive
+    past_date = now().date().replace(day=1) - timedelta(days=1)
     form = BoxForm(data={
         "name": "Past Box",
         "description": "This is a past box",
@@ -107,6 +108,7 @@ def test_box_form_auto_archive():
     box = form.save()
     box.refresh_from_db()
     assert box.is_archived
+
 
 
 @pytest.mark.django_db
@@ -121,7 +123,8 @@ def test_box_form_editing():
         shipping_date=initial_date
     )
 
-    updated_date = now().date() - timedelta(days=1)
+    # Set it to the previous month to trigger auto-archive logic
+    updated_date = now().date().replace(day=1) - timedelta(days=1)
     form = BoxForm(data={
         "name": "Updated Box",
         "description": "Updated description",
