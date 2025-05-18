@@ -8,16 +8,20 @@ from django.core import mail
 from django.test import RequestFactory, TestCase
 from django.utils import timezone
 
-from hobbyhub.mail import (send_gift_confirmation_to_sender,
-                           send_gift_notification_to_recipient,
-                           send_order_confirmation_email,
-                           send_payment_failed_email,
-                           send_subscription_confirmation_email,
-                           send_upcoming_renewal_email)
-from hobbyhub.utils import (alert, build_shipping_details, get_gift_metadata,
-                            get_subscription_duration_display,
-                            get_subscription_status,
-                            get_user_default_shipping_address)
+from hobbyhub.mail import (
+    send_gift_confirmation_to_sender,
+    send_gift_notification_to_recipient,
+    send_order_confirmation_email,
+    send_payment_failed_email,
+    send_subscription_confirmation_email,
+    send_upcoming_renewal_email
+)
+from hobbyhub.utils import (
+    alert, build_shipping_details, get_gift_metadata,
+    get_subscription_duration_display,
+    get_subscription_status,
+    get_user_default_shipping_address
+)
 from users.models import ShippingAddress, User
 
 
