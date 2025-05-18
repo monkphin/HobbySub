@@ -770,7 +770,7 @@ def update_order_status(request, order_id):
                 send_order_status_update_email(order.user, order.id, 'cancelled')
                 
                 # 🔔 Fire a toast notification
-                alert(request, "success", "Order has been cancelled and email notification sent.")
+                alert(request, "success", "Subscription has been cancelled and email notification sent.")
                 
             except Exception as e:
                 logger.error(f"Failed to cancel subscription: {e}")
