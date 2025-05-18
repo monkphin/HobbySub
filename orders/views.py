@@ -478,7 +478,7 @@ def order_history(request):
         try:
             # Fetch latest subscription details from Stripe
             stripe_subscription = stripe.Subscription.retrieve(sub.stripe_subscription_id)
-            
+
             # Convert the timestamp to a datetime object
             from datetime import datetime
             current_period_end = datetime.fromtimestamp(stripe_subscription["current_period_end"])
@@ -513,7 +513,6 @@ def order_history(request):
         'get_subscription_duration_display': get_subscription_duration_display,
         'sub_map': sub_map,
     })
-
 
 
 @require_POST

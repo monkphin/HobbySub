@@ -6,8 +6,9 @@ from django.test import RequestFactory, TestCase
 from django.urls import reverse
 from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode
-from users.models import ShippingAddress, User
+from users.models import ShippingAddress
 from orders.models import Order, StripeSubscriptionMeta
+
 
 class TestUsersViews(TestCase):
 
@@ -140,7 +141,7 @@ class ShippingAddressTest(TestCase):
     def test_address_cannot_be_deleted_if_linked_to_order_or_subscription(self):
         user = User.objects.create(username="testuser")
         address = ShippingAddress.objects.create(
-            user=user, 
+            user=user,
             address_line_1="123 Test St",
             town_or_city="Test City",
             postcode="TEST123",

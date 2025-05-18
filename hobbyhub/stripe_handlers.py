@@ -161,7 +161,7 @@ def handle_checkout_session_completed(session):
                     StripeSubscriptionMeta.objects.select_for_update()
                     .filter(stripe_subscription_id=sub_id)
                 )
-                
+
                 if existing_subs.exists():
                     sub_meta = existing_subs.first()
                     created = False

@@ -95,14 +95,14 @@ class ShippingAddress(models.Model):
     def __str__(self):
         full_name = f"{self.recipient_f_name} {self.recipient_l_name}"
         return f"{full_name} — {self.postcode}"
-    
+
     def can_be_deleted(self):
         """
         Check if the address is linked to active orders or subscriptions.
         """
         # Lazy import inside the method to avoid circular import
         from orders.models import Order, StripeSubscriptionMeta
-        
+
         has_active_orders = Order.objects.filter(
             shipping_address=self,
             status__in=['pending', 'processing']

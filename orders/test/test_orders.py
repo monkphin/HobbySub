@@ -17,10 +17,10 @@ from unittest.mock import patch
 from django.db import connection
 
 
-
 logging.basicConfig(level=logging.DEBUG)
 
 User = get_user_model()
+
 
 # Retry logic with exponential backoff
 def retry_with_backoff(func, max_attempts=5):
@@ -28,9 +28,15 @@ def retry_with_backoff(func, max_attempts=5):
         try:
             return func()
         except Exception as e:
-            logging.error(f"Attempt {attempt + 1} failed: {e}. Retrying in backoff...")
+            logging.error(
+                f"Attempt {attempt + 1} failed: "
+                f"{e}. Retrying in backoff..."
+            )
             if connection.in_atomic_block:
-                logging.error("Rollback attempted inside atomic block. Operation will retry.")
+                logging.error(
+                    "Rollback attempted inside atomic block. "
+                    "Operation will retry."
+                )
             time.sleep(random.uniform(0.5, 2.0) * (2 ** attempt))
     raise RuntimeError("Max retry attempts exceeded.")
 
@@ -45,28 +51,43 @@ def run_webhook_handler(user_id, address_id, stripe_session):
 
             # Wrap in retry logic to handle temporary issues
             def acquire_locks():
-                locked_user = User.objects.select_for_update(nowait=True).get(id=user_id)
-                locked_address = ShippingAddress.objects.select_for_update(nowait=True).get(id=address_id)
+                locked_user = (
+                    User.objects.select_for_update(nowait=True)
+                    .get(id=user_id)
+                )
+                locked_address = (
+                    ShippingAddress.objects.select_for_update(nowait=True)
+                    .get(id=address_id)
+                )
                 return locked_user, locked_address
 
             # Use backoff strategy to avoid deadlocks
             locked_user, locked_address = retry_with_backoff(acquire_locks)
 
-            logging.debug(f"User {locked_user.id} and Address {locked_address.id} locked, proceeding...")
+            logging.debug(
+                f"User {locked_user.id} and "
+                f"Address {locked_address.id} locked, proceeding..."
+            )
 
-            # Retry logic for creating the StripeSubscriptionMeta as well      
+            # Retry logic for creating the StripeSubscriptionMeta as well
             def create_subscription():
-                subscription_meta, created = StripeSubscriptionMeta.objects.get_or_create(
-                    stripe_subscription_id=stripe_session['subscription'],        
-                    defaults={
-                        'user': locked_user,
-                        'shipping_address': locked_address
-                    }
+                subscription_meta, created = (
+                    StripeSubscriptionMeta.objects.get_or_create(
+                        stripe_subscription_id=stripe_session['subscription'],
+                        defaults={
+                            'user': locked_user,
+                            'shipping_address': locked_address
+                        }
+                    )
                 )
                 if created:
-                    logging.debug(f"StripeSubscriptionMeta created successfully with ID {subscription_meta.pk}")
+                    logging.debug(
+                        "StripeSubscriptionMeta created successfully with ID "
+                        f"{subscription_meta.pk}")
                 else:
-                    logging.warning(f"Subscription already exists: {subscription_meta.pk}")
+                    logging.warning(
+                        f"Subscription already exists: {subscription_meta.pk}"
+                    )
                 return subscription_meta
 
             # Use retry to handle concurrency issues during creation
@@ -78,7 +99,6 @@ def run_webhook_handler(user_id, address_id, stripe_session):
         logging.error(f"Unhandled exception: {e}")
     finally:
         logging.debug("Thread finished")
-
 
 
 @pytest.mark.django_db
@@ -501,11 +521,12 @@ def setup_request_with_session(rf, admin_user):
     return request
 
 
-@pytest.mark.django_db(transaction=True)  # Explicitly allow true DB transactions
+@pytest.mark.django_db(transaction=True)
 @patch('stripe.checkout.Session.retrieve')
 def test_concurrent_subscription_creation(mock_stripe):
     """
-    Simulate two webhook calls processed simultaneously for the same Stripe subscription.
+    Simulate two webhook calls processed simultaneously for the same
+    Stripe subscription.
     """
     mock_stripe.return_value = {
         'id': 'cs_test_concurrent',
@@ -532,12 +553,6 @@ def test_concurrent_subscription_creation(mock_stripe):
         country="GB"
     )
 
-    box = Box.objects.create(
-        name="Test Box",
-        shipping_date="2025-06-01",
-        is_archived=False
-    )
-
     stripe_session = {
         'id': 'cs_test_concurrent',
         'mode': 'subscription',
@@ -560,8 +575,14 @@ def test_concurrent_subscription_creation(mock_stripe):
 
     # Launch the threads **after the transaction commit is confirmed**
     logging.debug("Launching threads...")
-    t1 = threading.Thread(target=run_webhook_handler, args=(user.id, address.id, stripe_session))
-    t2 = threading.Thread(target=run_webhook_handler, args=(user.id, address.id, stripe_session))
+    t1 = threading.Thread(
+        target=run_webhook_handler,
+        args=(user.id, address.id, stripe_session)
+    )
+    t2 = threading.Thread(
+        target=run_webhook_handler,
+        args=(user.id, address.id, stripe_session)
+    )
 
     t1.start()
     t2.start()
@@ -580,4 +601,7 @@ def test_concurrent_subscription_creation(mock_stripe):
     logging.debug(f"🔎 Found {count} StripeSubscriptionMeta entries.")
 
     # Final Assertion
-    assert count == 1, f"Multiple StripeSubscriptionMeta entries were created! Count: {count}"
+    assert count == 1, (
+        f"Multiple StripeSubscriptionMeta entries were created! "
+        f"Count: {count}"
+    )
