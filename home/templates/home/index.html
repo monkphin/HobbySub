@@ -57,7 +57,7 @@
     {% if box %}
       <section class="section center-align">
         <h2 class=" text-darken-3">This Month’s Box</h2>
-        <img src="{{ box.image.url }}" alt="{{ box.name }}" class="responsive-img z-depth-2" />
+        <img src="{{ box.image.url }}" alt="{{ box.name }}" class="responsive-img box-preview-image z-depth-2" />
         <h5>{{ box.name }}</h5>
         <p class="grey-text text-darken-1">{{ box.description|truncatewords:25 }}</p>
 
@@ -80,7 +80,7 @@
       <section class="section center-align">
         <h2 class=" text-darken-3">Coming Next Month!</h2>
         <h3>{{ next_box.name }}</h3>
-        <img src="{{ next_box.image.url }}" alt="{{ next_box.name }}" class="responsive-img z-depth-2" />
+        <img src="{{ next_box.image.url }}" alt="{{ next_box.name }}" class="responsive-img box-preview-image z-depth-2" />
         <p class="grey-text">Ships {{ next_box.shipping_date|date:"d M Y" }}</p>
         <p class="grey-text text-darken-1">{{ next_box.description|truncatewords:20 }}</p>
       </section>

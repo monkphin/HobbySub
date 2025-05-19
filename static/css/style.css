@@ -38,6 +38,22 @@ h1, h2, h3, h4, h5, h6 {
 /* === Navbar === */
 nav .nav-wrapper {
   background-color: #4CAF50 !important;
+  display: flex !important;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: nowrap;
+  padding: 0 1rem;
+}
+
+/* Override container inside nav-wrapper */
+nav .nav-wrapper > .container {
+  width: 100% !important;
+  max-width: 100% !important;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 }
 
 nav ul li,
@@ -63,6 +79,25 @@ nav ul li a:hover {
   margin-left: 0.5rem;
   transform: none !important;
   left: 0 !important;
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+/* Prevent wrapping on list items */
+nav ul.right li {
+  white-space: nowrap;
+  margin-left: 0;
+}
+
+/* Adjust padding on links to save space */
+nav ul.right li a {
+  padding: 0 0.5rem;
+  font-size: 0.95rem;
+}
+
+/* Optional: reduce margin on nav ul li (only if needed) */
+nav ul li {
+  margin-left: 0.5rem;
 }
 
 .sidenav-trigger {
@@ -135,6 +170,17 @@ nav ul li a:hover {
   background-color: #e0f2f1;
   color: #2e7d32 !important;
 }
+
+/* === Index === */
+
+.box-preview-image {
+  max-width: 640px;
+  width: 100%;
+  height: auto;
+  margin: 0 auto;
+}
+
+
 
 /* === Carousel === */
 .carousel {
@@ -474,23 +520,26 @@ ul li i.left {
   min-height: 120px;
 }
 
-/* === Mobile Adjustments === */
-@media (max-width: 600px) {
-  .product-row .col {
-    flex: 0 0 calc(50% - 1rem);
-  }
+.past-boxes-grid .card {
+  max-height: 345px; /* lock max height to avoid overflow */
+  overflow: hidden;  /* hide any content that exceeds this height */
+  display: flex;
+  flex-direction: column;
+}
 
-  .product-item {
-    flex-direction: column;
-    align-items: flex-start;
-  }
 
-  .product-actions {
-    margin-top: 1rem;
-    width: 100%;
-    display: flex;
-    justify-content: space-between;
-  }
+.past-boxes-grid .card-content {
+  flex-grow: 1;      /* let content fill remaining space */
+  overflow: hidden;  /* hide overflow */
+}
+
+/* Optional: truncate the description text with ellipsis */
+.past-boxes-grid .card-content p {
+  display: -webkit-box;
+  -webkit-line-clamp: 5; /* number of lines before truncation */
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 /* === Hero Section Tweaks === */
@@ -662,11 +711,38 @@ a:focus:not(:focus-visible) {
     outline: none;
 }
 
-@media only screen and (min-width: 993px) {
-  #mobile-nav a {
-      pointer-events: none;
-      tabindex: -1;
+
+/* === Mobile Adjustments === */
+@media (max-width: 600px) {
+  .product-row .col {
+    flex: 0 0 calc(50% - 1rem);
+  }
+
+  .product-item {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .product-actions {
+    margin-top: 1rem;
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
   }
 }
 
+@media (min-width: 993px) {
+  #mobile-nav a {
+      pointer-events: none;
+  }
 
+  /* Right menu as flex, no wrap */
+  nav ul.right {
+    display: flex !important;
+    flex-wrap: nowrap !important;
+    gap: 0.75rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+}

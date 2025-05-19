@@ -58,6 +58,13 @@
 
 
 # Site Concept
+HobbySub is an online eCommerce site for tabletop wargame and model making hobbyists. It provides a mystery-box subscription service, which ships a new box of hobby supplies every month based on a specific theme. Users can sign up for four subscription options. Month by month, 3 monthly, 6 monthly or yearly. Representing different billing cycles and different price points. With discounts offered for longer subscription terms. Users can also purchase single boxes, if they're not yet ready to subscribe. The site has logic built into it to allow for purchases to be bought as items for the user, or as a gift to someone else, with personalised gift emails sent out when the item is ordered. 
+
+To manage and prioritise tasks, I set up a Kanban board to help track specific parts of the project from inception to completion. I used this in conjunction with a MoSCoW board to help with planning and prioritisation. 
+
+[My MoSCoW board can be found here](https://github.com/users/monkphin/projects/5/views/1)
+
+[My Kanban board can be found here](https://github.com/users/monkphin/projects/6/views/1)
 
 ## Site Owner Goals
 
@@ -87,9 +94,6 @@
  - Feel confident that their personal and payment information is handled securely.
  - Get help or support quickly if they run into issues with orders, addresses, or billing.
 
-[My MoSCoW board can be found here](https://github.com/users/monkphin/projects/5/views/1)
-
-[My Kanban board can be found here](https://github.com/users/monkphin/projects/6/views/1)
 
 # User Stories
 # User Stories
@@ -129,7 +133,12 @@
 
 # Design Choices
 
+The initial site design relied heavily on Materialize, so the site does look a little generic. This is quite deliberate. Since I knew the core of the work would be in the backend, getting Django to work how i needed as well as getting it to work with Stripe integrations. Where possible I used DRY approaches, using single HTML templates for similar functions, such as gift or self based purchases etc. 
+
+
 ## [Wireframes](#wireframes)
+Wireframes were created with Balsamiq and provided rough initial mockups for how the site should look. Some variation from these occurred as the project developed. 
+
 Homepage
   <img src="docs/wireframes/homepage.png">
 Subscription Page
@@ -146,6 +155,8 @@ Account Page
 
     <img src="docs/wireframes/homepage.png">
 ##  [Schema](#schema)
+In order to minimise the data I needed to design tables for and to enhance security. I fell back on using DJango's inbuilt users functionality. Additionally for security reasons I have made efforts to not store anything for billing on the site  - this way if the site suffers a breach, while PII (Personally identifiable information) such as home addresses, email addresses, names etc. Will be available. Card details are not at risk. Meaning the impact should be less significant. These are all handled by stripe. 
+
   <img src="docs/erd.png">
 | Model                  | Purpose                                                                                                                                                                             | Key Fields                                                                                                                                                                                                                                       | Relationships                                                                                     |
 |------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|----------------------------------------------------------------------------------------------------|
@@ -159,11 +170,70 @@ Account Page
 | BoxProduct             | Represents each item in a box. Used to display box contents in carousels or lists.                                                                                                  | [`content_id` (PK), `box_id` (FK) → Box, `name`, `image_url`, `description`, `quantity`]                                                                                                                          | Many-to-one with Box                                                                             |
 
 When reading up on Django models, I encountered this, which seemed helpful since I had a few issues with getting tooltips to play nice on my last project. So this seems like it may help with this. https://docs.djangoproject.com/en/3.2/ref/models/fields/#help-text
+
 ##  [UX](#ux)
+When a user first visits the site, they land on the home page, this should look the same for both logged in and logged out users. Though the menu items and buttons adjust depending on authentication, as well as type of authenticated user. For example the purchase and gift purchase buttons and menu bars have two distinct versions. With the version presented to none registered/signed in users specifically taking them on a registration journey as part of the purchase process, while the versions presented to logged in users does not. This ensure that users are always registered with the site and will have a stripe ID created as part of this process, allowing for robust handling of purchases. Similarly the user is presented with options to login or register when they're logged out. 
+
+Once a user logs in the menu adjusts to show options more fitting for a logged in user. Such as their account page, a log out link and so on. As mentioned previously the purchase buttons also adapt to factor in that the user is logged in. 
+
+The about page gives users a bit of information about the service, outlining who may benefit from this, what the box can include and a call to action at the bottom. 
+
+The buy for myself/give as gift menu items both present similar options to a user. With options for single boxes or the four subs. The page tailors its presentation to suit each possible purchase route available - with messaging reflecting that the purchase is a gift or just a standard purchase. 
+
+The flow for both types of order (gift or personal) is nearly identical so this will apply to both types - within the purchase flow the first screen the user sees is one to choose a plan - be it a single box, or one of the four subscription options. Once selected, they're sent to an address picker where they can choose the shipping address in use for the order. If no address exists one can be added here also. The user is also able to edit or add new addresses at this stage of the flow. Once the address is picked the flows diverge slightly. For orders for the user themselves, they're taken directly to stripe to enter their card data and complete the payment. For gift based purchases the user sees another screen where they can provide their name, the recipients name, the recipients email and a gift message. All of these fields are option and the site will allow for them to not be filled (or even just some of them to be filled and others left blank) this allows for the sender to ship without notifying the recipient - this is intentional, since people may choose to send the boxes as a surprise gift. Finally, once they press the Proceed to checkout button they're taken to stripe to complete the purchase. 
+
+Purchase. The user can cancel the purchase on the stripe screen, if they do so they're taken to a page to allow them to either go home, or to retry, this restarts the purchase flow. If they complete they're taken to another page that lets them go to their account to view their order history or to go home. 
+
+My account grants the user access to their account history and settings. With their user details and order history being quickly accessible in a card at the top of the screen - the order history button opens a new page which lists any historic orders. 
+The user also has options to change their password, edit their account or delete their account here. As well as viewing, adding or editing both personal and gift based addresses for purchases. 
+
+Order history this page splits orders by subs or single box purchases in a list of items for each. Each item shows order numbers, the current order state (Pending, processing, shipped or cancelled) the date of the order, if the order was a gift or not, who its shipping to. The estimated shipping date and the renewal date if its a subscription. The user can also using the two buttons see more information - which is mostly just the same data with more detail or can cancel their sub here too - the cancellation button uses a globally located modal that requires their password to cancel the order to provide some defensive programming. 
+
+The change password button takes the user to a new page where they're required to enter their current password and enter a new password twice. Again providing a level of defensive programming. 
+
+Edit account allows for the changing of email, username and the users first and last name. Only the email requires a password to change, which is again offered via a global modal for use on multiple forms like this. 
+
+THe address section shows both personal and gift based addresses if any exist. The use can add either type of address from here, using a DRY form which is displayed when clicking either 'add X address' button. Both types of address also allow for friendly names, such as home, work, etc. THe Personal address field also allows the user to set this as a default address. If the user has no personal address configured, the first they add will become their default shipping address automatically even if this is not checked. Additionally for shipping reasons if the user only has a single personal or gift address they are unable to delete it while any orders are outstanding or subscriptions are ongoing. Since these would be required to allow their goods to be sent to them. 
+
+Finally. if the user is an admin, their is a custom admin menu thats only visible and accessible to admins on the site. This provides a drop down allowing admins to administer boxes or users. 
+
+The box admin section allows admins to add, delete or edit boxes and their contents. They can add individual items here, as well as boxes. They can also see what boxes have been set up and saved as well as their current states - such as shipping dates, if the box is archived due to age and so on. This page also shows a list of 'orphaned products' which represent products that arent assigned to a box. These can be added in bulk using checkbox buttons or one at a time to existing boxes. 
+
+The add new box button allows the admin to create a new box - this requires a name, a description and a date. The image is currently optional - since there may be scenarios where an admin could be bulk adding future boxes before imagary can be found and edited for use. Image uploading uses cloudinary for storage. The admin can also archive a box here. Though this will auto archive if its older than the end of the current month. Once the box is saved they're taken to a page that displays the box and its contents, which for a new box would be empty. Here they can add single products, using the add product button. Or, if their are orphaned products these are visible and addable here too. Any products that are added can be edited, removed (orphaned) or deleted outright, with the delete button requiring a password to prevent accidental deletion. 
+
+The edit button on the box list takes the admin to a section similar to that seen when a new box is created - letting them edit the name, description edit the image or shipping date, as well as change the archived state. Their is also a manage product button here which takes the admin to the same page displayed when clicking the products page on the box manager screen. 
+
+The box products page lists any items in the box, it allows an admin to create a new product to add - this is performed one item at a time. As well as add any orphaned products to the box. Products pictured here can be modified, removed and made orphans or deleted outright. 
+
+The delete box button uses the same global modal to require a password before the box can be delete. 
+
+Finally orphaned products will list any products not assigned to the boxes listed on the box manager page, these can be assigned in bulk to existing boxes. Deleted, or edited from the buttons - with the delete button again using protective modals to prevent accidental removal. 
+
+The user mananger will show all registered users in a list. Giving usernames, emails, if they're admins, if they're active or have deactivated, view their orders, edit the account, sennd a password reset email or deactivate/activate the account (for billing enquieries etc it was decided that prior to deletion users should simply be deactivated. In order to delete a user the admin currently has to use Djangos own backend admin platform.) finally each user has a button to show their accountin stripe to help with billing issues and other queries. 
+
+The orders page allows the admin to see the ID, the date the order was placed, if payment succeeded, change the order states, see if its a gift, cancel a sub and see the name of the due box. 
+
+Editing the user lets the admin change their username, email see when they joined or when they last logged in. As well as sending a password reset email, changing them to be admins or deactivating the account. 
+
+Where users or admins are able to take destructive actions, a modal is fired to request a password to provide some level of defence against accidental deletion or editing. Toasts are used to provide message feedback for activities carried out on the site, such as updating data, etc. A custom error handler exists for error messaging on forms, ensuring the user is kept informed of issues. Email notifications for order state changes and account state changes also exist, though only in plainttext. These elements all exist to create a smooth, user friendly experience with feedback where needed. 
+
+
 ##  [Colour Palette](#colour-palette)
+The colour scheme was chosen late in development, to be reasonably easy on the eye using neutral, welcoming colours. Text readability was a factor in this choice also. 
+Greens are used through out with varying shades for the nav and top menu and various elements on the site. 
+Button colours are aligned with function, greens for positive outcomes reds for places where caution may be needed and blue for neutral actions like edits, updates etc. 
+
 ##  [Typography](#typography)
+Like the colour palette, fonts were chosen later in development, as the initial focus was on core functionality. Two Google Fonts were selected to provide visual distinction between text, headings, and the nav bar. Each font is clean and sans-serif, ensuring readability across various devices and user types, including those in the neurodiverse community.
+
+
 ##  [Images](#images)
+Local images are minimal, with everything hosted by Cloudinary where possible. 
+
+
 ##  [Icons](#icons)
+Icons are provided by font awesome and are used for variou features including buttons, bullets etc. 
+
 ##  [Features](#features)
 
 
@@ -255,3 +325,75 @@ orders/test/test_orders.py::test_concurrent_subscription_creation
 
 -- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
 ========================================= 65 passed, 2 warnings in 131.76s (0:02:11) ========================================= 
+
+Future features. 
+THe site has a lof of scope for future improvements. 
+
+Allowing admins to directly link to customer orders in Stripe would be a nice, quick feature to implement and allow admins to quickly access specific order history in the even of billing disputes and similar. 
+
+Stock handling - while the admin can add items to boxes, this could be extended to allow for stock handling and management - so that admins can know if they're going to need to archive boxes sooner than expected due to lack of availability of items. 
+
+Purchase older boxes. If stock was able to be tracked, this would allow less popular boxes to be sold as single items in addition to the currently shipping box - this would allow for admins to shift inventory which may not be moving quickly. It would also help gauge what may or may not be popular in terms of specific contents. 
+
+Address lookup - one feature that would be highly advantageous is tying into a global address lookup system, which would facilitate users quickly adding details, rather than having to type everything out by hand. This would also help ensure accuracy for admins. 
+
+Showing address data to admins on orders - this should have been in the initial release - its only since I've started to get to the end of the project that I realised this feature may be useful to allow admins to see where they're shipping boxes to. 
+
+Racapchta on sign up forms. As it stands, automated bot based sign up is possible. Sadly I lacked time to implement Captcha functionality to prevent this. 
+
+Similarly to the above a contact form while not required would be useful - but having has issues with this the last time I implemented it on a website for this course, where I couldn't get Captcha working properly in the the time I had for the project. I opted to not implement this at this time, since previously the last project became something of an issue for spam mails being sent using the form. 
+
+
+Security defenceive programming abd best practiceis. 
+
+Password security - this is all handled by Django - my user accounts are saved and stored using its built in features, so password hashing is handled directly by Django itself, so should follow best practices here. 
+
+Account change notifications - the users will get emails when their account is updated, allowing them to be aware of any changes they may not have made. 
+
+Modal based deletion protection. All destructive or dangerouse changes, such as email changes etc are protected by a modal that requires password based authentication. This includes admin actions as well as user actions and creates a secure two stage process - where the user gets a warning and that warning requires a password to action, ensuring that only the user should be able to take the action. 
+
+Technology 
+Frameworks and programs. 
+Languages
+HTMLCSS
+JAvascript
+Python
+
+version control and deplyoments. 
+Github
+GitherokuGithub projects. 
+
+Frameworks
+Django
+Materialize
+
+Database
+PostGreSQL
+
+Coding Environment. 
+VSCode. 
+
+Othertools and utilities
+ERD DB DEisgner
+Balsamiq
+DJecrety
+Cloudinary
+Google
+Chrome Dev Tools
+WAVE
+Google Fonts
+Techsini
+Favicon.io
+
+Testing and validation 
+
+Version control and Deployment
+repo Creation
+Cloning Locally
+Adding and Updating Files on the Repo.
+Forking and Merging
+Local Deployment
+PostGres DB Creation
+Heroku Set up and Configuration.
+Credits
+Acknowledgements
