@@ -2,13 +2,13 @@
 {% load custom_filters %}
 
 <li class="collection-item">
-    <!-- 🔎 Main Order Information -->
+    <!-- Main Order Information -->
     <strong>Order #{{ order.id }}</strong><br>
     <strong>Status:</strong> {{ order.status|title }}<br>
     <strong>Order Date:</strong> {{ order.order_date|date:"F j, Y" }}<br>
     <strong>Gift:</strong> {{ order.is_gift|yesno:"Yes,No" }}<br>    
 
-    <!-- 📦 Shipping Information -->
+    <!-- Shipping Information -->
     <strong>Shipping To:</strong> 
     {{ order.shipping_address.recipient_f_name }} 
     {{ order.shipping_address.recipient_l_name }}, 
@@ -18,21 +18,37 @@
         <strong>Estimated Shipping Date:</strong> {{ order.scheduled_shipping_date|date:"F j, Y" }}<br>
     {% endif %}
 
-    <!-- 🗓️ Renewal Date (if subscription exists and not canceled) -->
-    {% if order.stripe_subscription_id %}
-        {% with sub_map|get_item:order.stripe_subscription_id as sub_info %}
-            {% if sub_info and not sub_info.sub.cancelled_at %}
-                <strong>Renewal Date:</strong> {{ sub_info.current_period_end|date:"F j, Y" }}<br>
-            {% elif sub_info %}
+    <!-- Renewal Date (if subscription exists and not canceled) -->
+{% if order.stripe_subscription_id %}
+    {% with sub_map|get_item:order.stripe_subscription_id as sub_info %}
+        {% if sub_info %}
+            {% if not sub_info.sub.cancelled_at %}
+                {% if sub_info.current_period_end %}
+                    <strong>Renewal Date:</strong> {{ sub_info.current_period_end|date:"F j, Y" }}<br>
+                {% else %}
+                    <strong>Renewal Date:</strong> 
+                    <span class="red-text text-darken-2">
+                        Unable to retrieve renewal date. Please contact support.
+                    </span><br>
+                {% endif %}
+            {% else %}
                 <strong>Status:</strong> 
                 <span class="red-text text-darken-2">
                     Cancelled on {{ sub_info.sub.cancelled_at|date:"d M Y" }}
                 </span><br>
             {% endif %}
-        {% endwith %}
-    {% endif %}
+        {% else %}
+            <strong>Status:</strong> 
+            <span class="red-text text-darken-2">
+                Subscription information not available. Please contact support.
+            </span><br>
+        {% endif %}
+    {% endwith %}
+{% endif %}
 
-    <!-- 🎯 Action Buttons (now separate) -->
+
+
+    <!-- Action Buttons (now separate) -->
     <div class="btn-group mt-2">
         <a class="btn-small modal-trigger" href="#order-modal-{{ order.id }}">
             View Details

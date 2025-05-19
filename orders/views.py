@@ -13,7 +13,6 @@ import logging
 import stripe
 from django.conf import settings
 from django.contrib.auth import authenticate
-# Django/External Imports
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
 from django.shortcuts import redirect, render
@@ -21,15 +20,13 @@ from django.urls import reverse
 from django.utils import timezone
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
-
+from datetime import datetime
 from hobbyhub.mail import send_subscription_cancelled_email
-# Local imports
 from hobbyhub.utils import (alert, build_shipping_details, get_gift_metadata,
                             get_subscription_duration_display,
                             get_subscription_status,
                             get_user_default_shipping_address)
 from users.models import ShippingAddress
-
 from .forms import PreCheckoutForm
 from .models import Order, Payment, StripeSubscriptionMeta
 
@@ -125,28 +122,12 @@ def handle_purchase_type(request, plan):
 
 @login_required
 def gift_message(request, plan):
-    logger.info(
-        "[DEBUG] Session content at gift_message entry: "
-        f"{request.session.items()}"
-    )
-    logger.info(
-        "[SESSION CHECK] Session data at gift_message before refresh: "
-        f"{dict(request.session.items())}"
-    )
+    logger.info("[DEBUG] Entered gift_message view")
+    
+    # 🚀 Force the session to save
     request.session.modified = True
-    request.session.save()  # 🚀 Force it to persist!
-    logger.info(
-        "[SESSION CHECK] Session data at gift_message after refresh: "
-        f"{dict(request.session.items())}"
-    )
-
-    logger.info(
-        "[SESSION CHECK] Session data at gift_message: "
-        f"{request.session.items()}"
-    )
-    logger.info(f"{request.user} is entering gift message for {plan} plan")
-
-    # Only redirect if shipping ID is not in session
+    request.session.save()
+    
     shipping_id = request.session.get('checkout_shipping_id')
     if not shipping_id:
         request.session['return_to_gift'] = plan
@@ -161,7 +142,6 @@ def gift_message(request, plan):
     form = PreCheckoutForm(request.POST or None)
     price_id = PLAN_MAP.get(plan)
 
-    # ** Here we add the 'plan' to the context **
     context = {
         'form': form,
         'plan': plan
@@ -175,22 +155,18 @@ def gift_message(request, plan):
             try:
                 is_subscription = plan != 'oneoff'
 
+                # 👇🏻 Get gift metadata AND FORCE IS_GIFT
                 gift_metadata = get_gift_metadata(
                     form,
                     request.user.id,
                     address_id=shipping_id
                 )
 
+                # 🚩 Hardcode is_gift to true if the session holds it
                 is_gift = request.session.get('is_gift', False)
-                logger.info(
-                    f"[STRIPE CHECKOUT] Session-based is_gift value: {is_gift}"
-                )
-
                 gift_metadata['gift'] = 'true' if is_gift else 'false'
-                logger.info(
-                    "[STRIPE CHECKOUT] Metadata before submission: "
-                    f"{gift_metadata}"
-                )
+
+                logger.info(f"[STRIPE CHECKOUT] Metadata before submission: {gift_metadata}")
 
                 shipping_address = ShippingAddress.objects.get(id=shipping_id)
                 checkout_data = {
@@ -198,13 +174,9 @@ def gift_message(request, plan):
                     'mode': 'subscription' if is_subscription else 'payment',
                     'line_items': [{'price': price_id, 'quantity': 1}],
                     'metadata': gift_metadata,
-                    'customer_email': request.user.email,
-                    'success_url': request.build_absolute_uri(
-                        '/orders/success/'
-                    ),
-                    'cancel_url': request.build_absolute_uri(
-                        '/orders/cancel/'
-                    ),
+                    'customer': request.user.profile.stripe_customer_id,
+                    'success_url': request.build_absolute_uri('/orders/success/'),
+                    'cancel_url': request.build_absolute_uri('/orders/cancel/'),
                 }
 
                 if not is_subscription:
@@ -212,6 +184,10 @@ def gift_message(request, plan):
                         'metadata': gift_metadata,
                         'shipping': build_shipping_details(shipping_address),
                     }
+
+                # 🚀 Force the session to save again before checkout
+                request.session.modified = True
+                request.session.save()
 
                 session = stripe.checkout.Session.create(**checkout_data)
                 logger.info(f"Stripe session created: {session.url}")
@@ -231,7 +207,6 @@ def gift_message(request, plan):
             logger.error(f"Form errors: {form.errors}")
             alert(request, "error", "Please correct the errors in the form.")
 
-    # Re-render the form with the plan in context
     return render(request, 'orders/pre_checkout.html', context)
 
 
@@ -376,37 +351,36 @@ def create_subscription_checkout(request, price_id):
         else:
             logger.info(f"Found Address: {address}")
 
-        # Step 1: Check if customer ID already exists for the user
-        if not request.user.profile.stripe_customer_id:
-            # ⬇If not, create a new customer and save it
-            customer = stripe.Customer.create(
-                email=request.user.email,
-                shipping={
-                    'name': (
-                        f"{address.recipient_f_name} "
-                        f"{address.recipient_l_name}"
-                    ),
-                    'address': {
-                        'line1': address.address_line_1,
-                        'line2': address.address_line_2 or '',
-                        'city': address.town_or_city,
-                        'state': address.county or '',
-                        'postal_code': address.postcode,
-                        'country': address.country.code
-                    }
-                }
-            )
-            request.user.profile.stripe_customer_id = customer.id
-            request.user.save()
-            logger.info(f"New Stripe Customer Created: {customer.id}")
-        else:
-            # ✅ Step 2: If it exists, just fetch it
-            customer = stripe.Customer.retrieve(
-                request.user.profile.stripe_customer_id
-            )
-            logger.info(f"Reusing Existing Stripe Customer: {customer.id}")
+        # Step 1: Refresh the user profile before checking the Stripe ID
+        request.user.profile.refresh_from_db()
 
-        # ⬇️ Proceed with checkout
+        # Step 2: Now proceed with the ID check
+        if not request.user.profile.stripe_customer_id:
+            logger.warning("Stripe Customer ID not found in profile. Fetching from Stripe...")
+            existing_customers = stripe.Customer.list(email=request.user.email, limit=1)
+            if existing_customers.data:
+                customer = existing_customers.data[0]
+                request.user.profile.stripe_customer_id = customer.id
+                request.user.profile.save()
+                logger.info(f"Linked existing Stripe Customer: {customer.id}")
+            else:
+                # If no customer found, create one
+                logger.info("No existing customer found, creating a new one.")
+                customer = stripe.Customer.create(
+                    email=request.user.email,
+                    name=request.user.get_full_name(),
+                    metadata={
+                        'user_id': request.user.id
+                    }
+                )
+                request.user.profile.stripe_customer_id = customer.id
+                request.user.profile.save()
+        else:
+            # If the ID already exists, fetch it
+            customer = stripe.Customer.retrieve(request.user.profile.stripe_customer_id)
+            logger.info(f"Using existing Stripe Customer ID: {customer.id}")
+
+        # Proceed with checkout
         checkout_session = stripe.checkout.Session.create(
             customer=customer.id,
             payment_method_types=['card'],
@@ -421,6 +395,8 @@ def create_subscription_checkout(request, price_id):
             ),
             cancel_url=request.build_absolute_uri('/orders/cancel/'),
         )
+
+        
         return redirect(checkout_session.url, code=303)
     except stripe.error.StripeError as e:
         logger.error(f"Stripe error during subscription creation: {str(e)}")
@@ -431,7 +407,6 @@ def create_subscription_checkout(request, price_id):
             "Please try again shortly."
         )
         return redirect('subscribe_options')
-
 
 def order_success(request):
     """
@@ -476,12 +451,30 @@ def order_history(request):
 
     for sub in subscriptions:
         try:
-            # Fetch latest subscription details from Stripe
-            stripe_subscription = stripe.Subscription.retrieve(sub.stripe_subscription_id)
+            stripe_subscription = stripe.Subscription.retrieve(
+                sub.stripe_subscription_id,
+                expand=["latest_invoice"]
+            )
 
-            # Convert the timestamp to a datetime object
-            from datetime import datetime
-            current_period_end = datetime.fromtimestamp(stripe_subscription["current_period_end"])
+            logger.info(f"[SUBSCRIPTION DEBUG] Full Stripe subscription object: {stripe_subscription}")
+
+            # Attempt to retrieve `current_period_end`
+            current_period_end = None
+
+            # 🗝️ First, try to get it from the subscription items
+            if "items" in stripe_subscription and len(stripe_subscription["items"]["data"]) > 0:
+                current_period_end = stripe_subscription["items"]["data"][0].get("current_period_end")
+
+            # 🚀 If it wasn't found, fallback to `billing_cycle_anchor`
+            if not current_period_end:
+                current_period_end = stripe_subscription.get("billing_cycle_anchor")
+
+            if current_period_end:
+                current_period_end = datetime.fromtimestamp(current_period_end)
+                logger.info(f"[SUBSCRIPTION DEBUG] Found current_period_end for {sub.stripe_subscription_id}: {current_period_end}")
+            else:
+                current_period_end = "Not Available"
+                logger.warning(f"[SUBSCRIPTION DEBUG] No current_period_end found for {sub.stripe_subscription_id}")
 
             # Populate the sub_map with additional data
             sub_map[sub.stripe_subscription_id] = {
@@ -491,6 +484,7 @@ def order_history(request):
                 'is_gift': sub.is_gift,
                 'current_period_end': current_period_end
             }
+
         except Exception as e:
             logger.error(f"Failed to retrieve subscription {sub.stripe_subscription_id}: {e}")
             sub_map[sub.stripe_subscription_id] = {
@@ -513,6 +507,7 @@ def order_history(request):
         'get_subscription_duration_display': get_subscription_duration_display,
         'sub_map': sub_map,
     })
+
 
 
 @require_POST

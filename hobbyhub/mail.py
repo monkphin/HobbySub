@@ -124,16 +124,16 @@ def send_password_reset_email(user, domain, protocol='https'):
     uid = urlsafe_base64_encode(force_bytes(user.pk))
     token = default_token_generator.make_token(user)
 
-    reset_link = (
-        f"{protocol}://{domain}"
-        f"{reverse(
-            'password_reset_confirm',
-            kwargs={
-                'uidb64': uid,
-                'token': token
-            }
-        )}"
+    url_path = reverse(
+        'password_reset_confirm',
+        kwargs={
+            'uidb64': uid,
+            'token': token
+        }
     )
+
+    reset_link = f"{protocol}://{domain}{url_path}"
+
 
     message = (
         f"Hi {user.username},\n\n"

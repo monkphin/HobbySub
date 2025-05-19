@@ -22,12 +22,14 @@ from django.contrib.auth.models import User
 from django.db import IntegrityError, transaction
 from django.utils import timezone
 
-from hobbyhub.mail import (send_gift_confirmation_to_sender,
-                           send_gift_notification_to_recipient,
-                           send_order_confirmation_email,
-                           send_payment_failed_email,
-                           send_subscription_confirmation_email,
-                           send_upcoming_renewal_email)
+from hobbyhub.mail import (
+    send_gift_confirmation_to_sender,
+    send_gift_notification_to_recipient,
+    send_order_confirmation_email,
+    send_payment_failed_email,
+    send_subscription_confirmation_email,
+    send_upcoming_renewal_email
+)
 from hobbyhub.utils import PLAN_MAP
 from orders.models import (Box, Order, Payment, ShippingAddress,
                            StripeSubscriptionMeta)
@@ -148,6 +150,8 @@ def handle_checkout_session_completed(session):
                 shipping_address = (
                     ShippingAddress.objects.get(id=address_id, user=user)
                 )
+                logger.info(f"Fetched Shipping Address: {shipping_address}")
+                logger.info(f"Address ID: {address_id} | User: {user}")
             except ShippingAddress.DoesNotExist:
                 logger.error(
                     f"No address found for user {user.id} "
@@ -467,13 +471,26 @@ def handle_invoice_payment_succeeded(invoice):
             }
         )
 
-        # Fetch the shipping address from sub_meta
         shipping_address = sub_meta.shipping_address
         if not shipping_address:
-            logger.error(
-                f"No shipping address found for subscription {subscription_id}"
+            logger.warning(
+                f"[MISSING ADDRESS] Sub ID: {subscription_id} "
+                f"has no associated shipping address. Checking DB now."
             )
-            return
+            
+            # Attempt to fetch from DB
+            address = ShippingAddress.objects.filter(user=user).first()
+            if address:
+                sub_meta.shipping_address = address
+                sub_meta.save()
+                shipping_address = address  # Assign it to continue with logic
+                logger.info(
+                    f"[RECOVERED] Assigned address {address.id} to subscription {subscription_id}"
+                )
+            else:
+                logger.error(f"[FAILED RECOVERY] No address found for user {user.id}")
+                return
+
 
         if not created:
             # Sync the data if it already existed
@@ -525,12 +542,22 @@ def handle_invoice_payment_succeeded(invoice):
                     f"[EXISTS] Order {order.id} already exists "
                     f"for subscription {subscription_id}"
                 )
+                if sub_meta.is_gift and not order.is_gift:
+                    logger.warning(f"[FORCE UPDATE] Order {order.id} -> is_gift=True")
+                    order.is_gift = True
+                    order.save(update_fields=['is_gift'])
+                    order.refresh_from_db()
+                    if not order.is_gift:
+                        logger.error(f"[DB MISMATCH] Order {order.id} still reports is_gift=False after save.")
+                    else:
+                        logger.info(f"[DB SUCCESS] Order {order.id} is_gift=True now reflected in DB")
         except Exception as e:
             logger.error(
                 "Failed to create Order for subscription %s: %s",
                 subscription_id,
                 e
             )
+
 
         if not invoice.get('payment_intent'):
             logger.error(

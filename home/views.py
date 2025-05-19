@@ -13,10 +13,7 @@ from django.contrib.auth import login
 from django.contrib.auth.models import User
 from django.core.signing import BadSignature, Signer
 from django.shortcuts import redirect, render
-# Django/External Imports
 from django.utils.http import url_has_allowed_host_and_scheme
-
-# Local Imports
 from boxes.models import Box
 from hobbyhub.mail import send_registration_email
 
