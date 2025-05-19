@@ -131,6 +131,37 @@ This was part of a wider effort to control input behaviour across the platform, 
  
 # User Story Testing
  
+| **User Story**                                                                                       |  **Notes**  |
+|------------------------------------------------------------------------------------------------------|            |
+| As a user, I want to register and log in securely so I can access my account and manage my subscriptions. |       |
+| As a logged-in user, I want to view and update my profile details (like shipping address or email). |     |
+| As a logged-in user, I want to access only my own data, not see admin pages or other users' info. |       |
+| As an admin, I want to restrict access to admin features like box creation and order management. |        |
+|------------------------------------------------------------------------------------------------------|        |
+| As a user, I want to browse available subscription boxes so I can choose one that suits me or someone else. |     |
+| As a user, I want to have options for frequency of payment plans, including its price and shipping schedule. |        |
+| As an admin, I want to create, edit, and remove box offerings to control what's available. |      |
+|------------------------------------------------------------------------------------------------------|        |
+| As a user, I want to subscribe to a box for myself or gift it to someone else. |      |
+| As a user, I want to pause or cancel my subscription at any time. |       |
+| As a user, I want to choose or update the shipping address for each subscription. |       |
+| As a user, I want to see upcoming shipping dates for my subscription boxes. |     |
+|------------------------------------------------------------------------------------------------------|        |
+| As a user, I want to securely check out and save my payment details for recurring billing. |      |
+| As a user, I want to see confirmation of successful or failed payments. |     |
+| As a user, I want to update my payment method if my card changes. |       |
+|------------------------------------------------------------------------------------------------------|        |
+| As a user, I want to see my order history so I can track previous deliveries. |       |
+| As a user, I want to view payment details associated with past orders (e.g., card type, last 4 digits). |     |
+| As a user, I want to receive confirmation emails for successful orders and renewals. |        |
+| As an admin, I want to view all orders, linked subscriptions, and user details for support or fulfillment. |      |
+|------------------------------------------------------------------------------------------------------|        |
+| As a user, I want the site to be easy to navigate, even on mobile, so I can find what I need quickly. |       |
+| As a user, I want clear feedback when I complete actions (e.g., subscribing, pausing, paying). |      |
+| As a user, I want the site to support screen readers and keyboard navigation for accessibility. |     |
+|------------------------------------------------------------------------------------------------------|        |
+| As an admin, I want to manage boxes, subscriptions, and orders via a secure dashboard. |      |
+
 ## Successes 
 
 ## Failed to meet. 
@@ -138,11 +169,16 @@ This was part of a wider effort to control input behaviour across the platform, 
 # JavaScript Testing
  
 # Python Testing
+PEP8 Compliance testing was conducted with the Code Institute provided [Python Linter](https://pep8ci.herokuapp.com/) the results of which can be seen below.
+
+
  
 # Device and Browser Testing
 
 # Responsiveness
- 
+ I tested my project both when deployed locally and on the Heroku server using Google Chrome's dev tools, trying various simulated phones as well as just shifting the responsive dimensions screen around to view how varying resolutions impacted the site's rendering.
+
+
  
 # Automated testing
 
