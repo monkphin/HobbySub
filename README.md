@@ -489,48 +489,428 @@ This two-stage process ensures that only authenticated users can complete these 
 
 This multi-layered approach to security is designed to protect user data, prevent unauthorised access, and maintain the integrity of sensitive account information.
 
-Technology 
-Frameworks and programs. 
-Languages
-HTMLCSS
-JAvascript
-Python
+# Technology
+## Frameworks and Programs
+ ### Languages
+ - [HTML](https://www.w3schools.com/html/) - used to create the front end of the website.
+ - [CSS](https://developer.mozilla.org/en-US/docs/Web/CSS) - Used to style the website. 
+ - [Javascript](https://developer.mozilla.org/en-US/docs/Web/javascript) - Used for front-end interactions and adjustments. 
+ - [Python](https://www.python.org/) - The backend programming language. 
 
-version control and deplyoments. 
-Github
-GitherokuGithub projects. 
+ ### Version Control and Deploying. 
+ - [Github](https://github.com/) - Used to store the website's codebase in a repo. 
+ - [Git](https://git-scm.com/) - A CLI based tool used for version control and uploading to Github. 
+ - [Heroku](https://www.heroku.com/) - Hosting the final deployed version of the website. 
+ - [GitHub Projects](https://github.com/) - used to help plan and manage my project. 
 
-Frameworks
-Django
-Materialize
+ ### Frameworks 
+ - [Materialise](https://materializecss.com/) - a Front end library used to provide some templating and layout, as well as some Javascript-powered features such as modals, carousels and so on. 
+ - [Django](https://www.djangoproject.com/) - The Python framework that powers the site. 
+ - [Awesomeplete](https://projects.verou.me/awesomplete/) - Used to provide auto-complete functions for Tags
 
-Database
-PostGreSQL
+ ### Database
+ - [PostGreSQL](https://www.postgresql.org/) - A relational database used to store the data for the site. 
 
-Coding Environment. 
-VSCode. 
+ ### Coding Environment 
+ - [VSCode](https://code.visualstudio.com/) - My IDE of choice. 
 
-Othertools and utilities
-ERD DB DEisgner
-Balsamiq
-DJecrety
-Cloudinary
-Google
-Chrome Dev Tools
-WAVE
-Google Fonts
-Techsini
-Favicon.io
+ ### Other Tools and Utilities
+ - [ERD DB Designer](https://erd.dbdesigner.net/) - Used to help with ERD diagrams and understanding the DB relationships
+ - [Balsamiq](https://balsamiq.com/) - Wire-framing program.
+ - [Djecrety](https://djecrety.ir/) - Used to generate secret keys.
+ - [Cloudinary](https://cloudinary.com/users/login) - Used to host image files
+ - [Stripe](https://stripe.com/) - The payment platform used to handle payments and subscription automation. 
+ - [Google](https://google.com) - Used to provide Mail services. 
+ - [Chrome Dev Tools]() - Used to help analyse performance, responsiveness and tweak CSS in a live situation to ensure accurate adjustments. 
+ - [WAVE](https://wave.webaim.org/) - Used for accessibility testing
+ - [Google Fonts](https://fonts.google.com/) - Used to import fonts to the style sheet. 
+ - [Techsini](https://techsini.com/) - Mockup generator
+ - [Favicon.io](https://favicon.io/favicon-converter/) - Used to generate Favicons. 
 
-Testing and validation 
+# Testing and Validation
 
-Version control and Deployment
-repo Creation
-Cloning Locally
-Adding and Updating Files on the Repo.
-Forking and Merging
-Local Deployment
-PostGres DB Creation
-Heroku Set up and Configuration.
-Credits
-Acknowledgements
+Testing is covered in the following document: [Testing And Validation](TESTING.md)
+
+  ```
+  $ pytest --ds=hobbyhub.settings -v --color=yes
+  ==================================================== test session starts =====================================================
+  platform win32 -- Python 3.12.3, pytest-8.3.5, pluggy-1.6.0 -- C:\Users\darre\Code\HobbySub\venv\Scripts\python.exe
+  cachedir: .pytest_cache
+  django: version: 4.2.20, settings: hobbyhub.settings (from option)
+  rootdir: C:\Users\darre\Code\HobbySub
+  plugins: django-4.11.1
+  collected 65 items                                                                                                            
+
+  boxes/tests/test_boxes.py::TestPastBoxesView::test_past_boxes_view_success PASSED                                        [  1%]
+  boxes/tests/test_boxes.py::TestPastBoxesView::test_past_boxes_view_no_archived_boxes PASSED                              [  3%]
+  boxes/tests/test_boxes.py::TestBoxDetailView::test_box_detail_view_success PASSED                                        [  4%]
+  boxes/tests/test_boxes.py::TestBoxDetailView::test_box_detail_view_not_found PASSED                                      [  6%]
+  dashboard/tests/test_dashboard.py::test_box_form_missing_fields PASSED                                                   [  7%]
+  dashboard/tests/test_dashboard.py::test_box_form_invalid_date PASSED                                                     [  9%]
+  dashboard/tests/test_dashboard.py::test_box_form_valid_creation PASSED                                                   [ 10%]
+  dashboard/tests/test_dashboard.py::test_box_form_auto_archive PASSED                                                     [ 12%]
+  dashboard/tests/test_dashboard.py::test_box_form_editing PASSED                                                          [ 13%]
+  dashboard/tests/test_dashboard.py::test_box_form_invalid_file PASSED                                                     [ 15%]
+  dashboard/tests/test_dashboard.py::test_create_box PASSED                                                                [ 16%]
+  dashboard/tests/test_dashboard.py::test_edit_box_image_update PASSED                                                     [ 18%]
+  dashboard/tests/test_dashboard.py::test_edit_box_date_forward PASSED                                                     [ 20%]
+  dashboard/tests/test_dashboard.py::test_user_admin_overview PASSED                                                       [ 21%]
+  dashboard/tests/test_dashboard.py::test_toggle_user_state PASSED                                                         [ 23%]
+  dashboard/tests/test_dashboard.py::test_admin_password_reset PASSED                                                      [ 24%]
+  dashboard/tests/test_dashboard.py::test_order_status_update PASSED                                                       [ 26%]
+  dashboard/tests/test_dashboard.py::test_admin_cancel_subscription PASSED                                                 [ 27%]
+  hobbyhub/tests/test_hobbyhub.py::TestMailFunctions::test_send_gift_confirmation_to_sender PASSED                         [ 29%]
+  hobbyhub/tests/test_hobbyhub.py::TestMailFunctions::test_send_gift_notification_to_recipient PASSED                      [ 30%]
+  hobbyhub/tests/test_hobbyhub.py::TestMailFunctions::test_send_order_confirmation_email PASSED                            [ 32%]
+  hobbyhub/tests/test_hobbyhub.py::TestMailFunctions::test_send_payment_failed_email PASSED                                [ 33%]
+  hobbyhub/tests/test_hobbyhub.py::TestMailFunctions::test_send_subscription_confirmation_email PASSED                     [ 35%]
+  hobbyhub/tests/test_hobbyhub.py::TestMailFunctions::test_send_upcoming_renewal_email PASSED                              [ 36%]
+  hobbyhub/tests/test_hobbyhub.py::TestUtilsFunctions::test_alert PASSED                                                   [ 38%]
+  hobbyhub/tests/test_hobbyhub.py::TestUtilsFunctions::test_build_shipping_details PASSED                                  [ 40%]
+  hobbyhub/tests/test_hobbyhub.py::TestUtilsFunctions::test_get_gift_metadata PASSED                                       [ 41%]
+  hobbyhub/tests/test_hobbyhub.py::TestUtilsFunctions::test_get_subscription_duration_display PASSED                       [ 43%]
+  hobbyhub/tests/test_hobbyhub.py::TestUtilsFunctions::test_get_subscription_status PASSED                                 [ 44%]
+  hobbyhub/tests/test_hobbyhub.py::TestUtilsFunctions::test_get_user_default_shipping_address PASSED                       [ 46%]
+  home/tests/test_home.py::test_register_form_required_fields PASSED                                                       [ 47%]
+  home/tests/test_home.py::test_register_form_max_length PASSED                                                            [ 49%]
+  home/tests/test_home.py::test_register_form_invalid_email PASSED                                                         [ 50%]
+  home/tests/test_home.py::test_register_form_password_mismatch PASSED                                                     [ 52%]
+  home/tests/test_home.py::test_register_form_success PASSED                                                               [ 53%]
+  orders/test/test_orders.py::TestStripeSubscriptionMeta::test_subscription_creation PASSED                                [ 55%]
+  orders/test/test_orders.py::TestStripeSubscriptionMeta::test_subscription_string_representation PASSED                   [ 56%]
+  orders/test/test_orders.py::TestOrder::test_order_creation PASSED                                                        [ 58%]
+  orders/test/test_orders.py::TestPayment::test_payment_creation PASSED                                                    [ 60%]
+  orders/test/test_orders.py::test_select_purchase_type_view PASSED                                                        [ 61%]
+  orders/test/test_orders.py::test_order_success_view PASSED                                                               [ 63%]
+  orders/test/test_orders.py::test_order_cancel_view PASSED                                                                [ 64%]
+  orders/test/test_orders.py::test_order_history_view PASSED                                                               [ 66%]
+  orders/test/test_orders.py::test_choose_shipping_address_view PASSED                                                     [ 67%]
+  orders/test/test_orders.py::test_handle_purchase_type_view PASSED                                                        [ 69%]
+  orders/test/test_orders.py::test_gift_message_view PASSED                                                                [ 70%]
+  orders/test/test_orders.py::test_secure_cancel_subscription PASSED                                                       [ 72%]
+  orders/test/test_orders.py::test_handle_purchase_type_no_shipping_id PASSED                                              [ 73%]
+  orders/test/test_orders.py::test_choose_shipping_address_no_addresses PASSED                                             [ 75%]
+  orders/test/test_orders.py::test_choose_shipping_address_valid_and_invalid_ids PASSED                                    [ 76%]
+  orders/test/test_orders.py::test_create_subscription_checkout_missing_shipping_id PASSED                                 [ 78%]
+  orders/test/test_orders.py::test_concurrent_order_creation PASSED                                                        [ 80%]
+  orders/test/test_orders.py::test_secure_cancel_subscription_wrong_password PASSED                                        [ 81%]
+  orders/test/test_orders.py::test_gift_order_creation PASSED                                                              [ 83%]
+  users/tests/test_users.py::TestUsersViews::test_account_view PASSED                                                      [ 84%]
+  users/tests/test_users.py::TestUsersViews::test_add_address PASSED                                                       [ 86%]
+  users/tests/test_users.py::TestUsersViews::test_edit_account PASSED                                                      [ 87%]
+  users/tests/test_users.py::TestUsersViews::test_edit_address PASSED                                                      [ 89%]
+  users/tests/test_users.py::TestUsersViews::test_password_reset_confirm PASSED                                            [ 90%]
+  users/tests/test_users.py::TestUsersViews::test_password_reset_request PASSED                                            [ 92%]
+  users/tests/test_users.py::TestUsersViews::test_secure_delete_account PASSED                                             [ 93%]
+  users/tests/test_users.py::TestUsersViews::test_secure_delete_address PASSED                                             [ 95%]
+  users/tests/test_users.py::TestUsersViews::test_set_default_address PASSED                                               [ 96%]
+  users/tests/test_users.py::ShippingAddressTest::test_address_cannot_be_deleted_if_linked_to_order_or_subscription PASSED [ 98%]
+  orders/test/test_orders.py::test_concurrent_subscription_creation PASSED                                                 [100%]
+
+  ====================================================== warnings summary ====================================================== 
+  venv\Lib\site-packages\django\conf\__init__.py:241
+    C:\Users\darre\Code\HobbySub\venv\Lib\site-packages\django\conf\__init__.py:241: RemovedInDjango50Warning: The default value of USE_TZ will change from False to True in Django 5.0. Set USE_TZ to False in your project settings if you want to keep the current default behavior.
+      warnings.warn(
+
+  orders/test/test_orders.py::test_concurrent_subscription_creation
+    C:\Users\darre\Code\HobbySub:0: PytestWarning: Error when trying to teardown test databases: OperationalError('database "test_polar_flock_crook_753623" is being accessed by other users\nDETAIL:  There are 2 other sessions using the database.\n')       
+
+  -- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+  ========================================= 65 passed, 2 warnings in 131.76s (0:02:11) ========================================= 
+  ```
+
+
+# Version control and Deployment
+
+The live site is deployed on Heroku, configured to automatically update from GitHub with every commit. It currently utilises a PostgreSQL relational database provided by Code Institute. Upon project completion and marking, I plan to migrate the database to a Heroku-hosted PostgreSQL instance to allow me to continue developing and running the site as an ongoing project.
+
+## Repo Creation
+
+A new repo was generated using the Code Institute's ci-full-template with the following steps:
+
+1. Navigate to https://github.com/Code-Institute-Org/ci-full-template
+2. Click the green 'Use this template' button and select 'Create a new repository'
+3. On the newly loaded page, in the text field enter a name for the repo, in this case, Colour Forge was entered.
+4. An optional description can be added in the text box below this. In this instance, this was left blank.
+5. Select the visibility as either public or private. Since this needs to be visible for assessment and marking, the default 'Public' option was left checked.
+6. Click the Create repository button and wait for a few moments, once this has been cloned into your account the page will reload and you'll be presented with the code space for the repo.
+
+## Cloning Locally
+
+I work with VSCode, so use the built-in CLI to run the commands needed to clone the repo to my local machine for editing. 
+
+1. In VSCode, I opened the Terminal window, by visiting the 'Terminal' menu in VSCode and selecting 'New Terminal'
+2. Within this terminal window, I made sure I was in the correct folder for where I wanted to store my work, if this was not correct I would have used the bash command cd to navigate to the correct folder. In this case, ~/Code, which is a folder called 'Code' in my logged-in user Home Folder.
+3. In a web browser, I navigated to the GitHub repository for the project and clicked on the green '<> Code' button, this presented me with several options for cloning. I selected the 'HTTPS' option and copied the URL in the text field.
+4. In Visual Studio Code’s terminal, I typed git clone https://github.com/monkphin/HobbySub.git and pressed enter, which cloned the repo to my local machine as shown by the below output.
+   ```
+    Code here
+   ```
+
+
+5. Once this had finished cloning I used cd to navigate into the relevant folder - in this case, cd HobbySub
+   
+  ```
+  darren@localhost MINGW64 ~/Code (main)
+  $ cd HobbySub/
+  darren@localhost MINGW64 ~/Code/HobbySub (main)
+  ```
+6. I am now able to work on the project on my local machine.
+
+I used the ability to clone locally to allow me to work on several devices throughout the creation of the app and its readme file. It's worth noting that at several points I was working on the project on a computer provided by my employer as part of our allocated "10% Time" where we're allowed to focus on studying and personal development. Any commits made from this device will show my work GitHub profile (Movonkphin) as being responsible for them.
+
+## Adding and Updating Files on the Repo. 
+
+Much like all previous instructions this will be carried out via CLI. 
+
+1. Once you are ready to upload a new or a changed file, within the terminal type: 
+
+  ``` 
+  git add -A
+  ```
+to add multiple files or
+
+  ```
+  git add filename.extension
+  ```
+to add a single file. 
+This adds the file to the current staging area. 
+
+eg: 
+
+  ```
+  darre@Anton MINGW64 ~/Code/HobbySub (main)
+  $ git add -A 
+  ```
+It's worth being aware that using git add -a will update all files, so to avoid sending private or secret data you may need to create a .gitignore file, which will contain a list of files that you want git to not upload to GitHub when using git add commands. 
+
+eg 
+
+  ```
+  core.Microsoft*
+  core.mongo*
+  core.python*
+  env.py
+  __pycache__/
+  *.py[cod]
+  node_modules/
+  .github/
+  cloudinary_python.txtsendgrid.env
+  sendgrid.env
+  testmail.py
+  reset_db.py
+  ```
+
+2. Once you are ready to commit the change from staging use the following command 
+
+  ```
+  git commit -m 'description of the changes made' 
+  ```
+
+This creates the commit, ready to be pushed to Github and will show some output in terms of what the commit message is and what files have been changed and how. 
+
+eg: 
+  ```
+  Code here
+  ```
+
+3. Finally, to push the changes to git type 
+  ```
+  git push
+  ```
+This should generate some output to confirm the actions being taken to transfer the files to GitHub. 
+eg: 
+  ```
+  Code here
+  ```
+
+
+### Working on Multiple Devices
+Assuming you have already cloned the repo to any other computers you may want to work on the code on, you need to ensure that you have the latest version of the code. Luckily this is relatively simple, using a single command.
+
+  ```
+  git pull
+  ```
+This will show some output to show what files its downloading from github as well as any changes or adjustments made to files that are stored locally and need to be updated
+eg
+  ```
+  Code here
+  ```
+ 
+## Branching and Merging
+
+During development, I used a Git branching strategy to keep main features and experimental code isolated from the main branch.
+
+### Creating a Branch
+To create a new branch for a feature or bug fix:
+  ```
+  git checkout -b feature/branch-name
+  ```
+
+### Switching Branches
+To switch back to the main branch:
+  ```
+  git checkout main
+  ```
+
+### Merging Changes
+When the feature is complete and tested, switch to the main branch and merge:
+  ```
+  git checkout main
+  git merge feature/branch-name
+  ```
+
+### Conflict Resolution
+If conflicts arise, Git will prompt you to resolve them before completing the merge.
+
+### Deleting the Branch
+Once merged, you can safely delete the feature branch:
+  ```
+  git branch -d feature/branch-name
+  ```
+
+## Local Deployment
+For testing reasons it is beneficial to have the site be able to run locally. As mentioned, you can clone the repo to a machine you are working on, allowing you to access the codebase that exists on GitHub. 
+Local deployment allows for the testing of modified files before uploading them to GitHub, to ensure the code does what you expect it to, helping minimise the number of commits needed and ensure fewer errors are committed. 
+
+ - We've already covered cloning a repo above. However, you may also need to pull any modules you're using. This can be done with the below command. 
+  ```
+  pip install requirements -r requirements.txt
+  ```
+ 
+Once the required modules are imported, you will also need to ensure you have a local env.py file, since this should never be uploaded to GitHub and can be set to be ignored using the .gitignore file as previously mentioned.
+This file needs to be at the root level of your project and should include the environment variables needed to ensure the application can run. 
+
+  ```
+  import os
+
+  os.environ.setdefault("IP", "0.0.0.0")
+  os.environ.setdefault("PORT", "5000")
+  os.environ.setdefault("SECRET_KEY", "insert secret key")
+  os.environ.setdefault("DEBUG", "True")
+  os.environ.setdefault("DEVELOPMENT", "True")
+  os.environ.setdefault("DB_URL", "insert DB URL")
+  ```
+
+In the above file we're using a development and debug-enabled environment, this can be useful to allow for debug messages to be pushed to the console. But should never be used in a live production environment since it can create a security risk. 
+
+As you can see from the below, I have configured Heroku to not be in debug or development mode. 
+
+<img src="docs/deployment/debug-config.png">
+
+## PostGres DB Creation
+
+To create the Postgres DB, I used the Code Institute provided Database hosting service, located here: https://dbs.ci-dbs.net/
+
+It provides a guided setup process, which is outlined below. 
+
+ - 1 enter your email address in the field provided
+ - 2 Wait for the tool to create the DB
+ - 3 Wait for the email to be sent. 
+
+<br>
+<details>
+<summary>The three DB Creation stage</summary>
+<img src="docs/deployment/db-creation.png">
+<img src="docs/deployment/db-construction.png">
+<img src="docs/deployment/db-deployment.png">
+</details>
+<br>
+
+Once the email has been received this will confirm the details of your new database. 
+
+<img src="docs/deployment/db-details.png">
+
+## Heroku Set up and Configuration. 
+As mentioned this project is hosted on Heroku, a service that allows developers to host applications and websites using tools such as containerisation to create lightweight, isolated servers on the internet, which Heroku refers to as 'Dynos'. 
+
+The below steps outline how to create a Heroku Dyno, once you have an account with them. 
+
+ - Click on 'New' in the drop-down in the top-right of the Heroku Dashboard and select 'create new app' from the menu that appears. 
+
+<img src="docs/deployment/heroku-dyno-deployment.png">
+
+ - Choose a unique app name and choose a region that fits your requirements, typically the one that's geographically closest to you, then click on the 'Create App' button. 
+
+<img src="docs/deployment/heroku-app-name.png">
+
+- Once the next page loads, your dyno is created. However, there are further steps that may be needed to get the app to work. 
+- As part of the development process of the app, you will have likely created an env.py file, which stores various pieces of data needed to run the application, such as database URLs, usernames, keys and so on. This information will need to be configured in Heroku. 
+- In the tabbed page that will appear after the Dyno has been created, click the 'settings' tab. 
+
+<img src="docs/deployment/heroku-settings.png">
+
+Within the settings screen, scroll down until you see the 'reveal config vars' button, click this to show a form that allows you to enter any variables you may have. 
+
+<img src="docs/deployment/config-vars.png">
+
+Examples of these include:
+
+| key          |   value         |
+| ------------ | --------------- |
+| IP           |  0.0.0.0        |  
+| PORT         |    5000         |
+| DB_URL       | url of DB       |
+| SECRET_KEY   | users key       |
+| OTHER VALUES | set as required |
+
+ - Once this has been saved, you need to create two additional files in your IDE. 
+    - requirements.txt
+    - profile
+
+The requirements file is used to ensure any imported modules that may be used by your app are included whenever the Dyno is deployed, including things like 'Math', 'Cloudinary', 'Flask' and so on. 
+The Procfile is used to tell the Dyno how to start your python application, in this case using the command 'web: python run.py'
+
+ - To generate the requirements file, simply issue the following command:
+  ```
+  pip freeze -- local > requirements.txt
+  ```
+The requirements file will need to be updated any time new modules and imports are added to your codebase to ensure it can run the required external functions you may be calling on. 
+
+ - Creating the Procfile can be done either manually, by creating the Procfile itself and then editing its contents in a text editor or IDE or via CLI. 
+ - To create via CLI simply issue the below command, assuming your flask app is launched from run.py, otherwise, this will need to be changed to whatever this file is called, e.g. app.py. 
+  ''' 
+  echo web: python app.py > Procfile
+  '''
+
+ - To deploy your code on Heroku, you can either use the Heroku terminal, or alternatively configure the app on Heroku to auto deploy whenever you push a commit to github. 
+ - For automatic deployments, within Herokus website, click on the Deployment tab, click 'Connect to Github, choose your account in the dropdown if it's not already there and fill in the name of the repo you wish to deploy from. 
+
+<img src="docs/deployment/deploy-menu.png">
+<img src="docs/deployment/deployment-git.png">
+
+ - Once you have selected the appropriate repo, Heroku will spend a few moments connecting to it and if it is successful display the following:
+
+<img src="docs/deployment/connected-git.png">
+
+- This will now allow you to set up auto deploys if you should so choose to, which will allow Heroku to automatically update on changes to the GitHub repo to do this, simply click the 'Enable Automatic Deploys' button.  
+
+<img src="docs/deployment/auto-deploys.png">
+
+ - Alternatively below this is a manual deployment option, which requires you to click the 'Deploy Branch' button each time you're ready to deploy.
+
+<img src="docs/deployment/manual-deploy.png">
+
+Finally, you can, as mentioned, use the Heroku CLI. Where previously you would need to select the GitHub option on the Deploy page, you can simply leave this set to 'Heroku Git' since this is the default setting. 
+
+ - To use the Heroku terminal, you need to login to it using the following command: 
+  ```
+  $ heroku login
+  ```
+ - You will then need to set the remote for Heroku. 
+  ```
+  $ heroku git:remote -a insert-your-app-name
+  ```
+ - Once done, after using the typical Git-based add, commit and push commands you can deploy to Heroku directly using the following: 
+  ```
+  $ git push heroku main
+  ```
+
+# Credits
+
+
+# Acknowledgements
+ - [Iuliia Konovalova](https://github.com/IuliiaKonovalova), my Code Institute Mentor for your help, insight and advice throughout this project. 
+ - The fine community built around [The Fluffenhammer](https://www.thefluffenhammer.com/) for tolerating me going on about this so much in discord and constantly asking if they could test functionality - some of the issues found would still be there if not for you gents. 
+ - My incredibly patient wife for putting up with me vanishing for hours at a time while I worked on this over the last couple of months
+ - My workmates for putting up with me heavily leaning on my 10% time at work between internal project work to get a bit more time to focus on this. 
