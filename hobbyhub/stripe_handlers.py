@@ -165,7 +165,7 @@ def handle_checkout_session_completed(session):
                     StripeSubscriptionMeta.objects.select_for_update()
                     .filter(stripe_subscription_id=sub_id)
                 )
-                
+
                 if existing_subs.exists():
                     sub_meta = existing_subs.first()
                     created = False
@@ -477,7 +477,7 @@ def handle_invoice_payment_succeeded(invoice):
                 f"[MISSING ADDRESS] Sub ID: {subscription_id} "
                 f"has no associated shipping address. Checking DB now."
             )
-            
+
             # Attempt to fetch from DB
             address = ShippingAddress.objects.filter(user=user).first()
             if address:
@@ -490,7 +490,6 @@ def handle_invoice_payment_succeeded(invoice):
             else:
                 logger.error(f"[FAILED RECOVERY] No address found for user {user.id}")
                 return
-
 
         if not created:
             # Sync the data if it already existed
@@ -557,7 +556,6 @@ def handle_invoice_payment_succeeded(invoice):
                 subscription_id,
                 e
             )
-
 
         if not invoice.get('payment_intent'):
             logger.error(

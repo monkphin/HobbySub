@@ -9,6 +9,7 @@ from .models import UserProfile
 stripe.api_key = settings.STRIPE_SECRET_KEY
 logger = logging.getLogger(__name__)
 
+
 @receiver(post_save, sender=User)
 def create_or_update_user_profile(sender, instance, created, **kwargs):
     """
@@ -31,7 +32,7 @@ def create_or_update_user_profile(sender, instance, created, **kwargs):
             profile.save()
 
             logger.info(f"Stripe customer created for {instance.username}: {customer.id}")
-        
+
         except Exception as e:
             # Roll back profile creation if Stripe fails
             profile.delete()

@@ -123,11 +123,11 @@ def handle_purchase_type(request, plan):
 @login_required
 def gift_message(request, plan):
     logger.info("[DEBUG] Entered gift_message view")
-    
-    # 🚀 Force the session to save
+
+    # Force the session to save
     request.session.modified = True
     request.session.save()
-    
+
     shipping_id = request.session.get('checkout_shipping_id')
     if not shipping_id:
         request.session['return_to_gift'] = plan
@@ -396,7 +396,6 @@ def create_subscription_checkout(request, price_id):
             cancel_url=request.build_absolute_uri('/orders/cancel/'),
         )
 
-        
         return redirect(checkout_session.url, code=303)
     except stripe.error.StripeError as e:
         logger.error(f"Stripe error during subscription creation: {str(e)}")
@@ -407,6 +406,7 @@ def create_subscription_checkout(request, price_id):
             "Please try again shortly."
         )
         return redirect('subscribe_options')
+
 
 def order_success(request):
     """
@@ -471,7 +471,10 @@ def order_history(request):
 
             if current_period_end:
                 current_period_end = datetime.fromtimestamp(current_period_end)
-                logger.info(f"[SUBSCRIPTION DEBUG] Found current_period_end for {sub.stripe_subscription_id}: {current_period_end}")
+                logger.info(
+                    "[SUBSCRIPTION DEBUG] Found current_period_end for "
+                    f"{sub.stripe_subscription_id}: {current_period_end}"
+                )
             else:
                 current_period_end = "Not Available"
                 logger.warning(f"[SUBSCRIPTION DEBUG] No current_period_end found for {sub.stripe_subscription_id}")
@@ -507,7 +510,6 @@ def order_history(request):
         'get_subscription_duration_display': get_subscription_duration_display,
         'sub_map': sub_map,
     })
-
 
 
 @require_POST

@@ -110,7 +110,6 @@ def test_box_form_auto_archive():
     assert box.is_archived
 
 
-
 @pytest.mark.django_db
 def test_box_form_editing():
     """

@@ -134,7 +134,6 @@ def send_password_reset_email(user, domain, protocol='https'):
 
     reset_link = f"{protocol}://{domain}{url_path}"
 
-
     message = (
         f"Hi {user.username},\n\n"
         "You requested a password reset for your Hobby Hub account.\n\n"

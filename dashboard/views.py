@@ -21,9 +21,7 @@ from django.contrib.auth import authenticate, get_user_model
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
-from django.utils.timezone import now
 from django.views.decorators.http import require_POST
-from datetime import datetime, timedelta
 from boxes.models import Box, BoxProduct
 from hobbyhub.mail import (send_auto_archive_notification,
                            send_order_status_update_email,

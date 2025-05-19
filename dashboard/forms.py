@@ -10,9 +10,6 @@ users.
 
 All forms use MaterializeCSS-friendly widgets for consistent styling.
 """
-
-from datetime import date
-
 from django import forms
 from django.contrib.auth import get_user_model
 from datetime import timedelta, date
@@ -26,6 +23,7 @@ def last_day_of_month(any_day):
     """Return the last day of the month for the given date."""
     next_month = any_day.replace(day=28) + timedelta(days=4)
     return next_month - timedelta(days=next_month.day)
+
 
 class BoxForm(forms.ModelForm):
     """
@@ -97,7 +95,6 @@ class BoxForm(forms.ModelForm):
         if commit:
             instance.save()
         return instance
-
 
     shipping_date = forms.DateField(
         input_formats=['%d/%m/%Y', '%Y-%m-%d'],
