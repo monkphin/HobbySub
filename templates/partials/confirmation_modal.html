@@ -3,16 +3,16 @@
       <h5 id="modal-title">Confirm Action</h5>
       <p id="delete-warning" class="orange-text text-darken-2 margin-top-10"></p>
       <p id="modal-message">Please enter your password to confirm.</p>
-      <label for="modal-password" class="sr-only">Password</label>
-      <form id="modal-password-form" style="display:none;">
-        <!-- Added username and autocomplete to satisfy Google’s "recommendations" – username field is not actually used -->
+      
+      <form id="modal-password-form" class="modal-form">
         <input type="text" name="username" autocomplete="username" aria-hidden="true" style="display: none;" />
-        <input id="modal-password" type="password" class="browser-default" placeholder="Password" autocomplete="new-password">
+        <input id="modal-password" type="password" class="browser-default modal-input" placeholder="Password" autocomplete="new-password">
       </form>
-    <div id="modal-error" class="red-text margin-top-10"></div>
+      
+      <div id="modal-error" class="red-text margin-top-10"></div>
   </div>
-  <div class="modal-footer btn-group">
-    <button id="modal-cancel-btn" class="btn grey lighten-1 black-text">Cancel</button>
-    <button id="modal-confirm-btn" class="btn green white-text">Confirm</button>
+  <div class="modal-footer button-row">
+    <button id="modal-cancel-btn" class="btn grey lighten-1 black-text" aria-label="Cancel Deletion">Cancel</button>
+    <button id="modal-confirm-btn" class="btn green white-text" aria-label="Confirm Deletion">Confirm</button>
   </div>
 </div>

@@ -206,7 +206,10 @@ nav ul li {
   display: flex;
   flex-direction: column;
   width: 100%;
+  max-width: 800px;
   height: 100%;
+  margin: 0 auto;
+  margin-bottom: 1.5rem;
 }
 
 .card-content {
@@ -257,6 +260,20 @@ nav ul li {
   text-shadow: 1px 1px 3px rgba(0,0,0,0.6);
 }
 
+.account-card-action {
+  display: flex;
+  flex-direction: column; /* Stack by default */
+  gap: 0.75rem;
+  margin-top: 1rem;
+  padding-bottom: 1rem;
+}
+
+.account-card-action .back-btn,
+.account-card-action .save-btn {
+  width: 100%;
+}
+
+
 .card-image img {
   object-fit: cover;
   height: 220px;
@@ -266,6 +283,7 @@ nav ul li {
 .card-action {
   padding: 1rem;
 }
+
 
 .card-action.flex-actions {
   display: flex;
@@ -278,6 +296,41 @@ nav ul li {
 .card-action.flex-actions form {
   margin: 0;
 }
+
+.email-row {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+/* Email Input full width by default */
+.email-input {
+  width: 100%;
+}
+
+/* Button full width by default */
+.email-button {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
+
+/* === Scoped Subscription Plan Cards === */
+.subscription-plan-group .card {
+  min-height: 260px; /* Enforce 240px height for uniformity */
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between; /* Ensures the button is at the bottom */
+}
+
+.subscription-plan-group .card-content {
+  flex-grow: 1;
+}
+
+.subscription-plan-group .card-action {
+  margin-top: auto;
+}
+
 
 /* === Toasts === */
 #toast-container {
@@ -351,8 +404,7 @@ ul li i.left {
 }
 
 .details-card {
-  max-width: 500px;
-  width: 100%;
+  width: 90%;
 }
 
 .address-grid {
@@ -377,7 +429,8 @@ ul li i.left {
 
 .btn-group {
   display: flex;
-  gap: 0.5rem;
+  gap: 1 rem;
+  margin-top: 1rem;
   flex-wrap: wrap;
   justify-content: center;
   align-items: center;
@@ -390,6 +443,13 @@ ul li i.left {
 }
 
 /* === Button Styling === */
+.btn {
+  width: 100%;
+  max-width: 500px;
+  margin: 0.5rem auto;
+  display: block;
+}
+
 .btn-small {
   display: inline-flex;
   align-items: center;
@@ -424,6 +484,15 @@ ul li i.left {
 .deactivate-btn {
     background-color: red !important;
     color: white !important;
+}
+
+.section.center-align a.btn {
+  margin-bottom: 0.5rem;
+  display: block;
+}
+
+#change-email-btn {
+  margin-top: 1rem;
 }
 
 /* === Product Cards & Product List === */
@@ -521,7 +590,7 @@ ul li i.left {
 }
 
 .past-boxes-grid .card {
-  max-height: 345px; /* lock max height to avoid overflow */
+  min-height: 350px; /* lock max height to avoid overflow */
   overflow: hidden;  /* hide any content that exceeds this height */
   display: flex;
   flex-direction: column;
@@ -531,6 +600,12 @@ ul li i.left {
 .past-boxes-grid .card-content {
   flex-grow: 1;      /* let content fill remaining space */
   overflow: hidden;  /* hide overflow */
+}
+
+.no-margin-fix {
+  margin-bottom: 0 !important; /* Ensure no margin */
+  line-height: 1.5; /* Add spacing between lines */
+  padding-bottom: 2px; /* Micro-adjustment to prevent cutoff */
 }
 
 /* Optional: truncate the description text with ellipsis */
@@ -582,25 +657,83 @@ h4 {
   margin: 0 auto;
 }
 
+.gift-message {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 2rem 1rem;
+  background-color: #ffffff;
+  border-radius: 8px;
+  box-shadow: 0px 2px 10px rgba(0, 0, 0, 0.1);
+}
+
 .address-card {
   min-height: 320px;
 }
 
 .button-container {
   display: flex;
+  flex-direction: column;
+  align-items: center;
   justify-content: center;
-  gap: 20px;
-  margin-top: 30px;
 }
 
+.button-container a {
+  min-width: 70%;
+  max-width: 80%;
+  align-items: center;
+  justify-content: center;
+}
 
 .button-row {
   display: flex;
   gap: 1rem;
   justify-content: center;
-  margin-top: 2rem;
+  margin-top: 1.5rem;
   flex-wrap: wrap;
 }
+
+/* Make buttons full-width on mobile */
+.button-row .btn {
+  width: 80%;
+  max-width: 500px;
+}
+
+.button-row-utility {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  align-items: center;
+  margin-top: 2rem;
+  flex-wrap: wrap;
+  width: 80%;
+  max-width: 500px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.button-row-utility a.btn,
+.button-row-utility button.btn {
+  margin: 0;
+}
+
+/* Button Wrapper for Better Alignment */
+.button-wrapper {
+  display: flex;
+  flex-direction: column; /* Stack vertically by default */
+  gap: 0.5rem;
+  width: 70%;
+  max-width: 500px;
+  margin: 0 auto;
+}
+
+.button-wrapper a,
+.button-wrapper button {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  display: flex;
+  justify-content: center;
+}
+
 
 .padded-card-content {
   padding-bottom: 2rem;
@@ -632,6 +765,12 @@ h4 {
   width: auto;
 }
 
+.collection-item {
+  padding-bottom: 1.5rem;
+  border-bottom: 1px solid #e0e0e0;
+  margin-bottom: 1rem;
+}
+
 .collection .collection-item {
   margin-bottom: 1rem;
 }
@@ -644,6 +783,44 @@ h4 {
   margin-bottom: 2rem;
 }
 
+/* === Modal Styling === */
+.modal {
+  display: none;
+  justify-content: center;
+  align-items: center;
+  min-height: 400px;
+  max-height: 90vh; /* Prevent overflow on very small screens */
+  overflow-y: auto; /* Scroll if content overflows */
+  z-index: 1000;
+}
+
+
+.modal.active {
+  display: flex; /* Only display when the class is toggled */
+}
+
+.modal-content {
+  padding: 2rem;
+  width: 100%;
+  background-color: #fff;
+  border-radius: 8px;
+  position: relative;
+}
+
+.modal-form {
+  margin-top: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.modal-input {
+  padding: 0.75rem;
+  border-radius: 4px;
+  border: 1px solid #ccc;
+  font-size: 1rem;
+  width: 100%;
+}
 
 /* === Utility Spacing === */
 .mt-1r { margin-top: 1rem; }
@@ -731,6 +908,83 @@ a:focus:not(:focus-visible) {
   }
 }
 
+@media (min-width: 600px) {
+  .section.center-align a.btn {
+    display: inline-block;
+    margin-bottom: 0;
+  }
+
+  .button-container {
+    flex-direction: row;
+    justify-content: space-between;
+    max-width: 600px;
+  }
+
+  .button-container a {
+    min-width: 45%;
+    max-width: 45%;
+  }
+
+  .button-wrapper {
+    flex-direction: row;
+    justify-content: center;
+  }
+
+  .button-wrapper a,
+  .button-wrapper button {
+    width: auto;
+  }
+
+  .details-card {
+    max-width: 500px; /* Extend on larger screens */
+  }
+
+  .account-card-action {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .account-card-action {
+    flex-direction: row;
+    justify-content: center;
+  }
+
+  #change-email-btn {
+    width: auto;
+  }
+
+  .btn {
+    max-width: 300px;
+  }
+
+  .button-row {
+    flex-direction: row;
+  }
+
+  .button-row .btn {
+    min-width: 45%;
+    max-width: 250px;
+  }
+
+  .button-row-utility {
+    flex-wrap: nowrap;
+    gap: 1.5rem; /* Slightly larger gap on medium screens */
+  }
+}
+
+@media (min-width: 658px) {
+  .modal {
+    min-height: 200px;
+  }
+}
+
+  @media (min-width: 768px) {
+  .gift-message {
+    padding: 2rem 2rem;
+  }
+}
+
 @media (min-width: 993px) {
   #mobile-nav a {
       pointer-events: none;
@@ -746,3 +1000,4 @@ a:focus:not(:focus-visible) {
     list-style: none;
   }
 }
+

@@ -5,43 +5,47 @@
 
 {% block content %}
 
-{% if form.errors %}
-    <div class="card-panel red lighten-4">
-        <ul>
-            {% for field, errors in form.errors.items %}
-                <li><strong>{{ field }}:</strong> {{ errors }}</li>
-            {% endfor %}
-        </ul>
-    </div>
-{% endif %}
+  {% if form.errors %}
+      <div class="card-panel red lighten-4">
+          <ul>
+              {% for field, errors in form.errors.items %}
+                  <li><strong>{{ field }}:</strong> {{ errors }}</li>
+              {% endfor %}
+          </ul>
+      </div>
+  {% endif %}
 
-<section class="section center-align">
-  <h2>Gift Message</h2>
-  <form id="gift-message-form" method="post" action="{% url 'gift_message' plan %}">
-    {% csrf_token %}
-    <div class="row">
-      <div class="input-field col s12">
-        {{ form.recipient_name.label_tag }}
-        {{ form.recipient_name }}
+  <section class="section center-align">
+    <h2>Gift Message</h2>
+    <form id="gift-message-form" method="post" action="{% url 'gift_message' plan %}">
+      {% csrf_token %}
+      <div class="container gift-message">
+        <div class="row">
+          <div class="input-field col s12">
+            {{ form.recipient_name.label_tag }}
+            {{ form.recipient_name }}
+          </div>
+          <div class="input-field col s12">
+            {{ form.recipient_email.label_tag }}
+            {{ form.recipient_email }}
+          </div>
+          <div class="input-field col s12">
+            {{ form.sender_name.label_tag }}
+            {{ form.sender_name }}
+          </div>
+          <div class="input-field col s12">
+            {{ form.gift_message.label_tag }}
+            {{ form.gift_message }}
+          </div>
+        </div>
+
+        <div class="row button-row center-align">
+          <button class="btn teal lighten-1" type="submit">
+            <i class="fas fa-credit-card left"></i> Proceed to Checkout
+          </button>
+        </div> 
       </div>
-      <div class="input-field col s12">
-        {{ form.recipient_email.label_tag }}
-        {{ form.recipient_email }}
-      </div>
-      <div class="input-field col s12">
-        {{ form.sender_name.label_tag }}
-        {{ form.sender_name }}
-      </div>
-      <div class="input-field col s12">
-        {{ form.gift_message.label_tag }}
-        {{ form.gift_message }}
-      </div>
-    </div>
-    <div class="row button-row center-align">
-      <button class="btn" type="submit">
-        <i class="fas fa-credit-card left"></i> Proceed to Checkout
-      </button>
-    </div> 
-  </form>
-</section>
+    </form>
+  </section>
+
 {% endblock %}

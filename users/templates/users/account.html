@@ -29,7 +29,7 @@
 <div class="section-divider"></div>
 
 <section class="section center-align">
-  <div class="chip-container">
+  <div class="chip-container button-wrapper">
     <a href="{% url 'change_password' %}" class="btn-small blue lighten-1 white-text">Change Password</a>
     <a href="{% url 'edit_account' %}" class="btn-small green white-text">Edit Account</a>
     <button id="delete-account-btn" class="btn-small red white-text">
@@ -42,13 +42,17 @@
 
 <section class="section center-align">
   <h3>Saved Addresses</h3>
-  <a href="{% url 'add_address' %}?gift=false&next={{ request.path }}" class="btn teal white-text">
-    <i class="fas fa-plus left"></i> Add Personal Address
-  </a>
+
+  <div class="row button-container">
+    <a href="{% url 'add_address' %}?gift=false&next={{ request.path }}" class="btn teal white-text">
+      <i class="fas fa-plus left"></i> Add Personal Address
+    </a>
+
+    <a href="{% url 'add_address' %}?gift=true&next={{ request.path }}" class="btn teal lighten-2 white-text">
+      <i class="fas fa-gift left"></i> Add Gift Address
+    </a>
+  </div>
   
-  <a href="{% url 'add_address' %}?gift=true&next={{ request.path }}" class="btn teal lighten-2 white-text">
-    <i class="fas fa-gift left"></i> Add Gift Address
-  </a>
   <!-- Personal Addresses -->
   <div class="row">
     <h5 class="center-align">Your Personal Addresses</h5>
