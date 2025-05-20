@@ -9,43 +9,47 @@
   <form method="post" enctype="multipart/form-data">
     {% csrf_token %}
 
-    <div class="input-field">
+  <div class="row">
+    <div class="input-field col s12">
       {{ form.name.label_tag }}
       {{ form.name }}
     </div>
+  </div>
 
-    <div class="input-field">
+  <div class="row">
+    <div class="input-field col s12">
       {{ form.description.label_tag }}
       {{ form.description }}
     </div>
+  </div>
 
-    <div class="file-field input-field">
-      <div class="btn">
-        <span>Upload Image</span>
-        {{ form.image }}
-      </div>
-      <div class="file-path-wrapper">
-        <input class="file-path validate" type="text" placeholder="Upload an image">
-      </div>
+  <div class="file-field input-field">
+    <div class="btn">
+      <span>Upload Image</span>
+      {{ form.image.as_widget }}
     </div>
-
-    {% if box and box.image %}
-      <p>Current Image:</p>
-      <img src="{{ box.image.url }}" alt="Current image" class="responsive-img small-preview">
-    {% endif %}
-
-    <div class="input-field">
-      {{ form.shipping_date.label_tag }}
-      {{ form.shipping_date }}
+    <div class="file-path-wrapper">
+      <input class="file-path validate" type="text" placeholder="Upload an image">
     </div>
+  </div>
 
-    <p>
-      <label>
-        {{ form.is_archived }} <span>Archive this box?</span>
-      </label>
-    </p>
+  {% if box and box.image %}
+    <p>Current Image:</p>
+    <img src="{{ box.image.url }}" alt="Current image" class="responsive-img small-preview">
+  {% endif %}
 
-    {% if form.errors %}
+  <div class="input-field">
+    {{ form.shipping_date.label_tag }}
+    {{ form.shipping_date }}
+  </div>
+
+  <p>
+    <label>
+      {{ form.is_archived }} <span>Archive this box?</span>
+    </label>
+  </p>
+
+  {% if form.errors %}
     <div class="card-panel red lighten-4 red-text text-darken-4">
       <ul>
         {% for field in form %}
@@ -72,4 +76,6 @@
   
   </form>
 </div>
+
+
 {% endblock %}

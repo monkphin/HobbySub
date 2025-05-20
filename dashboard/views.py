@@ -16,20 +16,24 @@ import logging
 
 import stripe
 from cloudinary.uploader import destroy
-# Django/External Imports
+from django.urls import reverse
 from django.contrib.auth import authenticate, get_user_model
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 from django.views.decorators.http import require_POST
 from boxes.models import Box, BoxProduct
-from hobbyhub.mail import (send_auto_archive_notification,
-                           send_order_status_update_email,
-                           send_password_reset_email,
-                           send_shipping_confirmation_email)
-# Local Imports
-from hobbyhub.utils import (alert, get_subscription_duration_display,
-                            get_subscription_status)
+from hobbyhub.mail import (
+    send_auto_archive_notification,
+    send_order_status_update_email,
+    send_password_reset_email,
+    send_shipping_confirmation_email
+)
+from hobbyhub.utils import (
+    alert,
+    get_subscription_duration_display,
+    get_subscription_status
+)
 from orders.models import Order, Payment, StripeSubscriptionMeta
 
 from .decorators import custom_staff_required
@@ -246,7 +250,7 @@ def edit_box_products(request, box_id):
     orphaned_products = BoxProduct.objects.filter(box__isnull=True)
 
     if request.method == 'POST':
-        selected_products = request.POST.getlist('orphaned_products')
+        selected_products = request.POST.getlist('product_ids')
         if selected_products:
             # Update the selected orphaned products to this box
             BoxProduct.objects.filter(id__in=selected_products).update(box=box)
@@ -282,6 +286,7 @@ def assign_orphaned_to_box(request, box_id):
     """
     box = get_object_or_404(Box, pk=box_id)
     if request.method == 'POST':
+        logger.info("DEBUG POST DATA:", request.POST)
         product_ids = request.POST.getlist('product_ids')
         if product_ids:
             products = BoxProduct.objects.filter(
@@ -536,55 +541,83 @@ def remove_product_from_box(request, product_id):
 def manage_orphaned_products(request):
     """
     Handles batch reassignment or deletion of orphaned products.
+    Also supports single-product delete buttons.
     """
-    # === DEBUGGING OUTPUT ===
-    print("=== DEBUGGING: Entering manage_orphaned_products ===")
-    print(f"Request method: {request.method}")
-    print(f"POST Data: {request.POST}")
+    logger.info("=== DEBUGGING: Entering manage_orphaned_products ===")
+    logger.info(f"Request method: {request.method}")
+    logger.info(f"POST Data: {request.POST}")
 
+    # Handle single delete shortcut first
+    delete_single_id = request.POST.get('delete_single')
+    if delete_single_id:
+        password = request.POST.get('password')
+
+        if not password or not request.user.check_password(password):
+            error_msg = "Password incorrect." if password else "Password is required."
+            if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+                return JsonResponse({'success': False, 'error': error_msg})
+            alert(request, "error", error_msg)
+            return redirect('box_admin')
+
+        # Proceed with deletion
+        logger.info(f"=== DEBUGGING: Single delete triggered for product ID: {delete_single_id} ===")
+        BoxProduct.objects.filter(id=delete_single_id, box__isnull=True).delete()
+        
+        if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+            return JsonResponse({'success': True})
+
+        alert(request, "success", "Product successfully deleted.")
+        return redirect('box_admin')
+
+    # Otherwise, handle bulk actions
     action = request.POST.get('action')
     product_ids = request.POST.getlist('product_ids')
 
-    # Log the action and product IDs
-    print(f"=== DEBUGGING: Action received -> {action}")
-    print(f"=== DEBUGGING: Product IDs received -> {product_ids}")
+    logger.info(f"=== DEBUGGING: Action received -> {action}")
+    logger.info(f"=== DEBUGGING: Product IDs received -> {product_ids}")
 
     if action not in ['reassign', 'delete']:
         alert(request, "error", "Invalid action.")
-        print(
-            "=== DEBUGGING: Invalid action encountered, "
-            "redirecting to box_admin ==="
-        )
+        logger.info("=== DEBUGGING: Invalid action encountered, redirecting to box_admin ===")
         return redirect('box_admin')
 
-    if not product_ids:
-        alert(request, "error", "No products selected.")
-        print(
-            "=== DEBUGGING: No products selected, "
-            "redirecting to box_admin ==="
-        )
+    if not product_ids or not all(pid.isdigit() for pid in product_ids):
+        error_msg = "Invalid product IDs."
+
+        if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+            return JsonResponse({'success': False, 'error': error_msg})
+
+        alert(request, "error", error_msg)
+        logger.warning(f"Invalid product_ids submitted: {product_ids}")
         return redirect('box_admin')
 
+    # Inside manage_orphaned_products
     if action == 'reassign':
-        print(
-            f"=== DEBUGGING: Redirecting to reassign_orphaned_products "
-            f"with IDs: {product_ids} ==="
-        )
-        # Redirect to reassign page
-        return redirect(
-            'reassign_orphaned_products',
-            product_ids=",".join(product_ids)
-        )
+        logger.info(f"=== DEBUGGING: Redirecting to reassign_orphaned_products with IDs: {product_ids} ===")
+        if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+            return JsonResponse({'redirect': reverse('reassign_orphaned_products', args=[",".join(product_ids)])})
+        return redirect('reassign_orphaned_products', product_ids=",".join(product_ids))
 
-    elif action == 'delete':
-        print(f"=== DEBUGGING: Deleting products with IDs: {product_ids} ===")
-        # Batch delete
-        BoxProduct.objects.filter(id__in=product_ids).delete()
-        alert(
-            request,
-            "success",
-            f"Deleted {len(product_ids)} orphaned products."
-        )
+    if action == 'delete':
+        password = request.POST.get('password')
+
+        if not password or not request.user.check_password(password):
+            error_msg = "Password incorrect." if password else "Password is required."
+
+            if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+                return JsonResponse({'success': False, 'error': error_msg})
+
+            alert(request, "error", error_msg)
+            return redirect('box_admin')
+
+        # Password was valid — proceed to delete
+        deleted_count, _ = BoxProduct.objects.filter(id__in=product_ids, box__isnull=True).delete()
+        logger.info(f"=== DEBUGGING: Deleted {deleted_count} orphaned products ===")
+
+        if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+            return JsonResponse({'success': True, 'deleted': deleted_count})  # <-- THIS WAS MISSING
+
+        alert(request, "success", f"Deleted {deleted_count} orphaned products.")
         return redirect('box_admin')
 
 
@@ -653,7 +686,7 @@ def edit_user(request, user_id):
                 'is_staff': data.get('is_staff')
             }
 
-            print(f"Received form data: {form_data}")
+            logger.info(f"Received form data: {form_data}")
 
             # Authenticate admin user
             admin_user = authenticate(

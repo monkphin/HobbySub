@@ -73,6 +73,42 @@ Description: Emails occasionally send twice for a single event trigger.
         Added checks to prevent duplicate sends.
     Status: Believed to be resolved but left marked as outstanding pending further testing.
 
+### Page rendering issues
+Description:
+On some pages containing <textarea> fields, resizing the browser window can cause the content to visually compress or wrap incorrectly. I have specifically seen this on the Add/Edit Box and Add/Edit Products pages, since they're fundamentally the same underlying form.  
+
+    Likely Cause:
+        Interaction between MaterializeCSS’s layout model and how certain browsers recalculate textarea dimensions during dynamic resizing. May also relate to how unbroken content is handled during flex/grid reflow.
+    Mitigation:
+        Isolated the issue to a specific block of HTML.
+        Applied multiple responsive CSS overrides (width, box-sizing, overflow-wrap) — these were later removed as they did not resolve the underlying issue and caused side effects, particularly with the admin dropdown menu.        Removed Materialize’s textareaAutoResize() to avoid conflicting JS behaviour.
+    Status:
+        Unresolved. Non-blocking and cosmetic only. A full fix was deprioritised due to time constraints. Reloading the page resolves the issue consistently. No impact on usability or form submission.
+
+### Toasts for updating box contents showing 0
+Description:
+When assigning orphaned products to a box via the box_products.html page, the form posts successfully, but no checkbox data (product_ids) is received in request.POST.
+    Observed Behavior:
+        The checkboxes render correctly and allow selection.
+        Submitting the form (via the “Assign to Box” button) redirects as expected.
+        However, the server logs consistently show:
+        ```
+        request.POST.getlist('product_ids') == []
+        ```
+        Resulting message:
+        "0 products successfully added to 'BoxName'."
+    
+Expected Behavior:
+Checkboxes for selected orphaned products should be submitted as product_ids in the POST data, and the selected products should be reassigned to the specified box.
+    Confirmed Factors:
+        HTML inputs are correctly named: <input type="checkbox" name="product_ids" value="{{ product.id }}">.
+        CSRF token is present and accepted.
+        No errors or warnings in the browser console.
+        JS disables the submit button on form submission for UX, but this should not block form data unless it fires too early.
+Next Steps / Logging:
+Issue remains unresolved. No workaround has been applied yet. Will revisit this after higher-priority tasks or consider commenting out the form submit button disable temporarily for confirmation testing.
+
+
 ## Refactoring and DRY 
 Throughout development, I attempted to adhere to DRY (Don't Repeat Yourself) principles wherever possible, aiming to minimise code duplication and improve maintainability.
 

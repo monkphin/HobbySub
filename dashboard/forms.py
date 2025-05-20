@@ -125,8 +125,10 @@ class BoxForm(forms.ModelForm):
                     'rows': 4
                 }
             ),
+            'image': forms.FileInput(attrs={'accept': 'image/*'}),  # ✅ this line is the fix
             'is_archived': forms.CheckboxInput(),
         }
+
 
 
 class ProductForm(forms.ModelForm):
@@ -150,6 +152,7 @@ class ProductForm(forms.ModelForm):
             'description': forms.Textarea(
                 attrs={'class': 'materialize-textarea'}
             ),
+            'image': forms.FileInput(attrs={'accept': 'image/*'}),
         }
 
 

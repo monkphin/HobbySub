@@ -490,6 +490,27 @@ ul li i.left {
   margin-bottom: 2rem;
 }
 
+
+.product-ctrl-btn {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  margin-bottom: 0.5rem;
+  width: 100%;
+}
+
+.product-ctrl-btn a,
+.product-ctrl-btn button {
+  justify-content: center;
+  align-items: center;
+  align-content: center;
+  margin-bottom: 0.5rem;
+  width: 80%;
+}
+
 .orphan-ctrl-btn {
   display: flex;
   flex-direction: column;
@@ -508,7 +529,6 @@ ul li i.left {
   align-content: center;
   margin-bottom: 0.5rem;
   width: 80%;
-  max
 }
 
 .button-row-orphans a.btn,
@@ -850,6 +870,7 @@ h4 {
 }
 
 .select-auto-width {
+  display: block !important;
   width: auto;
 }
 
@@ -1051,7 +1072,7 @@ a:focus:not(:focus-visible) {
   }
 
   .button-row .btn {
-    min-width: 45%;
+    width: 40%;
     max-width: 250px;
   }
 
@@ -1087,6 +1108,7 @@ a:focus:not(:focus-visible) {
   .orphan-ctrl-btn {
     flex-direction: row;
   }
+
 }
 
 @media (min-width: 905px) {
@@ -1111,3 +1133,18 @@ a:focus:not(:focus-visible) {
   }
 }
 
+
+.select-wrapper {
+  display: inline-flex !important;
+  position: relative !important;
+  width: 100% !important;
+}
+
+.select-wrapper input.select-dropdown {
+  display: inline-block !important;
+  cursor: pointer;
+  padding: 0.8rem 1rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  background-color: white;
+}

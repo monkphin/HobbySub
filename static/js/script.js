@@ -8,6 +8,10 @@ document.addEventListener('DOMContentLoaded', function () {
   M.FormSelect.init(document.querySelectorAll('select'));
   M.updateTextFields();
 
+  document.querySelectorAll('.materialize-textarea').forEach(textarea => {
+    M.textareaAutoResize(textarea);
+  });
+
 // === Materialize Datepicker Initialization ===
 M.Datepicker.init(document.querySelectorAll('.datepicker'), {
   format: 'dd/mm/yyyy',      // Ensures it matches '%d/%m/%Y' in Django forms
@@ -122,7 +126,13 @@ document.querySelectorAll('.cancel-subscription-btn').forEach(button => {
   // Product deletion button
   document.querySelectorAll('.delete-product-btn').forEach(button => {
     button.addEventListener('click', () => {
-      openModal('delete_product', button.dataset.id);
+      const isOrphaned = button.closest('form')?.id === 'orphaned-products-form';
+
+      if (isOrphaned) {
+        openModal('delete_single_product', button.dataset.id);  // Pass product ID
+      } else {
+        openModal('delete_product', button.dataset.id);
+      }
     });
   });
 
@@ -141,13 +151,30 @@ document.querySelectorAll('.cancel-subscription-btn').forEach(button => {
     });
   });
 
-
   // === Modal trigger binding for Admin Save User ===
   document.querySelectorAll('.admin-update-user-btn').forEach(button => {
     button.addEventListener('click', () => {
       openModal('admin_save_user', button.dataset.id);
     });
   });
+
+  // === Modal trigger for Orphaned Bulk Delete ===
+  const orphanedBulkDeleteBtn = document.getElementById('orphaned-bulk-delete-btn');
+  if (orphanedBulkDeleteBtn) {
+    orphanedBulkDeleteBtn.addEventListener('click', () => {
+      const checked = document.querySelectorAll('input[name="product_ids"]:checked');
+      if (checked.length === 0) {
+        M.toast({ html: 'Please select at least one product to delete.', classes: 'red' });
+        return;
+      }
+
+      // Set the hidden action field in the form
+      setOrphanedAction('delete');
+
+      // Open confirmation modal
+      openModal('orphaned_bulk_delete');
+    });
+  }
 
   // === Modal trigger bindings for Email Change ===
   const emailChangeBtn = document.getElementById('change-email-btn');
@@ -227,6 +254,14 @@ function openModal(action, id = null) {
     case 'change_email':
       title.innerText = 'Confirm Email Change';
       message.innerText = 'Please confirm your password to update your email address.';
+      break;
+    case 'orphaned_bulk_delete':
+      title.innerText = 'Confirm Bulk Deletion';
+      message.innerText = 'Please enter your password to delete the selected orphaned products.';
+      break;
+    case 'delete_single_product':
+      title.innerText = 'Confirm Product Deletion';
+      message.innerText = 'Please enter your password to delete this orphaned product.';
       break;
     case 'admin_password_reset':
       title.innerText = 'Admin-Initiated Password Reset';
@@ -336,11 +371,59 @@ function submitModalAction() {
       url = GLOBALS.urls.changeEmail;
       payload.new_email = modalContext.newEmail;
       break;
-    default:
-      errorEl.innerText = 'Invalid action.';
-      return;
-  }
 
+    case 'orphaned_bulk_delete':
+      const formEl = document.getElementById('orphaned-products-form');
+      const bulkFormData = new FormData(formEl);
+      bulkFormData.append('password', password);
+      console.log("Bulk delete URL is:", GLOBALS.orphanedBulkDelete);
+      fetch(GLOBALS.urls.orphanedBulkDelete, {
+        method: 'POST',
+        headers: {
+          'X-CSRFToken': GLOBALS.csrfToken,
+          'X-Requested-With': 'XMLHttpRequest'
+        },
+        body: bulkFormData,
+      })
+        .then(res => res.json())
+        .then(data => {
+          if (data.success) {
+            window.location.reload();
+          } else {
+            errorEl.innerText = data.error || 'Failed to delete products.';
+          }
+        })
+        .catch(() => {
+          errorEl.innerText = 'Sorry — there was a problem completing your request.';
+        });
+      return;
+    case 'delete_single_product':
+      const singleDeleteFormData = new FormData();
+      singleDeleteFormData.append('delete_single', modalContext.id);
+      singleDeleteFormData.append('password', password);
+
+      fetch(GLOBALS.urls.orphanedBulkDelete, {
+        method: 'POST',
+        headers: {
+          'X-CSRFToken': GLOBALS.csrfToken,
+          'X-Requested-With': 'XMLHttpRequest'
+        },
+        body: singleDeleteFormData,
+      })
+        .then(res => res.json())
+        .then(data => {
+          if (data.success) {
+            window.location.reload();
+          } else {
+            errorEl.innerText = data.error || 'Failed to delete product.';
+          }
+        })
+        .catch(() => {
+          errorEl.innerText = 'Sorry — there was a problem completing your request.';
+        });
+      return;
+    }
+  
   fetch(url, {
     method: 'POST',
     headers: {
