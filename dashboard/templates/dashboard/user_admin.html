@@ -5,78 +5,82 @@
 <div class="container">
   <h3 class="center-align">User Manager</h3>
 
-  <table class="highlight responsive-table">
-    <thead>
-      <tr>
-        <th>Username</th>
-        <th>Email</th>
-        <th>Admin</th>
-        <th>Active</th>
-        <th>Actions</th>
-        <th>Stripe Account</th>
-      </tr>
-    </thead>
-    <tbody>
+  {% if users %}
+    <div class="row admin-user-boxes-grid">
       {% for user in users %}
-        <tr>
-          <td>{{ user.username }}</td>
-          <td>{{ user.email }}</td>
-          <td>{{ user.is_staff|yesno:"Yes,No" }}</td>
-          <td>
-            {% if user.is_active %}
-              Active
-            {% else %}
-              <span class="red-text">Inactive</span>
-            {% endif %}
-          </td>
-          <td>
-            <div class="btn-group">
-              <a href="{% url 'user_orders' user.id %}" class="btn-small green">Orders</a>
-              <a href="{% url 'edit_user' user.id %}" class="btn-small blue">Edit</a>
-              <a href="#" class="btn-small orange admin-password-reset-btn" data-id="{{ user.id }}">Reset Password</a>
-              {% if user.is_superuser %}
-                <button 
-                  class="btn-small grey lighten-1 disabled tooltipped"
-                  data-tooltip="Admins cannot be deactivated"
-                  style="cursor: not-allowed;">
-                        Deactivate Account
-                </button>
-              {% else %}
-                <a href="#" 
-                  class="btn-small admin-toggle-state-btn {% if not user.is_active %}activate-btn{% else %}deactivate-btn{% endif %}" 
-                  data-id="{{ user.id }}">
-                    {% if not user.is_active %}
-                        Activate Account
-                    {% else %}
-                        Deactivate Account
-                    {% endif %}
-                </a>
-              {% endif %}
-            </div>
-          </td>
-          <td>
-            {% if user.profile.stripe_customer_id %}
-              <a href="https://dashboard.stripe.com/test/customers/{{ user.profile.stripe_customer_id }}" 
-                target="_blank" 
-                class="btn-small grey darken-2">
-                  <i class="fa fa-cc-stripe" style="margin-right: 5px;"></i>
-                  View in Stripe
-              </a>
-            {% else %}
-              <span class="red-text">Not Linked</span>
-            {% endif %}
-          </td>
-        </tr>
-      {% empty %}
-        <tr>
-          <td colspan="6">No users found.</td>
-        </tr>
+
+      
+<div class="col s12 m6 l4">
+  <div class="card hoverable">
+    <div class="card-content">
+      <h5 class="truncate" title="{{ user.username }}">{{ user.username }}</h5>
+      <p><strong>Email:</strong> {{ user.email }}</p>
+      <p><strong>Admin:</strong> {{ user.is_staff|yesno:"Yes,No" }}</p>
+      <p>
+        <strong>Status:</strong>
+        {% if user.is_active %}
+          <span class="green-text">Active</span>
+        {% else %}
+          <span class="red-text">Inactive</span>
+        {% endif %}
+      </p>
+
+      <p class="stripe-button-wrapper">
+        {% if user.profile.stripe_customer_id %}
+          <a href="https://dashboard.stripe.com/test/customers/{{ user.profile.stripe_customer_id }}" 
+             target="_blank" 
+             class="btn-small grey darken-3">
+            <i class="fa fa-cc-stripe left admin-btn"></i>Stripe
+          </a>
+        {% else %}
+          <span class="red-text">Not Linked</span>
+        {% endif %}
+      </p>
+    </div>
+
+    <div class="card-action">
+      <div class="row" style="margin: 0;">
+        <div class="col s12 m6">
+          <a href="{% url 'user_orders' user.id %}" class="btn green btn-block admin-btn">Orders</a>
+        </div>
+        <div class="col s12 m6">
+          <a href="{% url 'edit_user' user.id %}" class="btn blue btn-block admin-btn">Edit</a>
+        </div>
+        <div class="col s12">
+          <a href="#" class="btn orange btn-block admin-password-reset-btn admin-btn" data-id="{{ user.id }}">
+            Reset Password
+          </a>
+        </div>
+
+        {% if user.is_superuser %}
+          <div class="col s12">
+            <button class="btn grey lighten-1 btn-block disabled tooltipped admin-btn" data-tooltip="Admins cannot be deactivated" disabled>
+              Deactivate
+            </button>
+          </div>
+        {% else %}
+          <div class="col s12">
+            <a href="#" 
+               class="btn btn-block {% if user.is_active %}red deactivate-btn{% else %}teal activate-btn{% endif %} admin-btn" 
+               data-id="{{ user.id }}">
+              {% if user.is_active %}Deactivate{% else %}Activate{% endif %}
+            </a>
+          </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+
+
       {% endfor %}
-    </tbody>
-  </table>
-<p align="center">
-    To deactivate an admin account, please use Django's backend service. 
-    This is to ensure admins are not accidentally removed.
-</p>
+    </div>
+  {% else %}
+    <p class="center-align">No users found.</p>
+  {% endif %}
+
+  <p class="center-align grey-text text-darken-1">
+    To deactivate an admin account, please use Django’s backend service.
+  </p>
 </div>
 {% endblock %}

@@ -883,6 +883,11 @@ def user_orders(request, user_id):
     for order in orders:
         order.payment = Payment.objects.filter(order=order).first()
 
+    payments_by_order = {
+        order.id: Payment.objects.filter(order=order).first()
+        for order in orders
+    }
+
     return render(
         request,
         'dashboard/user_orders.html',
@@ -891,7 +896,8 @@ def user_orders(request, user_id):
             'orders': orders,
             'active_sub': active_sub,
             'cancelled_subs': cancelled_subs,
-            'sub_map': sub_map
+            'sub_map': sub_map,
+            'payments_by_order': payments_by_order,
         }
     )
 

@@ -5,6 +5,7 @@
 {% block content %}
 <div class="container">
   <h3>{{ user.username }}’s Orders</h3>
+
   <div class="row button-row center-align margin-bottom-2">
     <a href="{% url 'user_admin' %}" class="btn grey">
       <i class="fas fa-arrow-left left"></i> Back to Users
@@ -12,104 +13,14 @@
   </div>
 
   {% if orders %}
-    <table class="highlight">
-      <thead>
-        <tr>
-          <th>Order ID</th>
-          <th>Order Date</th>
-          <th>Payment Status</th>
-          <th>Order Status</th>
-          <th>Is Gift</th>
-          <th>Subscription Status</th>
-          <th>Box Name</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for order in orders %}
-        <tr>
-          <td>#{{ order.id }}</td>
-          <td>{{ order.order_date }}</td>
-
-          <!-- Payment Info -->
-          <td>
-            {% if order.payment %}
-              £{{ order.payment.amount }} — {{ order.payment.status|title }}<br>
-              {{ order.payment.payment_date|date:"M d, Y H:i" }}
-            {% else %}
-              <em>No payment</em>
-            {% endif %}
-          </td>
-
-          <!-- Order Status Logic -->
-          <td>
-              {% if order.status == 'cancelled' %}
-                  <p class="red-text"><strong>Cancelled</strong></p>
-              {% elif order.stripe_subscription_id %}
-                  {% with sub_map|get_item:order.stripe_subscription_id as sub_info %}
-                      {% if sub_info.sub.cancelled_at %}
-                          <p class="red-text"><strong>Cancelled</strong></p>
-                      {% else %}
-                          <form method="post" action="{% url 'update_order_status' order.id %}">
-                              {% csrf_token %}
-                              <div class="inline-form">
-                                  <select name="status" class="browser-default select-auto-width">
-                                      {% for key, label in order.STATUS_CHOICES %}
-                                          {% if key != 'cancelled' %}
-                                              <option value="{{ key }}" {% if order.status == key %}selected{% endif %}>{{ label }}</option>
-                                          {% endif %}
-                                      {% endfor %}
-                                  </select>
-                                  <button type="submit" class="btn-small">Update</button>
-                              </div>
-                          </form>
-                      {% endif %}
-                  {% endwith %}
-              {% else %}
-                  <form method="post" action="{% url 'update_order_status' order.id %}">
-                      {% csrf_token %}
-                      <div class="inline-form">
-                          <select name="status" class="browser-default select-auto-width">
-                              {% for key, label in order.STATUS_CHOICES %}
-                                  <option value="{{ key }}" {% if order.status == key %}selected{% endif %}>{{ label }}</option>
-                              {% endfor %}
-                          </select>
-                          <button type="submit" class="btn-small">Update</button>
-                      </div>
-                  </form>
-              {% endif %}
-          </td>
-
-          <!-- Is Gift Logic -->
-          <td>
-          {{ order.is_gift|yesno:"Yes,No" }}
-          </td>
-
-          <!-- Subscription Logic -->
-          <td>
-            {% if order.stripe_subscription_id %}
-              {% with sub_map|get_item:order.stripe_subscription_id as sub_info %}
-                {% if sub_info.sub.cancelled_at %}
-                  <p class="red-text"><strong>Cancelled on {{ sub_info.sub.cancelled_at|date:"d M Y" }}</strong></p>
-                {% else %}
-                  <button 
-                    class="btn-small red lighten-1 white-text cancel-subscription-btn" 
-                    data-subscription-id="{{ sub_info.sub.stripe_subscription_id }}">
-                      Cancel Subscription
-                  </button>
-                {% endif %}
-              {% endwith %}
-            {% else %}
-              <p><em>Not a Subscription</em></p>
-            {% endif %}
-          </td>
-
-          <!-- Box Name -->
-          <td>{{ order.box }}</td>
-        </tr>
-        {% endfor %}
-      </tbody>
-    </table>
-  {% else %}
+    <div class="user-admin-boxes-grid row">
+      {% for order in orders %}
+        <div class="col s12 m6 l4"> 
+          {% include 'orders/admin_order_list_item.html' with order=order %}
+        </div>
+      {% endfor %}
+      </div>
+    {% else %}
     <p>No orders found for this user.</p>
   {% endif %}
 </div>

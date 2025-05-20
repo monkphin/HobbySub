@@ -482,6 +482,17 @@ ul li i.left {
   width: 80%;
 }
 
+.btn.admin-btn {
+  white-space: nowrap;         /* No wrapping */
+  overflow: hidden;            /* Just in case */
+  text-overflow: ellipsis;     /* Add ... if needed */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  padding: 0.5rem 1rem;
+}
+
 .button-row-orphans {
   display: flex;
   flex-direction: column;
@@ -697,6 +708,30 @@ ul li i.left {
   min-height: 120px;
 }
 
+.admin-user-boxes-grid .card {
+  min-height: 410px; /* lock max height to avoid overflow */
+  overflow: hidden;  /* hide any content that exceeds this height */
+  display: flex;
+  flex-direction: column;
+}
+
+.stripe-button-wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  margin-top: 0.5rem;
+}
+
+.stripe-button-wrapper a {
+  width: 80%;
+  max-width: 300px;
+  text-align: center;
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+}
+
 .past-boxes-grid .card {
   min-height: 350px; /* lock max height to avoid overflow */
   overflow: hidden;  /* hide any content that exceeds this height */
@@ -723,6 +758,13 @@ ul li i.left {
   -webkit-box-orient: vertical;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+.user-admin-boxes-grid .card {
+  min-height: 410px; 
+  overflow: hidden; 
+  display: flex;
+  flex-direction: column;
 }
 
 /* === Hero Section Tweaks === */
@@ -763,6 +805,51 @@ h4 {
 .form-wrapper {
   max-width: 700px;
   margin: 0 auto;
+}
+
+.order-status-form {
+  width: 100%;
+}
+
+.status-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 1rem;
+  margin-top: 0.5rem;
+}
+
+.status-field {
+  flex: 1 1 auto;
+  min-width: 140px;
+}
+
+.status-label {
+  font-weight: 600;
+  margin-bottom: 0.2rem;
+  display: block;
+}
+
+.status-select {
+  font-size: 1rem;
+  padding: 0.4rem;
+  border-radius: 4px;
+  background-color: #fff;
+  border: 1px solid #ccc;
+}
+
+.status-button {
+  flex: 0 0 auto;
+  width: 100%;
+}
+
+.order-status-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 64px; /* match the combined height of select + button */
+  font-weight: bold;
+  color: #d32f2f; /* same as Materialize 'red-text' */
 }
 
 .gift-message {
