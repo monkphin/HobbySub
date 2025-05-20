@@ -19,7 +19,7 @@
       <p>
         <strong>Status:</strong>
         {% if user.is_active %}
-          <span class="green-text">Active</span>
+          <span class="green-text text-darken-3">Active</span>
         {% else %}
           <span class="red-text">Inactive</span>
         {% endif %}
@@ -42,13 +42,13 @@
     <div class="card-action">
       <div class="row">
         <div class="col s12 m6">
-          <a href="{% url 'user_orders' user.id %}" class="btn green btn-block admin-btn">Orders</a>
+          <a href="{% url 'user_orders' user.id %}" class="btn green darken-3 btn-block admin-btn">Orders</a>
         </div>
         <div class="col s12 m6">
-          <a href="{% url 'edit_user' user.id %}" class="btn blue btn-block admin-btn" aria-label="Edit {{ user.username }}’s account">Edit</a>
+          <a href="{% url 'edit_user' user.id %}" class="btn blue darken-2 btn-block admin-btn" aria-label="Edit {{ user.username }}’s account">Edit</a>
         </div>
         <div class="col s12">
-          <a href="#" class="btn orange btn-block admin-password-reset-btn admin-btn" data-id="{{ user.id }}">
+          <a href="#" class="btn teal darken-3 btn-block admin-password-reset-btn admin-btn" data-id="{{ user.id }}">
             Reset Password
           </a>
         </div>
@@ -62,7 +62,7 @@
         {% else %}
           <div class="col s12">
             <a href="#" 
-               class="btn btn-block {% if user.is_active %}red deactivate-btn{% else %}teal activate-btn{% endif %} admin-btn" 
+               class="btn btn-block {% if user.is_active %}red darken-2 deactivate-btn{% else %}teal activate-btn{% endif %} admin-btn" 
                data-id="{{ user.id }}">
               {% if user.is_active %}Deactivate{% else %}Activate{% endif %}
             </a>
@@ -80,7 +80,7 @@
     <p class="center-align">No users found.</p>
   {% endif %}
 
-  <p class="center-align grey-text text-darken-1">
+  <p class="center-align grey-text text-darken-2">
     To deactivate an admin account, please use Django’s backend service.
   </p>
 </div>

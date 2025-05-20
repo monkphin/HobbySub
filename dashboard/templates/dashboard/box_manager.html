@@ -6,7 +6,7 @@
   <h2 class="center-align">Box Manager</h2>
 
   <div class="section center-align">
-    <a href="{% url 'add_box' %}" class="btn green">
+    <a href="{% url 'add_box' %}" class="btn teal darken-3">
       <i class="fas fa-plus left"></i> Add New Box
     </a>
     </div>
@@ -30,13 +30,13 @@
             </div>
           </div>
           <div class="card-action admin-btn-group">
-            <a href="{% url 'edit_box' box.id %}" class="btn-small green" aria-label="Edit Box">
+            <a href="{% url 'edit_box' box.id %}" class="btn-small green darken-3" aria-label="Edit Box">
               <i class="fas fa-pencil-alt left"></i> Edit
             </a>
-            <a href="{% url 'edit_box_products' box.id %}" class="btn-small blue" aria-label="Edit Box Products">
+            <a href="{% url 'edit_box_products' box.id %}" class="btn-small blue darken-2" aria-label="Edit Box Products">
               <i class="fas fa-box-open left"></i> Products
             </a>
-            <a href="#!" class="btn-small red delete-box-btn" data-id="{{ box.id }}" aria-label="Delete Box">
+            <a href="#!" class="btn-small red darken-2 delete-box-btn" data-id="{{ box.id }}" aria-label="Delete Box">
               <i class="fas fa-trash-alt left"></i> Delete
             </a>
           </div>

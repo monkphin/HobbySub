@@ -7,11 +7,11 @@
   <h4>Contents of "{{ box.name }}"</h4>
 
   <div class="row button-row center-align">
-    <a href="{% url 'box_admin' %}" class="btn grey">
+    <a href="{% url 'box_admin' %}" class="btn grey darken-1">
       <i class="fas fa-arrow-left"></i> Back to Boxes
     </a>
 
-    <a href="{% url 'add_product_to_box' box.id %}" class="btn green">
+    <a href="{% url 'add_product_to_box' box.id %}" class="btn green darken-3">
       <i class="fas fa-plus"></i> Add Product
     </a>
   </div>
@@ -39,13 +39,13 @@
               <p><strong>Quantity:</strong> {{ product.quantity }}</p>
             </div>
             <div class="card-action product-ctrl-btn">
-              <a href="{% url 'edit_product' product.id %}" class="btn-small green" aria-label="Edit Product">
+              <a href="{% url 'edit_product' product.id %}" class="btn-small green darken-3" aria-label="Edit Product">
                 <i class="fas fa-edit"></i> Edit
               </a>
-              <a href="{% url 'remove_product_from_box' product.id %}?box_id={{ box.id }}" class="btn-small orange" aria-label="Remove Product from Box">
+              <a href="{% url 'remove_product_from_box' product.id %}?box_id={{ box.id }}" class="btn-small teal darken-3" aria-label="Remove Product from Box">
                 <i class="fas fa-trash-alt"></i> Remove
               </a>
-              <a href="#!" class="btn-small red delete-product-btn" data-id="{{ product.id }}" aria-label="Delete Product">
+              <a href="#!" class="btn-small red darken-2 delete-product-btn" data-id="{{ product.id }}" aria-label="Delete Product">
                 <i class="fas fa-trash-alt"></i> Delete
               </a>
             </div>

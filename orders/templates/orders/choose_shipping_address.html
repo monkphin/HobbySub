@@ -5,9 +5,9 @@
 <section class="section container">
   <h4 class="green-text text-darken-2 center-align">Choose a Shipping Address</h4>
   {% if gift %}
-    <p class="center-align grey-text">These are your gift recipient addresses.</p>
+    <p class="center-align grey-text text-darken-2">These are your gift recipient addresses.</p>
   {% else %}
-    <p class="center-align grey-text">These are your personal delivery addresses.</p>
+    <p class="center-align grey-text text-darken-2">These are your personal delivery addresses.</p>
   {% endif %}
   {% if addresses %}
   <div class="address-grid">
@@ -16,6 +16,7 @@
       <div class="card">
         <div class="card-content">
           <p class="flow-text">
+            <strong>{{ address.recipient_f_name }} {{ address.recipient_l_name }}</strong>
             <strong>{{ address.recipient_f_name }} {{ address.recipient_l_name }}</strong>
             {% if address.is_default %}
               <span class="new badge green" data-badge-caption="Default"></span>
@@ -37,9 +38,9 @@
           <form method="POST" action="">
             {% csrf_token %}
             <input type="hidden" name="shipping_address" value="{{ address.id }}">
-            <button type="submit" class="btn green">Deliver to this address</button>
+            <button type="submit" class="btn green darken-3">Deliver to this address</button>
           </form>
-          <a href="{% url 'edit_address' address.id %}?next={{ request.get_full_path|urlencode }}" class="btn teal lighten-1 white-text">
+          <a href="{% url 'edit_address' address.id %}?next={{ request.get_full_path|urlencode }}" class="btn teal darken-2 white-text">
             <i class="fas fa-edit left"></i> Edit
           </a>
         </div>

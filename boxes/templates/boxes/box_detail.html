@@ -7,7 +7,7 @@
 <div class="container">
   <!-- Box Overview -->
   <section class="section center-align" role="region" aria-labelledby="box-overview-heading">
-    <h2 id="box-overview-heading" class="green-text text-darken-3">{{ box.name }}</h2>
+    <h1 id="box-overview-heading" class="green-text text-darken-3">{{ box.name }}</h1>
     {% if box.image %}
       <img src="{{ box.image.url }}"
           alt="{{ box.name }}"
@@ -19,7 +19,7 @@
           class="responsive-img responsive-image z-depth-1">
     {% endif %}
 
-    <p class="grey-text">📦 Shipped: {{ box.shipping_date|date:"F j, Y" }}</p>
+    <p class="grey-text text-darken-2">📦 Shipped: {{ box.shipping_date|date:"F j, Y" }}</p>
     <p class="flow-text grey-text text-darken-2 mt-1r">{{ box.description }}</p>
   </section>
 
@@ -48,7 +48,7 @@
             <div class="card-content">
               <h6 class="green-text text-darken-3">{{ product.name }}</h6>
               <p class="grey-text text-darken-2">{{ product.description }}</p>
-              <p class="grey-text"><strong>Quantity:</strong> {{ product.quantity }}</p>
+              <p class="grey-text text-darken-2"><strong>Quantity:</strong> {{ product.quantity }}</p>
             </div>
           </div>
 

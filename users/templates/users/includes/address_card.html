@@ -20,11 +20,11 @@
   </div>
 
   <div class="card-action flex-actions">
-    <a href="{% url 'edit_address' address.id %}" class="btn-small teal lighten-1 white-text">
+    <a href="{% url 'edit_address' address.id %}" class="btn-small teal darken-2 white-text">
       <i class="fas fa-edit left"></i> Edit
     </a>
 
-    <button class="btn-small red white-text delete-address-btn"
+    <button class="btn-small red darken-2 white-text delete-address-btn"
             data-id="{{ address.id }}"
             aria-label="Delete this address"
             {% if not address.can_be_deleted %}
@@ -36,11 +36,11 @@
     </button>
 
     {% if address.is_default %}
-      <span class="grey-text text-darken-1" aria-label="This is your default address">(Default Address)</span>
+      <span class="grey-text text-darken-2" aria-label="This is your default address">(Default Address)</span>
     {% elif not address.is_gift_address %}
       <form method="post" action="{% url 'set_default_address' address.id %}">
         {% csrf_token %}
-        <button class="btn-small green white-text" type="submit">
+        <button class="btn-small green darken-3 white-text" type="submit">
           <i class="fas fa-check-circle left"></i> Set as Default
         </button>
       </form>

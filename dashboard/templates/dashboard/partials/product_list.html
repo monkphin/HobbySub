@@ -7,20 +7,20 @@
       <input type="hidden" name="action" id="orphaned-action">
       <!-- Top action bar -->
       <div class="button-row-orphans">
-      <a href="{% url 'add_products' %}" class="btn green">
+      <a href="{% url 'add_products' %}" class="btn teal darken-3">
         <i class="fas fa-plus"></i> Add
       </a>
         {% if not box %}
-          <button type="submit" class="btn blue orphan-action-btn" data-action="reassign" aria-label="reassign">
+          <button type="submit" class="btn blue darken-2 orphan-action-btn" data-action="reassign" aria-label="reassign">
           <i class="fas fa-exchange-alt"></i> Reassign
           </button>
         {% endif %}
         {% if box %}
-          <button type="submit" name="assign_to_box" value="1" class="btn blue" data-action="assign" aria-label="Assign to box">
+          <button type="submit" name="assign_to_box" value="1" class="btn blue darken-2" data-action="assign" aria-label="Assign to box">
             <i class="fas fa-plus"></i> Assign to Box
           </button>
         {% endif %}
-        <button type="button" id="orphaned-bulk-delete-btn" class="btn red orphan-action-btn" aria-label="Delete">
+        <button type="button" id="orphaned-bulk-delete-btn" class="btn red darken-2 orphan-action-btn" aria-label="Delete">
         <i class="fas fa-trash-alt"></i> Delete
         </button>
     </div>
@@ -46,16 +46,16 @@
                 <label>
                   <input type="checkbox" name="product_ids" value="{{ product.id }}">
                   <span class="black-text">
-                    <strong class="green-text text-darken-2">{{ product.name }}</strong>
+                    <strong class="green-text text-darken-3">{{ product.name }}</strong>
                     (x{{ product.quantity }})
                   </span>
                 </label>
               </div>
               <div class="card-action center orphan-ctrl-btn">
-                <a href="{% url 'edit_product' product.id %}" class="btn-small teal" aria-label="Edit">
+                <a href="{% url 'edit_product' product.id %}" class="btn-small green darken-3" aria-label="Edit">
                   <i class="fas fa-edit left"></i> Edit
                 </a>
-                <button type="button" class="btn-small red delete-product-btn" data-id="{{ product.id }}" aria-label="Delete Orphaned Product">
+                <button type="button" class="btn-small red darken-2 delete-product-btn" data-id="{{ product.id }}" aria-label="Delete Orphaned Product">
                   <i class="fas fa-trash left"></i> Delete
                 </button>
               </div>
@@ -68,7 +68,7 @@
     <p class="grey-text center-align">No orphaned products found.</p>
       {% if not box %}
         <div class="center-align">
-          <a href="{% url 'add_products' %}" class="btn green" aria-label="Add Orphaned Product">
+          <a href="{% url 'add_products' %}" class="btn teal darken-3" aria-label="Add Orphaned Product">
             <i class="fas fa-plus left"></i> Add Product
           </a>
         </div>

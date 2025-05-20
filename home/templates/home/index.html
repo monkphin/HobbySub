@@ -70,14 +70,14 @@
         <h6>Box Contents</h6>
         <div class="carousel">
           {% for item in box.products.all %}
-            <a class="carousel-item" href="#{{ item.id }}">
+            <div class="carousel-item">
             {% if item.image %}
               <img src="{{ item.image.url }}" alt="{{ item.name }}" onerror="this.onerror=null;this.src='https://res.cloudinary.com/dlmbpbtfx/image/upload/v1747743568/ifeiea8bmpc80sx3g8wr.png';">
             {% else %}
               <img src="https://res.cloudinary.com/dlmbpbtfx/image/upload/v1747743568/ifeiea8bmpc80sx3g8wr.png" alt="Default image for {{ item.name }}">
             {% endif %}
               <h6>{{ item.name }}</h6>
-            </a>
+            </div>
           {% endfor %}
         </div>
       </section>

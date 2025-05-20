@@ -22,7 +22,7 @@
         {% if order.stripe_subscription_id %}
           <a href="https://dashboard.stripe.com/test/subscriptions/{{ order.stripe_subscription_id }}"
             target="_blank"
-            class="btn-small blue darken-1 white-text"
+            class="btn-small blue darken-2 white-text"
             aria-label="View Stripe subscription for order {{ order.id }}">
             <i class="fa-brands fa-stripe-s left admin-btn" aria-hidden="true"></i> Subscription
           </a>
@@ -57,14 +57,14 @@
               {% endfor %}
             </select>
           </div>
-          <button type="submit" class="btn full-width">Update</button>
+          <button type="submit" class="btn teal darken-3 full-width">Update</button>
         </form>
       {% endif %}
     </div>
 
     {% if order.shipping_address %}
       <a href="#address-modal-{{ order.id }}" 
-        class="btn-small center-align modal-trigger" 
+        class="btn-small center-align modal-trigger green darken-3" 
         aria-controls="address-modal-{{ order.id }}" 
         aria-expanded="false"
         aria-label="View shipping address for order {{ order.id }}">

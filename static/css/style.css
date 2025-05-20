@@ -746,7 +746,7 @@ ul li i.left {
 }
 
 .past-boxes-grid .card {
-  min-height: 350px; /* lock max height to avoid overflow */
+  min-height: 500px; /* lock max height to avoid overflow */
   overflow: hidden;  /* hide any content that exceeds this height */
   display: flex;
   flex-direction: column;
@@ -810,7 +810,6 @@ h4 {
   left: 0;
   right: 0;
   height: 60%;
-  background: linear-gradient(to top, rgba(0, 0, 0, 0.6), transparent);
   z-index: 1;
   pointer-events: none;
 }

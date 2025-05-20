@@ -24,7 +24,7 @@
   </div>
 
   <div class="file-field input-field">
-    <div class="btn">
+    <div class="btn teal darken-3">
       <span>Upload Image</span>
       {{ form.image.as_widget }}
     </div>
@@ -65,12 +65,12 @@
   {% endif %}
 
   <div class="button-row">
-    <button class="btn green" type="submit">
+    <button class="btn green darken-3" type="submit">
       {% if editing %}Update{% else %}Save{% endif %}
     </button>
-    <a href="{% url 'box_admin' %}" class="btn grey">Cancel</a>
+    <a href="{% url 'box_admin' %}" class="btn grey darken-1">Cancel</a>
     {% if box %}
-      <a href="{% url 'edit_box_products' box.id %}" class="btn blue white-text">Manage Products</a>
+      <a href="{% url 'edit_box_products' box.id %}" class="btn blue darken-2 white-text">Manage Products</a>
     {% endif %}
   </div>
   
