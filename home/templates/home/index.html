@@ -43,7 +43,7 @@
       <h1 class="flow-text">Unbox Hobby Joy Monthly</h1>
       <p class="lead">Get curated miniatures, paints, and hobby gear delivered to your door.</p>
       {% if user.is_authenticated %}
-        <a href="{% url 'select_purchase_type' %}?gift=false" class="btn btn-large green">Pick a Plan</a>
+        <a href="{% url 'select_purchase_type' %}?gift=false" class="btn btn-large green darken-3">Pick a Plan</a>
         <a href="{% url 'select_purchase_type' %}?gift=true" class="btn btn-large teal lighten-2 black-text">Give as a Gift</a>
       {% else %}
         <a href="{% url 'register' %}?next={% url 'select_purchase_type' %}?gift=false" class="btn btn-large green">Pick a Plan</a>
@@ -65,7 +65,7 @@
 
 
         <h5>{{ box.name }}</h5>
-        <p class="grey-text text-darken-1">{{ box.description|truncatewords:25 }}</p>
+        <p class="grey-text text-darken-3">{{ box.description|truncatewords:25 }}</p>
 
         <h6>Box Contents</h6>
         <div class="carousel">
@@ -95,8 +95,8 @@
         {% else %}
           <img src="https://res.cloudinary.com/dlmbpbtfx/image/upload/v1747743568/ifeiea8bmpc80sx3g8wr.png" alt="Default image for {{ next_box.name }}" class="responsive-img box-preview-image z-depth-2">
         {% endif %}
-        <p class="grey-text">Ships {{ next_box.shipping_date|date:"d M Y" }}</p>
-        <p class="grey-text text-darken-1">{{ next_box.description|truncatewords:20 }}</p>
+        <p class="grey-text text-darken-2">Ships {{ next_box.shipping_date|date:"d M Y" }}</p>
+        <p class="grey-text text-darken-2">{{ next_box.description|truncatewords:20 }}</p>
       </section>
     {% endif %}
 
