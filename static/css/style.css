@@ -21,7 +21,7 @@ main {
 
 footer {
   flex-shrink: 0;
-  background-color: #4CAF50;
+  background-color: #2E7D32 ;
   color: #ffffff;
   padding: 1rem;
   text-align: center;
@@ -37,12 +37,17 @@ h1, h2, h3, h4, h5, h6 {
 
 /* === Navbar === */
 nav .nav-wrapper {
-  background-color: #4CAF50 !important;
+  background-color: #2E7D32  !important;
   display: flex !important;
   align-items: center;
   justify-content: space-between;
   flex-wrap: nowrap;
   padding: 0 1rem;
+}
+
+.btn.green:hover,
+.btn.green:focus {
+  background-color: #2e7d32 !important;
 }
 
 /* Override container inside nav-wrapper */
@@ -384,7 +389,7 @@ nav ul li {
   cursor: pointer;
 }
 
-.toast.success { background-color: #4CAF50; }
+.toast.success { background-color: #2E7D32; }
 .toast.error   { background-color: #f44336; }
 .toast.warning { background-color: #ff9800; }
 .toast.info    { background-color: #2196f3; }
@@ -584,7 +589,7 @@ ul li i.left {
 }
 
 .btn.green {
-  background-color: #4CAF50;
+  background-color: #2E7D32;
   color: #ffffff;
 }
 
