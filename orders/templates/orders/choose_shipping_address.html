@@ -39,8 +39,7 @@
             <input type="hidden" name="shipping_address" value="{{ address.id }}">
             <button type="submit" class="btn green">Deliver to this address</button>
           </form>
-        
-          <a href="{% url 'edit_address' address.id %}" class="btn teal lighten-1 white-text">
+          <a href="{% url 'edit_address' address.id %}?next={{ request.get_full_path|urlencode }}" class="btn teal lighten-1 white-text">
             <i class="fas fa-edit left"></i> Edit
           </a>
         </div>

@@ -5,16 +5,18 @@
 
 {% block content %}
 <section class="section center-align">
-  <h2 class="red-text text-darken-2">Order Cancelled</h2>
-  <p>Your payment process was cancelled. No charges have been made.</p>
-  <p>If this was a mistake, you can try again below.</p>
+  <div role="alert">
+    <h1 class="red-text text-darken-2">Order Cancelled</h1>
+    <p>Your payment process was cancelled. No charges have been made.</p>
+    <p>If this was a mistake, you can try again below.</p>
+  </div>
   <br>
   <div class="button-row-utility center-align">
     <a href="{% url 'select_purchase_type' %}" class="btn">
-      <i class="fas fa-undo left"></i> Try Again
+      <i class="fas fa-undo left" aria-hidden="true"></i> Try Again
     </a>
     <a href="{% url 'home' %}" class="btn-flat">
-      <i class="fas fa-home left"></i> Return Home
+      <i class="fas fa-home left" aria-hidden="true"></i> Return Home
     </a>
   </div>
 </section>

@@ -9,8 +9,8 @@
   <form method="post">
     <div class="button-row">
       {% csrf_token %}
-      <button type="submit" class="btn orange">Remove</button>
-      <a href="{% url 'edit_box_products' product.box.id %}" class="btn grey">Cancel</a>
+      <button type="submit" class="btn orange" aria-label="Remove Product">Remove</button>
+      <a href="{% url 'edit_box_products' product.box.id %}" class="btn grey" aria-label="Cancel">Cancel</a>
     </div>
   </form>
 </div>

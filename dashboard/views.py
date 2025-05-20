@@ -884,8 +884,7 @@ def user_orders(request, user_id):
         order.payment = Payment.objects.filter(order=order).first()
 
     payments_by_order = {
-        order.id: Payment.objects.filter(order=order).first()
-        for order in orders
+        p.order_id: p for p in Payment.objects.filter(order__in=orders)
     }
 
     return render(

@@ -19,7 +19,7 @@
           <p><strong>Joined:</strong> {{ request.user.date_joined|date:"d M Y" }}</p>
         </div>
         <div class="card-action center-btn">
-          <a href="{% url 'order_history' %}" class="btn green white-text">Order History</a>
+          <a href="{% url 'order_history' %}" class="btn green white-text" aria-label="Order History">Order History</a>
         </div>
       </div>
     </div>
@@ -30,9 +30,9 @@
 
 <section class="section center-align">
   <div class="chip-container button-wrapper">
-    <a href="{% url 'change_password' %}" class="btn-small blue lighten-1 white-text">Change Password</a>
-    <a href="{% url 'edit_account' %}" class="btn-small green white-text">Edit Account</a>
-    <button id="delete-account-btn" class="btn-small red white-text">
+    <a href="{% url 'change_password' %}" class="btn-small blue lighten-1 white-text" aria-label="Change your password">Change Password</a>
+    <a href="{% url 'edit_account' %}" class="btn-small green white-text" aria-label="Edit your account">Edit Account</a>
+    <button id="delete-account-btn" class="btn-small red white-text" aria-label="Delete your account">
       Delete Account
     </button>
   </div>
@@ -54,8 +54,8 @@
   </div>
   
   <!-- Personal Addresses -->
-  <div class="row">
-    <h5 class="center-align">Your Personal Addresses</h5>
+  <section aria-labelledby="personal-addresses-heading">
+    <h5 id="personal-addresses-heading" class="center-align">Your Personal Addresses</h5>
     {% if personal_addresses %}
       <div class="address-grid">
         {% for address in personal_addresses %}
@@ -67,11 +67,11 @@
     {% else %}
       <p class="grey-text">You have no personal addresses saved.</p>
     {% endif %}
-  </div>
+  </section>
 
   <!-- Gift Addresses -->
-  <div class="row">
-    <h5 class="center-align">Gift Recipient Addresses</h5>
+  <section aria-labelledby="gift-addresses-heading">
+    <h5 id="gift-addresses-heading" class="center-align">Gift Recipient Addresses</h5>
     {% if gift_addresses %}
       <div class="address-grid">
         {% for address in gift_addresses %}
@@ -83,7 +83,7 @@
     {% else %}
       <p class="grey-text">You have no gift recipient addresses saved.</p>
     {% endif %}
-  </div>
+    </section>
 
 
 </section>

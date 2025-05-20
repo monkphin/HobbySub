@@ -4,13 +4,13 @@
 {% block content %}
 <section class="section">
   <div class="container center-align">
-    <h4>
+    <h3>
       {% if gift %}
-        <i class="fas fa-gift"></i> Choose a Gift Plan
+        <i class="fas fa-gift" aria-hidden="true"></i> Choose a Gift Plan
       {% else %}
-        <i class="fas fa-cube"></i> Choose a Plan
+        <i class="fas fa-cube" aria-hidden="true"></i> Choose a Plan
       {% endif %}
-    </h4>
+    </h3>
     <p class="grey-text">
       {{ gift|yesno:"Your recipient will receive a surprise box based on your selection,Choose a plan that suits your hobby lifestyle." }}
     </p>
@@ -20,22 +20,24 @@
   <div class="container">
     <div class="row">
       <div class="col s12">
-        <h5 class="blue-grey-text text-darken-2 center-align">
+        <h4 class="blue-grey-text text-darken-2 center-align">
           {% if gift %}
-            <i class="fas fa-gift"></i> One-Off Box
+            <i class="fas fa-gift" aria-hidden="true"></i> One-Off Box
           {% else %}
-            <i class="fas fa-box-open"></i> One-Off Box
+            <i class="fas fa-box-open" aria-hidden="true"></i> One-Off Box
           {% endif %}
-        </h5>
+        </h4>
       </div>
       <div class="col s12 m8 offset-m2 l6 offset-l3">
-        <div class="card">
+        <div class="card" aria-labelledby="one-off">
           <div class="card-content center-align">
-            <h6 class="card-heading">One-Off Box</h6>
+            <h5 id="one-off" class="card-heading">One-Off Box</h5>
             <p>£35 total. A single HobbyCrate with no commitment — perfect for trying it out or sending a surprise!</p>
           </div>
           <div class="card-action center-align">
-            <a href="{% url 'handle_purchase_type' 'oneoff' %}?gift={{ gift|yesno:'true,false' }}" class="btn green">Select</a>
+            <a href="{% url 'handle_purchase_type' 'oneoff' %}?gift={{ gift|yesno:'true,false' }}" class="btn green" aria-label="Select One-Off {% if gift %}gift{% else %}subscription{% endif %} plan">
+              Select
+            </a>
           </div>
         </div>
       </div>
@@ -46,20 +48,20 @@
   <div class="container subscription-plan-group">
     <div class="row">
       <div class="col s12">
-        <h5 class="blue-grey-text text-darken-2 center-align">
+        <h4 class="blue-grey-text text-darken-2 center-align">
           {% if gift %}
-            <i class="fas fa-gifts"></i> Subscription Plans
+            <i class="fas fa-gifts" aria-hidden="true"></i> Subscription Plans
           {% else %}
-            <i class="fas fa-boxes"></i> Subscription Plans
+            <i class="fas fa-boxes" aria-hidden="true"></i> Subscription Plans
           {% endif %}
-        </h5>
+        </h4>
       </div>
 
       <!-- Monthly Subscription -->
       <div class="col s12 m6 l3">
-        <div class="card">
+        <div class="card" role="region" aria-labelledby="monthly">
           <div class="card-content center-align">
-            <h6 class="card-heading">Monthly Subscription</h6>
+            <h5 class="card-heading" id="monthly">Monthly Subscription</h5>
             <p>£35 per month total. Great if you're unable to make a single large payment.</p>
           </div>
           <div class="card-action center-align">
@@ -70,39 +72,45 @@
 
       <!-- 3-Month Subscription -->
       <div class="col s12 m6 l3">
-        <div class="card">
+        <div class="card" role="region" aria-labelledby="plan-3mo">
           <div class="card-content center-align">
-            <h6 class="card-heading">3-Month Subscription</h6>
+            <h5 id="plan-3mo" class="card-heading">3-Month Subscription</h5>
             <p>£100 total (save £5). Great for seasonal hobbying.</p>
           </div>
           <div class="card-action center-align">
-            <a href="{% url 'handle_purchase_type' '3mo' %}?gift={{ gift|yesno:'true,false' }}" class="btn green">Select</a>
+            <a href="{% url 'handle_purchase_type' '3mo' %}?gift={{ gift|yesno:'true,false' }}" class="btn green" aria-label="Select 3-month {% if gift %}gift{% else %}subscription{% endif %} plan">
+              Select
+            </a>
           </div>
         </div>
       </div>
 
       <!-- 6-Month Subscription -->
       <div class="col s12 m6 l3">
-        <div class="card">
+        <div class="card" role="region" aria-labelledby="plan-6mo">
           <div class="card-content center-align">
-            <h6 class="card-heading">6-Month Subscription</h6>
+            <h5 id="plan-6mo" class="card-heading">6-Month Subscription</h5>
             <p>£180 total (save £30). Half a year of hobby joy.</p>
           </div>
           <div class="card-action center-align">
-            <a href="{% url 'handle_purchase_type' '6mo' %}?gift={{ gift|yesno:'true,false' }}" class="btn green">Select</a>
+            <a href="{% url 'handle_purchase_type' '6mo' %}?gift={{ gift|yesno:'true,false' }}" class="btn green" aria-label="Select 6-month {% if gift %}gift{% else %}subscription{% endif %} plan">
+              Select
+            </a>
           </div>
         </div>
       </div>
 
       <!-- 12-Month Subscription -->
       <div class="col s12 m6 l3">
-        <div class="card">
+        <div class="card" role="region" aria-labelledby="plan-12mo">
           <div class="card-content center-align">
-            <h6 class="card-heading">12-Month Subscription</h6>
+            <h5 id="plan-12mo" class="card-heading">12-Month Subscription</h5>
             <p>£300 total (save £120). Best value for committed hobbyists.</p>
           </div>
           <div class="card-action center-align">
-            <a href="{% url 'handle_purchase_type' '12mo' %}?gift={{ gift|yesno:'true,false' }}" class="btn green">Select</a>
+            <a href="{% url 'handle_purchase_type' '12mo' %}?gift={{ gift|yesno:'true,false' }}" class="btn green" aria-label="Select 12-month {% if gift %}gift{% else %}subscription{% endif %} plan">
+              Select
+            </a>
           </div>
         </div>
       </div>

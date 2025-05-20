@@ -3,8 +3,8 @@
 {% load custom_filters %}
 
 {% block content %}
-<div class="container">
-  <h3>{{ user.username }}’s Orders</h3>
+<div class="container" role="region" aria-labelledby="user-orders-heading">
+  <h3 id="user-orders-heading">{{ user.username }}’s Orders</h3>
 
   <div class="row button-row center-align margin-bottom-2">
     <a href="{% url 'user_admin' %}" class="btn grey">
@@ -16,7 +16,7 @@
     <div class="user-admin-boxes-grid row">
       {% for order in orders %}
         <div class="col s12 m6 l4"> 
-          {% include 'orders/admin_order_list_item.html' with order=order %}
+          {% include 'orders/partials/admin_order_list_item.html' with order=order %}
         </div>
       {% endfor %}
       </div>

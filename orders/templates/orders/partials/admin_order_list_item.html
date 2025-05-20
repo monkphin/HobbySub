@@ -1,0 +1,108 @@
+{% load custom_filters %}
+
+<div class="card white z-depth-1" style="margin-bottom: 20px;">
+  <div class="card-content black-text">
+    <h5 class="order-id">Order #{{ order.id }}</h5>
+    <p><strong>Date:</strong> {{ order.order_date|date:"F j, Y" }}</p>
+    <p><strong>Box:</strong> {{ order.box }}</p>
+    <p><strong>Gift:</strong> {{ order.is_gift|yesno:"Yes,No" }}</p>
+    {% with payments_by_order|get_item:order.id as payment %}
+      <p><strong>Payment:</strong>
+        {% if payment %}
+          £{{ payment.amount }} — {{ payment.status|title }}<br>
+          {{ payment.payment_date|date:"M d, Y H:i" }}
+        {% else %}
+          <em>No payment</em>
+        {% endif %}
+      </p>
+    {% endwith %}
+
+    {% with payment=payments_by_order|get_item:order.id %}
+      <p class="stripe-button-wrapper">
+        {% if order.stripe_subscription_id %}
+          <a href="https://dashboard.stripe.com/test/subscriptions/{{ order.stripe_subscription_id }}"
+            target="_blank"
+            class="btn-small blue darken-1 white-text"
+            aria-label="View Stripe subscription for order {{ order.id }}">
+            <i class="fa-brands fa-stripe-s left admin-btn" aria-hidden="true"></i> Subscription
+          </a>
+        {% elif payment and payment.payment_intent_id %}
+          <a href="https://dashboard.stripe.com/test/payments/{{ payment.payment_intent_id }}"
+            target="_blank"
+            class="btn-small grey darken-3 white-text"
+            aria-label="View Stripe payment for order {{ order.id }}">
+            <i class="fa fa-credit-card left admin-btn" aria-hidden="true"></i> Payment
+          </a>
+        {% else %}
+          <span class="btn-small grey lighten-2 black-text disabled">
+            <i class="fa fa-unlink left admin-btn"></i> Not Linked
+          </span>
+        {% endif %}
+      </p>
+    {% endwith %}
+ 
+    <div aria-live="polite" aria-atomic="true">
+      {% if order.status == 'cancelled' %}
+        <div class="order-status-placeholder">Cancelled</div>
+      {% else %}
+        <form method="post" action="{% url 'update_order_status' order.id %}">
+          {% csrf_token %}
+          <div class="input-field">
+            <label for="status-select-{{ order.id }}" class="sr-only">Order Status</label>
+            <select id="status-select-{{ order.id }}" name="status" class="browser-default large-dropdown">
+              {% for key, val in order.STATUS_CHOICES %}
+                <option value="{{ key }}" {% if order.status == key %}selected{% endif %}>
+                  {{ val }}
+                </option>
+              {% endfor %}
+            </select>
+          </div>
+          <button type="submit" class="btn full-width">Update</button>
+        </form>
+      {% endif %}
+    </div>
+
+    {% if order.shipping_address %}
+      <a href="#address-modal-{{ order.id }}" 
+        class="btn-small center-align modal-trigger" 
+        aria-controls="address-modal-{{ order.id }}" 
+        aria-expanded="false"
+        aria-label="View shipping address for order {{ order.id }}">
+        <span class="valign center-align" style="width: 100%;">
+            View Address
+        </span>
+      </a>
+    {% else %}
+      <button class="btn-small grey lighten-1" disabled>
+        <span class="valign center-align" style="width: 100%;">
+          Missing Address
+        </span>  
+      </button>
+    {% endif %}
+
+  </div>
+</div>
+
+{% if order.shipping_address %}
+  <div id="address-modal-{{ order.id }}" class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-heading-{{ order.id }}">
+    <div class="modal-content">
+      <h4 id="modal-heading-{{ order.id }}" class="order-id">Order #{{ order.id }}</h4>
+      <h5>Shipping Address</h5>
+      <p><strong>{{ order.shipping_address.recipient_f_name }} {{ order.shipping_address.recipient_l_name }}</strong></p>
+      <p>{{ order.shipping_address.address_line_1 }}</p>
+      {% if order.shipping_address.address_line_2 %}
+        <p>{{ order.shipping_address.address_line_2 }}</p>
+      {% endif %}
+      <p>{{ order.shipping_address.town_or_city }}</p>
+      {% if order.shipping_address.county %}
+        <p>{{ order.shipping_address.county }}</p>
+      {% endif %}
+      <p>{{ order.shipping_address.postcode }}</p>
+      <p>{{ order.shipping_address.country.name }}</p>
+      <p><strong>Phone:</strong> {{ order.shipping_address.phone_number }}</p>
+    </div>
+    <div class="modal-footer">
+      <a href="#!" class="modal-close btn-flat">Close</a>
+    </div>
+  </div>
+{% endif %}

@@ -212,6 +212,14 @@ nav ul li {
   margin-bottom: 1.5rem;
 }
 
+.flex-gap {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  margin-top: 30px;
+}
+
+
 .card-content {
   flex-grow: 1;
   display: flex;
@@ -453,7 +461,7 @@ ul li i.left {
 
 .btn-group {
   display: flex;
-  gap: 1 rem;
+  gap: 1rem;
   margin-top: 1rem;
   flex-wrap: wrap;
   justify-content: center;
@@ -709,7 +717,7 @@ ul li i.left {
 }
 
 .admin-user-boxes-grid .card {
-  min-height: 410px; /* lock max height to avoid overflow */
+  min-height: 430px; /* lock max height to avoid overflow */
   overflow: hidden;  /* hide any content that exceeds this height */
   display: flex;
   flex-direction: column;
@@ -761,7 +769,7 @@ ul li i.left {
 }
 
 .user-admin-boxes-grid .card {
-  min-height: 410px; 
+  min-height: 420px; 
   overflow: hidden; 
   display: flex;
   flex-direction: column;

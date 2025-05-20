@@ -2,8 +2,8 @@
 {% block title %}About{% endblock %}
 
 {% block content %}
-<div class="container section">
-  <h4>About Hobby Hub</h4>
+<div class="container section" role="region" aria-labelledby="about-heading">
+  <h4 id="about-heading">About Hobby Hub</h4>
 
   <p>Hobby Hub is a subscription box for miniature painters, model builders, and tabletop creatives. Whether you're just starting out or you're already deep in the hobby, our goal is simple:</p>
 
@@ -19,9 +19,9 @@
 
   <h5>Who It’s For</h5>
   <ul>
-    <li><i class="fa-solid fa-paintbrush left"></i>New painters looking for guidance and gear</li>
-    <li><i class="fa-solid fa-dice left"></i>Veterans wanting to shake up their routine</li>
-    <li><i class="fa-solid fa-gift left"></i>Gift-givers who want to delight a hobbyist in their life</li>
+    <li><i class="fa-solid fa-paintbrush left" aria-hidden="true"></i>New painters looking for guidance and gear</li>
+    <li><i class="fa-solid fa-dice left" aria-hidden="true"></i>Veterans wanting to shake up their routine</li>
+    <li><i class="fa-solid fa-gift left" aria-hidden="true"></i>Gift-givers who want to delight a hobbyist in their life</li>
   </ul>
 
   <p>Still curious? You can <a href="{% url 'select_purchase_type' %}?gift=false">start with a single box</a> — no subscription required.</p>

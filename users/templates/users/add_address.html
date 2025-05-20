@@ -110,9 +110,15 @@
           </div>
         {% endif %}
         <div class="row button-row-utility center-align">
+        {% if next %}
+          <a href="{{ next }}" class="btn grey lighten-1 black-text back-button">
+            <i class="fas fa-arrow-left left"></i> Back
+          </a>
+        {% else %}
           <a href="{% url 'account' %}" class="btn grey lighten-1 black-text back-button">
             <i class="fas fa-arrow-left left"></i> Back
           </a>
+        {% endif %}
           <button type="submit" class="btn green white-text save-button">
             Save
           </button>

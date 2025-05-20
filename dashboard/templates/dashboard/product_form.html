@@ -3,9 +3,9 @@
 
 {% block content %}
 <div class="container">
-  <h4>{% if editing %}Edit Product{% else %}Add Product{% endif %}</h4>
+  <h4 id="product-form-heading">{% if editing %}Edit Product{% else %}Add Product{% endif %}</h4>
 
-  <form method="post" enctype="multipart/form-data">
+  <form method="post" enctype="multipart/form-data" aria-labelledby="product-form-heading">
     {% csrf_token %}
     <div class="input-field">{{ form.name.label_tag }}{{ form.name }}</div>
     <div class="input-field">{{ form.description.label_tag }}{{ form.description }}</div>
@@ -33,7 +33,7 @@
     </div>
   {% endif %}
   <div class="button-row">
-    <button type="submit" class="btn green">{% if editing %}Update{% else %}Save{% endif %}</button>
+    <button type="submit" class="btn green" aria-label="Save">{% if editing %}Update{% else %}Save{% endif %}</button>
     <a href="{% url 'box_admin' %}" class="btn grey">Cancel</a>
   </div>
   </form>

@@ -6,9 +6,19 @@
 {% block content %}
 <div class="container">
   <!-- Box Overview -->
-  <section class="section center-align">
-    <h2 class="green-text text-darken-3">{{ box.name }}</h2>
-    <img src="{{ box.image.url }}" alt="{{ box.name }}" class="responsive-img responsive-image z-depth-1">
+  <section class="section center-align" role="region" aria-labelledby="box-overview-heading">
+    <h2 id="box-overview-heading" class="green-text text-darken-3">{{ box.name }}</h2>
+    {% if box.image %}
+      <img src="{{ box.image.url }}"
+          alt="{{ box.name }}"
+          class="responsive-img responsive-image z-depth-1"
+          onerror="this.onerror=null;this.src='https://res.cloudinary.com/dlmbpbtfx/image/upload/v1747743568/ifeiea8bmpc80sx3g8wr.png';">
+    {% else %}
+      <img src="https://res.cloudinary.com/dlmbpbtfx/image/upload/v1747743568/ifeiea8bmpc80sx3g8wr.png"
+          alt="Fallback image for {{ box.name }}"
+          class="responsive-img responsive-image z-depth-1">
+    {% endif %}
+
     <p class="grey-text">📦 Shipped: {{ box.shipping_date|date:"F j, Y" }}</p>
     <p class="flow-text grey-text text-darken-2 mt-1r">{{ box.description }}</p>
   </section>
@@ -16,14 +26,24 @@
   <div class="section-divider"></div>
 
   <!-- Product List -->
-  <section class="section">
-    <h4 class="green-text text-darken-3 center-align">Included Items</h4>
+  <section class="section" role="region" aria-labelledby="included-items-heading">
+    <h4 id="included-items-heading" class="green-text text-darken-3 center-align">Included Items</h4>
     <div class="product-grid">
       {% for product in box.products.all %}
         <div class="col">
           <div class="card z-depth-1">
+
             <div class="card-image">
-              <img src="{{ product.image.url }}" alt="{{ product.name }}" class="responsive-img product-card-image">
+              {% if product.image %}
+                <img src="{{ product.image.url }}"
+                    alt="{{ product.name }}"
+                    class="responsive-img product-card-image"
+                    onerror="this.onerror=null;this.src='https://res.cloudinary.com/dlmbpbtfx/image/upload/v1747743568/ifeiea8bmpc80sx3g8wr.png';">
+              {% else %}
+                <img src="https://res.cloudinary.com/dlmbpbtfx/image/upload/v1747743568/ifeiea8bmpc80sx3g8wr.png"
+                    alt="Fallback image for {{ product.name }}"
+                    class="responsive-img product-card-image">
+              {% endif %}
             </div>
             <div class="card-content">
               <h6 class="green-text text-darken-3">{{ product.name }}</h6>
@@ -31,12 +51,12 @@
               <p class="grey-text"><strong>Quantity:</strong> {{ product.quantity }}</p>
             </div>
           </div>
+
         </div>
       {% endfor %}
     </div>
     
   </section>
-  
   
 </div>
 {% endblock %}

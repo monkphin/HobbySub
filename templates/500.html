@@ -1,11 +1,12 @@
 {% extends "base.html" %}
-{% block title %}Error 500{% endblock %}
+{% block title %}Server Error{% endblock %}
 
 {% block content %}
-<div class="container center-align error-container">
+<div class="container center-align error-container" role="main">
   <i class="fas fa-exclamation-triangle fa-3x red-text" aria-hidden="true"></i>
+  <h1 class="sr-only">500 – Server Error</h1>
   <h3>Something went wrong (500)</h3>
   <p>We're experiencing a technical issue. Please try again later.</p>
-  <a href="{% url 'home' %}" class="btn">Return Home</a>
+  <a href="{% url 'home' %}" class="btn" aria-label="Return to homepage">Return Home</a>
 </div>
 {% endblock %}

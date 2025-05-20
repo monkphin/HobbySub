@@ -11,16 +11,16 @@
         <i class="fas fa-plus"></i> Add
       </a>
         {% if not box %}
-          <button type="submit" class="btn blue orphan-action-btn" data-action="reassign">
+          <button type="submit" class="btn blue orphan-action-btn" data-action="reassign" aria-label="reassign">
           <i class="fas fa-exchange-alt"></i> Reassign
           </button>
         {% endif %}
         {% if box %}
-          <button type="submit" name="assign_to_box" value="1" class="btn blue" data-action="assign">
+          <button type="submit" name="assign_to_box" value="1" class="btn blue" data-action="assign" aria-label="Assign to box">
             <i class="fas fa-plus"></i> Assign to Box
           </button>
         {% endif %}
-        <button type="button" id="orphaned-bulk-delete-btn" class="btn red orphan-action-btn">
+        <button type="button" id="orphaned-bulk-delete-btn" class="btn red orphan-action-btn" aria-label="Delete">
         <i class="fas fa-trash-alt"></i> Delete
         </button>
     </div>
@@ -31,7 +31,16 @@
           <div class="col s12 m6">
             <div class="card hoverable">
               <div class="card-image">
-                <img src="{{ product.image.url }}" alt="{{ product.name }}" class="responsive-img product-card-image">
+                {% if product.image %}
+                  <img src="{{ product.image.url }}"
+                      alt="{{ product.name }}"
+                      class="responsive-img product-card-image"
+                      onerror="this.onerror=null;this.src='https://res.cloudinary.com/dlmbpbtfx/image/upload/v1747743568/ifeiea8bmpc80sx3g8wr.png';">
+                {% else %}
+                  <img src="https://res.cloudinary.com/dlmbpbtfx/image/upload/v1747743568/ifeiea8bmpc80sx3g8wr.png"
+                      alt="Fallback image for {{ product.name }}"
+                      class="responsive-img product-card-image">
+                {% endif %}
               </div>
               <div class="card-content valign-wrapper">
                 <label>
@@ -43,10 +52,10 @@
                 </label>
               </div>
               <div class="card-action center orphan-ctrl-btn">
-                <a href="{% url 'edit_product' product.id %}" class="btn-small teal">
+                <a href="{% url 'edit_product' product.id %}" class="btn-small teal" aria-label="Edit">
                   <i class="fas fa-edit left"></i> Edit
                 </a>
-                <button type="button" class="btn-small red delete-product-btn" data-id="{{ product.id }}">
+                <button type="button" class="btn-small red delete-product-btn" data-id="{{ product.id }}" aria-label="Delete Orphaned Product">
                   <i class="fas fa-trash left"></i> Delete
                 </button>
               </div>
@@ -57,10 +66,12 @@
     </form>
   {% else %}
     <p class="grey-text center-align">No orphaned products found.</p>
-    <div class="center-align">
-      <a href="{% url 'add_products' %}" class="btn green">
-        <i class="fas fa-plus left"></i> Add Product
-      </a>
-    </div>
-  {% endif %}
+      {% if not box %}
+        <div class="center-align">
+          <a href="{% url 'add_products' %}" class="btn green" aria-label="Add Orphaned Product">
+            <i class="fas fa-plus left"></i> Add Product
+          </a>
+        </div>
+      {% endif %}
+    {% endif %}
 </div>

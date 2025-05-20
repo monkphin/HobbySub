@@ -4,13 +4,15 @@
 {% block title %}Register{% endblock %}
 
 {% block content %}
-  <section class="section center-align">
-    <h2>Register</h2>
+  <section class="section center-align" role="region" aria-labelledby="register-heading">
+    <h2 id="register-heading">Register</h2>
+
     <div class="row form-wrapper">
-      <form class="col s12" method="post">
+      <form class="col s12" method="post" role="form" aria-describedby="register-heading">
         {% csrf_token %}
         {% include 'partials/form_errors.html' %}
         <input type="hidden" name="next" value="{{ next }}">
+
         <div class="row">
           <div class="input-field col s6">
             {{ form.username.label_tag }}
@@ -21,6 +23,7 @@
             {{ form.email }}
           </div>
         </div>
+
         <div class="row">
           <div class="input-field col s6">
             {{ form.first_name.label_tag }}
@@ -31,22 +34,25 @@
             {{ form.last_name }}
           </div>
         </div>
+
         <div class="row">
           <div class="input-field col s12">
             {{ form.password1.label_tag }}
             {{ form.password1 }}
           </div>
         </div>
+
         <div class="row">
           <div class="input-field col s12">
             {{ form.password2.label_tag }}
             {{ form.password2 }}
           </div>
         </div>
+
         <div class="row button-row">
           <div class="col s12 center-align">
-            <button type="submit" class="btn green white-text">Register</button>
-            <a href="{% url 'login' %}" class="btn-flat">Log in here</a>
+            <button type="submit" class="btn green white-text" aria-label="Register account">Register</button>
+            <a href="{% url 'login' %}" class="btn-flat" aria-label="Go to login page">Log in here</a>
           </div>
         </div>
       </form>

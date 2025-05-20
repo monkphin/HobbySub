@@ -362,6 +362,8 @@ def edit_address(request, address_id):
         user=request.user
     )
 
+    next_url = request.GET.get("next") or request.POST.get("next")
+
     if request.method == 'POST':
         form = AddAddressForm(request.POST, instance=address)
         if form.is_valid():
@@ -384,6 +386,7 @@ def edit_address(request, address_id):
     return render(request, 'users/add_address.html', {
         'form': form,
         'gift': address.is_gift_address,
+        'next': next_url,
     })
 
 

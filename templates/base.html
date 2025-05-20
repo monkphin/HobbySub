@@ -25,7 +25,7 @@
         </div>
       {% endif %}
 
-      <nav> <!-- optional: or remove class if using only custom CSS -->
+      <nav role="navigation">
         <div class="nav-wrapper">
           <div class="container">
           <a href="{% url 'home' %}" class="brand-logo">Hobby Hub</a>
@@ -67,7 +67,7 @@
       </ul>
 
       <!-- Mobile menu -->
-      <ul class="sidenav hide-on-large-only" id="mobile-nav" tabindex="-1">
+      <ul class="sidenav hide-on-large-only" id="mobile-nav" tabindex="-1" role="navigation">
         <li><a href="{% url 'about' %}">About</a></li>
         <li><a href="{% url 'past_boxes' %}">Past Boxes</a></li>
         {% if user.is_authenticated %}
@@ -100,7 +100,7 @@
         {% endblock %}
     </main>
 
-    <footer>
+    <footer aria-label="Site footer">
         <p>&copy; 2025 Hobby Hub</p>
     </footer>
     <!-- Materialize JS -->

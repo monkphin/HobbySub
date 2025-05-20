@@ -16,7 +16,9 @@
   {% endif %}
 
   <section class="section center-align">
-    <h2>Gift Message</h2>
+    <header class="center-align">
+      <h2>Gift Message</h2>
+    </header>
     <form id="gift-message-form" method="post" action="{% url 'gift_message' plan %}">
       {% csrf_token %}
       <div class="container gift-message">
@@ -40,7 +42,7 @@
         </div>
 
         <div class="row button-row center-align">
-          <button class="btn teal lighten-1" type="submit">
+          <button class="btn teal lighten-1" type="submit" aria-label="Proceed to payment and checkout">
             <i class="fas fa-credit-card left"></i> Proceed to Checkout
           </button>
         </div> 

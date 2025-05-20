@@ -11,9 +11,9 @@
 
       
 <div class="col s12 m6 l4">
-  <div class="card hoverable">
+  <div class="card hoverable" aria-labelledby="user-{{ user.id }}-name">
     <div class="card-content">
-      <h5 class="truncate" title="{{ user.username }}">{{ user.username }}</h5>
+      <h5 id="user-{{ user.id }}-name" class="truncate" title="{{ user.username }}">{{ user.username }}</h5>
       <p><strong>Email:</strong> {{ user.email }}</p>
       <p><strong>Admin:</strong> {{ user.is_staff|yesno:"Yes,No" }}</p>
       <p>
@@ -29,7 +29,8 @@
         {% if user.profile.stripe_customer_id %}
           <a href="https://dashboard.stripe.com/test/customers/{{ user.profile.stripe_customer_id }}" 
              target="_blank" 
-             class="btn-small grey darken-3">
+             class="btn-small grey darken-3"
+             aria-label="View Stripe profile for {{ user.username }}">
             <i class="fa fa-cc-stripe left admin-btn"></i>Stripe
           </a>
         {% else %}
@@ -39,12 +40,12 @@
     </div>
 
     <div class="card-action">
-      <div class="row" style="margin: 0;">
+      <div class="row">
         <div class="col s12 m6">
           <a href="{% url 'user_orders' user.id %}" class="btn green btn-block admin-btn">Orders</a>
         </div>
         <div class="col s12 m6">
-          <a href="{% url 'edit_user' user.id %}" class="btn blue btn-block admin-btn">Edit</a>
+          <a href="{% url 'edit_user' user.id %}" class="btn blue btn-block admin-btn" aria-label="Edit {{ user.username }}’s account">Edit</a>
         </div>
         <div class="col s12">
           <a href="#" class="btn orange btn-block admin-password-reset-btn admin-btn" data-id="{{ user.id }}">

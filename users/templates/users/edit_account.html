@@ -5,10 +5,10 @@
 
 {% block content %}
   <section class="section center-align">
-    <h2>Edit Your Account</h2>
+    <h2 id="edit-account-title">Edit Your Account</h2>
     {% include "partials/form_errors.html" %}
     <div class="row form-wrapper">
-      <form method="post" class="form-wrapper">
+      <form method="post" class="form-wrapper" role="form" aria-labelledby="edit-account-title">
         {% csrf_token %}
       
         <!-- Email row: disabled field, change via modal -->
@@ -20,7 +20,7 @@
                 {{ form.email }}
               </div>
               <div class="email-button">
-                <button type="button" class="btn red" id="change-email-btn">
+                <button type="button" class="btn red" id="change-email-btn" aria-label="Change your email address">
                   Change Email
                 </button>
               </div>
@@ -50,8 +50,8 @@
             </div>
           </div>
           <div class="card-action center-align account-card-action">
-            <a href="{% url 'account' %}" class="btn grey lighten-1 black-text">Back</a>
-            <button type="submit" class="btn green white-text">Save</button>
+            <a href="{% url 'account' %}" class="btn grey lighten-1 black-text" aria-label="Go back to My Account">Back</a>
+            <button type="submit" class="btn green white-text" aria-label="Save account changes">Save</button>
           </div>
         </div>
       </form>

@@ -2,11 +2,11 @@
 {% block title %}Add New Box{% endblock %}
 
 {% block content %}
-<div class="container">
-  <h4>{% if editing %}Edit Box{% else %}Add New Box{% endif %}</h4>
+<div class="container" aria-labelledby="box-form-heading">
+  <h4 id="box-form-heading">{% if editing %}Edit Box{% else %}Add New Box{% endif %}</h4>
 
 
-  <form method="post" enctype="multipart/form-data">
+  <form method="post" enctype="multipart/form-data" role="region" aria-label="Edit Box">
     {% csrf_token %}
 
   <div class="row">
@@ -44,8 +44,8 @@
   </div>
 
   <p>
-    <label>
-      {{ form.is_archived }} <span>Archive this box?</span>
+    <label for="{{ form.is_archived.id_for_label }}">
+      {{ form.is_archived }} Archive this box?
     </label>
   </p>
 

@@ -9,40 +9,45 @@
     {% with subs_count|add:orders_count as total_orders %}
       {% if total_orders >= 4 %}
         <div class="row button-row center-align">
-          <a href="{% url 'account' %}" class="btn grey lighten-1 black-text">
-            <i class="fas fa-arrow-left left"></i> Back
+          <!-- Button rendered only on longer pages showing more than 4 orders-->
+          <a href="{% url 'account' %}" class="btn grey lighten-1 black-text" aria-label="Back">
+            <i class="fas fa-arrow-left left" aria-hidden="true"></i> Back
           </a>
         </div>     
       {% endif %}
     {% endwith %}
   {% endwith %}
   {% endwith %}
-
-  <h3>Subscription Orders</h3>
-  {% if subscriptions %}
-    <ul class="collection">
-      {% for order in subscriptions %}
-        {% include "orders/order_list_item.html" %}
-      {% endfor %}
-    </ul>
-  {% else %}
-    <p>You don't have any subscription orders yet.</p>
-  {% endif %}
-
-  <h3>One-Off Orders</h3>
-  {% if orders %}
-    <ul class="collection">
-      {% for order in orders %}
-        {% include "orders/order_list_item.html" %}
-      {% endfor %}
-    </ul>
-  {% else %}
-    <p>You haven’t placed any one-off orders yet.</p>
-  {% endif %}
+  
+  <section aria-labelledby="subs-heading">
+    <h2 id="subs-heading">Subscription Orders</h2>
+    {% if subscriptions %}
+      <ul class="collection" role="list">
+        {% for order in subscriptions %}
+          {% include "orders/partials/order_list_item.html" %}
+        {% endfor %}
+      </ul>
+    {% else %}
+      <p>You don't have any subscription orders yet.</p>
+    {% endif %}
+  </section>
+  
+  <section aria-labelledby="oneoff-heading">
+    <h2 id="oneoff-heading">One-Off Orders</h2>
+    {% if orders %}
+      <ul class="collection" role="list">
+        {% for order in orders %}
+          {% include "orders/partials/order_list_item.html" %}
+        {% endfor %}
+      </ul>
+    {% else %}
+      <p>You haven’t placed any one-off orders yet.</p>
+    {% endif %}
+  </section>
 
   <div class="row button-row center-align">
-    <a href="{% url 'account' %}" class="btn grey lighten-1 black-text">
-      <i class="fas fa-arrow-left left"></i> Back
+    <a href="{% url 'account' %}" class="btn grey lighten-1 black-text" aria-label="Back">
+      <i class="fas fa-arrow-left left" aria-hidden="true"></i> Back
     </a>
   </div>
 

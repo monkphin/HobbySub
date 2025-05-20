@@ -3,13 +3,13 @@
 {% block title %}Check Your Email{% endblock %}
 
 {% block content %}
-<section class="section center-align">
-  <h3>Almost there!</h3>
+<section class="section center-align" role="region" aria-labelledby="email-confirm-heading">
+  <h3 id="email-confirm-heading">Almost there!</h3>
   <p>We've sent you a confirmation email to activate your account.</p>
   <p><strong>Please click the link in that email to complete your registration.</strong></p>
   <p>If you can't find it, check your spam folder.</p>
   
-  <div class="row" style="display: flex; justify-content: center; gap: 20px; margin-top: 30px;">
+  <div class="row flex-gap">
     <a href="{% url 'resend_activation' %}?email={{ email }}" class="btn orange">RESEND EMAIL</a>
     <a href="{% url 'home' %}" class="btn green">BACK TO HOME</a>
 </div>
