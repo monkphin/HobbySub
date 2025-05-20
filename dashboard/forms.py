@@ -130,7 +130,6 @@ class BoxForm(forms.ModelForm):
         }
 
 
-
 class ProductForm(forms.ModelForm):
     """
     Form for creating and editing BoxProduct instances.

@@ -205,9 +205,14 @@ This was part of a wider effort to control input behaviour across the platform, 
 # JavaScript Testing
  
 # Python Testing
-PEP8 Compliance testing was conducted with the Code Institute provided [Python Linter](https://pep8ci.herokuapp.com/) the results of which can be seen below.
+PEP8 Compliance testing was conducted with flake8 and the Code Institute provided [Python Linter](https://pep8ci.herokuapp.com/) the results of which can be seen below.
 
-
+```
+darre@Anton MINGW64 ~/Code/HobbySub (admin-password-reset)
+$ flake8 .
+(venv) 
+darre@Anton MINGW64 ~/Code/HobbySub (admin-password-reset)````
+```
  
 # Device and Browser Testing
 

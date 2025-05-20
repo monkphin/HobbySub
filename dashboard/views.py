@@ -562,7 +562,7 @@ def manage_orphaned_products(request):
         # Proceed with deletion
         logger.info(f"=== DEBUGGING: Single delete triggered for product ID: {delete_single_id} ===")
         BoxProduct.objects.filter(id=delete_single_id, box__isnull=True).delete()
-        
+
         if request.headers.get('x-requested-with') == 'XMLHttpRequest':
             return JsonResponse({'success': True})
 
