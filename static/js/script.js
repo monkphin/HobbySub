@@ -133,6 +133,15 @@ document.querySelectorAll('.cancel-subscription-btn').forEach(button => {
     });
   });
 
+  // Handle orphaned product action buttons
+  document.querySelectorAll('.orphan-action-btn').forEach(button => {
+    button.addEventListener('click', function () {
+      const action = this.dataset.action;
+      setOrphanedAction(action);
+    });
+  });
+
+
   // === Modal trigger binding for Admin Save User ===
   document.querySelectorAll('.admin-update-user-btn').forEach(button => {
     button.addEventListener('click', () => {
@@ -355,4 +364,13 @@ function submitModalAction() {
     .catch(() => {
       errorEl.innerText = 'Sorry — there was a problem completing your request.';
     });
+}
+
+function setOrphanedAction(action) {
+  const hiddenField = document.getElementById('orphaned-action');
+  if (hiddenField) {
+    hiddenField.value = action;
+  } else {
+    console.warn("Hidden 'action' input not found in orphaned products form.");
+  }
 }

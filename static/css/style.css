@@ -303,6 +303,30 @@ nav ul li {
   gap: 1rem;
 }
 
+.box-title-inline {
+  font-size: 2rem !important;
+  font-weight: 500;
+  color: #263238;
+  line-height: 1.6;
+}
+
+.box-title-inline strong {
+  font-weight: 700;
+  color: #1b5e20; /* darker green */
+}
+
+.archive-badge-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 0.5rem;
+}
+
+.archive-badge {
+  width: 80%;
+  text-align: center;
+}
+
 /* Email Input full width by default */
 .email-input {
   width: 100%;
@@ -434,6 +458,70 @@ ul li i.left {
   flex-wrap: wrap;
   justify-content: center;
   align-items: center;
+}
+
+/* === Scoped Button Group for Admin === */
+/* Full-width card adjustments */
+.admin-btn-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  margin-bottom: 0.5rem;
+  width: 100%;
+}
+
+.admin-btn-group a,
+.admin-btn-group button {
+  justify-content: center;
+  align-items: center;
+  align-content: center;
+  margin-bottom: 0.5rem;
+  width: 80%;
+}
+
+.button-row-orphans {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.orphan-ctrl-btn {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  margin-bottom: 0.5rem;
+  width: 100%;
+}
+
+.orphan-ctrl-btn a,
+.orphan-ctrl-btn button {
+  justify-content: center;
+  align-items: center;
+  align-content: center;
+  margin-bottom: 0.5rem;
+  width: 80%;
+  max
+}
+
+.button-row-orphans a.btn,
+.button-row-orphans button.btn {
+  width: 80%;
+  max-width: 500px;
+}
+
+.box-title-wrapper {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.75rem;
 }
 
 .box-actions {
@@ -971,6 +1059,18 @@ a:focus:not(:focus-visible) {
     flex-wrap: nowrap;
     gap: 1.5rem; /* Slightly larger gap on medium screens */
   }
+
+  .admin-btn-group {
+    flex-direction: row;
+    justify-content: flex-start;
+    gap: 1rem;
+  }
+
+    .button-row-orphans {
+    flex-direction: row;
+    gap: 1rem;
+  }
+
 }
 
 @media (min-width: 658px) {
@@ -982,6 +1082,16 @@ a:focus:not(:focus-visible) {
   @media (min-width: 768px) {
   .gift-message {
     padding: 2rem 2rem;
+  }
+
+  .orphan-ctrl-btn {
+    flex-direction: row;
+  }
+}
+
+@media (min-width: 905px) {
+  .admin-btn-group {
+    justify-content: flex-end;
   }
 }
 

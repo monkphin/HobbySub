@@ -1,0 +1,59 @@
+<div class="section">
+  <h4>Orphaned Products (Unassigned)</h4>
+
+  {% if orphaned_products %}
+    <form id="orphaned-products-form" method="POST" action="{% url 'manage_orphaned_products' %}">
+      {% csrf_token %}
+      <input type="hidden" name="action" id="orphaned-action">
+      <!-- Top action bar -->
+      <div class="button-row-orphans">
+      <a href="{% url 'add_products' %}" class="btn green">
+        <i class="fas fa-plus"></i> Add
+      </a>
+        <button type="submit" class="btn blue orphan-action-btn" data-action="reassign">
+        <i class="fas fa-exchange-alt"></i> Reassign
+        </button>
+        <button type="submit" class="btn red orphan-action-btn" data-action="delete">
+        <i class="fas fa-trash-alt"></i> Delete
+        </button>
+    </div>
+
+      <!-- Product cards -->
+      <div class="row">
+        {% for product in orphaned_products %}
+          <div class="col s12 m6">
+            <div class="card hoverable">
+              <div class="card-image">
+                <img src="{{ product.image.url }}" alt="{{ product.name }}" class="responsive-img product-card-image">
+              </div>
+              <div class="card-content valign-wrapper">
+                <label>
+                  <input type="checkbox" name="product_ids" value="{{ product.id }}">
+                  <span class="black-text">
+                    <strong class="green-text text-darken-2">{{ product.name }}</strong>
+                    (x{{ product.quantity }})
+                  </span>
+                </label>
+              </div>
+              <div class="card-action center orphan-ctrl-btn">
+                <a href="{% url 'edit_product' product.id %}" class="btn-small teal">
+                  <i class="fas fa-edit left"></i> Edit
+                </a>
+                <button type="submit" name="delete_single" value="{{ product.id }}" class="btn-small red">
+                  <i class="fas fa-trash left"></i> Delete
+                </button>
+              </div>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    </form>
+  {% else %}
+    <p class="grey-text center-align">No orphaned products found.</p>
+    <div class="center-align">
+      <a href="{% url 'add_products' %}" class="btn green">
+        <i class="fas fa-plus left"></i> Add Product
+      </a>
+    </div>
+  {% endif %}
+</div>
