@@ -9,10 +9,10 @@
     <a href="{% url 'add_box' %}" class="btn teal darken-3">
       <i class="fas fa-plus left"></i> Add New Box
     </a>
-    </div>
+  </div>
 
   <div class="container" role="region" aria-labelledby="existing-boxes-heading">
-    <h4>Existing Boxes</h4>
+    <h4 id="existing-boxes-heading">Existing Boxes</h4>
 
 <div class="row">
   {% for box in boxes %}
@@ -47,6 +47,6 @@
 </div>
 
 {% include 'dashboard/partials/product_list.html' with product=product %}
-
-  
+</div>
+</div>
 {% endblock %}

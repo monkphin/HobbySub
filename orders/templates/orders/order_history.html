@@ -52,5 +52,10 @@
   </div>
 
 </section>
-
+{% for order in subscriptions %}
+  {% include "orders/partials/order_modal.html" %}
+{% endfor %}
+{% for order in orders %}
+  {% include "orders/partials/order_modal.html" %}
+{% endfor %}
 {% endblock %}

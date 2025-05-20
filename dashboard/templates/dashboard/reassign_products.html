@@ -18,7 +18,7 @@
     </div>
     
     <div role="region" aria-labelledby="selected-products-heading">
-      <h5>Selected Products:</h5>
+      <h5 id="selected-products-heading">Selected Products:</h5>
       <ul class="collection">
         {% for product in products %}
           <li class="collection-item">{{ product.name }} (x{{ product.quantity }})</li>

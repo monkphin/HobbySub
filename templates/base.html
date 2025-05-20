@@ -72,30 +72,32 @@
       </ul>
 
       <!-- Mobile menu -->
-      <ul class="sidenav hide-on-large-only" id="mobile-nav" tabindex="-1" role="navigation">
-        <li><a href="{% url 'about' %}">About</a></li>
-        <li><a href="{% url 'past_boxes' %}">Past Boxes</a></li>
-        {% if user.is_authenticated %}
-          <li><a href="{% url 'account' %}">My Account</a></li>
-          <li><a href="{% url 'logout' %}">Logout</a></li>
-          <li class="divider"></li>
-          <li><strong class="grey-text text-lighten-2">Get a Box</strong></li>
-          <li><a href="{% url 'select_purchase_type' %}?gift=false">Buy for Myself</a></li>
-          <li><a href="{% url 'select_purchase_type' %}?gift=true">Give as a Gift</a></li>
-        {% else %}
-          <li><a href="{% url 'register' %}">Register</a></li>
-          <li><a href="{% url 'login' %}">Login</a></li>
-          <li class="divider"></li>
-          <li><strong class="grey-text text-darken-2">Get a Box</strong></li>
-          <li><a href="{% url 'register' %}?next={% url 'handle_purchase_type' plan='monthly' %}?gift=false">Pick a Plan</a></li>
-          <li><a href="{% url 'register' %}?next={% url 'handle_purchase_type' plan='monthly' %}?gift=true">Give as a gift</a></li>
-        {% endif %}
+      <div role="navigation" aria-label="Mobile navigation">
+        <ul class="sidenav hide-on-large-only" id="mobile-nav" tabindex="-1">
+          <li><a href="{% url 'about' %}">About</a></li>
+          <li><a href="{% url 'past_boxes' %}">Past Boxes</a></li>
+          {% if user.is_authenticated %}
+            <li><a href="{% url 'account' %}">My Account</a></li>
+            <li><a href="{% url 'logout' %}">Logout</a></li>
+            <li class="divider"></li>
+            <li><strong class="grey-text text-lighten-2">Get a Box</strong></li>
+            <li><a href="{% url 'select_purchase_type' %}?gift=false">Buy for Myself</a></li>
+            <li><a href="{% url 'select_purchase_type' %}?gift=true">Give as a Gift</a></li>
+          {% else %}
+            <li><a href="{% url 'register' %}">Register</a></li>
+            <li><a href="{% url 'login' %}">Login</a></li>
+            <li class="divider"></li>
+            <li><strong class="grey-text text-darken-2">Get a Box</strong></li>
+            <li><a href="{% url 'register' %}?next={% url 'handle_purchase_type' plan='monthly' %}?gift=false">Pick a Plan</a></li>
+            <li><a href="{% url 'register' %}?next={% url 'handle_purchase_type' plan='monthly' %}?gift=true">Give as a gift</a></li>
+          {% endif %}
 
-        {% if user.is_staff %}
-          <li><a href="{% url 'box_admin' %}">Box Admin</a></li>
-          <li><a href="{% url 'user_admin' %}">User Admin</a></li>
-        {% endif %}
-      </ul>
+          {% if user.is_staff %}
+            <li><a href="{% url 'box_admin' %}">Box Admin</a></li>
+            <li><a href="{% url 'user_admin' %}">User Admin</a></li>
+          {% endif %}
+        </ul>
+      </div>
 
     </header>
 

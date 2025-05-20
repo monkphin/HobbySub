@@ -62,7 +62,7 @@
         {% else %}
           <div class="col s12">
             <a href="#" 
-               class="btn btn-block {% if user.is_active %}red darken-2 deactivate-btn{% else %}teal activate-btn{% endif %} admin-btn" 
+               class="btn btn-block {% if user.is_active %}red darken-2 deactivate-btn{% else %}teal activate-btn{% endif %} admin-btn admin-toggle-state-btn" 
                data-id="{{ user.id }}">
               {% if user.is_active %}Deactivate{% else %}Activate{% endif %}
             </a>

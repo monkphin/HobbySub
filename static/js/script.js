@@ -225,7 +225,6 @@ function openModal(action, id = null) {
         const addressElement = button.closest('.address-card');
 
         if (!addressElement) {
-            console.error(`Address with ID ${id} not found.`);
             M.toast({ html: "Address not found. Please refresh the page.", classes: "red" });
             closeModal();
             return;
@@ -376,7 +375,6 @@ function submitModalAction() {
       const formEl = document.getElementById('orphaned-products-form');
       const bulkFormData = new FormData(formEl);
       bulkFormData.append('password', password);
-      console.log("Bulk delete URL is:", GLOBALS.orphanedBulkDelete);
       fetch(GLOBALS.urls.orphanedBulkDelete, {
         method: 'POST',
         headers: {
@@ -394,7 +392,7 @@ function submitModalAction() {
           }
         })
         .catch(() => {
-          errorEl.innerText = 'Sorry — there was a problem completing your request.';
+          errorEl.innerText = 'Sorry - there was a problem completing your request.';
         });
       return;
     case 'delete_single_product':
@@ -453,7 +451,5 @@ function setOrphanedAction(action) {
   const hiddenField = document.getElementById('orphaned-action');
   if (hiddenField) {
     hiddenField.value = action;
-  } else {
-    console.warn("Hidden 'action' input not found in orphaned products form.");
   }
 }

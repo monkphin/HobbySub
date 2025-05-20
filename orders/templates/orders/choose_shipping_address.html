@@ -35,7 +35,7 @@
           <i class="fas fa-phone-alt left"></i> {{ address.phone_number }}
         </div>
         <div class="card-action flex-actions">
-          <form method="POST" action="">
+          <form method="POST">
             {% csrf_token %}
             <input type="hidden" name="shipping_address" value="{{ address.id }}">
             <button type="submit" class="btn green darken-3">Deliver to this address</button>

@@ -156,7 +156,10 @@ This was part of a wider effort to control input behaviour across the platform, 
 # CSS Validation
 
 # Accessibility
- 
+ This was performed via waves Chrome plugin. 
+ A few common errors seen across the site were caused by hidden fields in modals, which had no labels - since these were hidden they shouldnt be interacted with by screen readers. Similarly it was calling out broken same page links, which were due to the admin drop down. 
+ There were a few pages with contrast issues caused by labels for forms - since these don't directly impact functionality I felt it was safe to leave as was. Otherwise, the majority of the site had few to major issues or errors. 
+
 # Lighthouse Performance Testing
 
 ## Logged Out
@@ -213,7 +216,7 @@ $ flake8 .
 (venv) 
 darre@Anton MINGW64 ~/Code/HobbySub (admin-password-reset)````
 ```
- 
+
 # Device and Browser Testing
 
 # Responsiveness

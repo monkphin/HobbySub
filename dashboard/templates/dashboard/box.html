@@ -2,11 +2,11 @@
 {% block title %}Add New Box{% endblock %}
 
 {% block content %}
-<div class="container" aria-labelledby="box-form-heading">
+<div class="container" role="region" aria-labelledby="box-form-heading">
   <h4 id="box-form-heading">{% if editing %}Edit Box{% else %}Add New Box{% endif %}</h4>
 
 
-  <form method="post" enctype="multipart/form-data" role="region" aria-label="Edit Box">
+  <form method="post" enctype="multipart/form-data" aria-label="Edit Box">
     {% csrf_token %}
 
   <div class="row">
