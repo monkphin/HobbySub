@@ -22,10 +22,14 @@ from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
 from datetime import datetime
 from hobbyhub.mail import send_subscription_cancelled_email
-from hobbyhub.utils import (alert, build_shipping_details, get_gift_metadata,
-                            get_subscription_duration_display,
-                            get_subscription_status,
-                            get_user_default_shipping_address)
+from hobbyhub.utils import (
+    alert,
+    build_shipping_details,
+    get_gift_metadata,
+    get_subscription_duration_display,
+    get_subscription_status,
+    get_user_default_shipping_address
+)
 from users.models import ShippingAddress
 from .forms import PreCheckoutForm
 from .models import Order, Payment, StripeSubscriptionMeta
@@ -122,6 +126,9 @@ def handle_purchase_type(request, plan):
 
 @login_required
 def gift_message(request, plan):
+    """
+    Handles the gift message step of the checkout process.
+    """
     logger.info("[DEBUG] Entered gift_message view")
 
     # Force the session to save

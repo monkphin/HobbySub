@@ -7,16 +7,6 @@
 
 [User Stories](#user-stories)
 
-  - [Account Registration and Authentication](#account-registration-and-authentication)
-  - [Paint Collection Management](#paint-collection-management)
-  - [Recipe Creation and Management](#recipe-creation-and-management)
-  - [Viewing and Searching](#viewing-and-searching)    
-  - [User Experience and Visuals](#user-experience-and-visuals)    
-  - [Security and Error Handling](#security-and-error-handling)    
-  - [Data Management](#data-management)    
-  - [Administration](#administration)    
-  - [Social Features](#social-features)   
-
 [Scope](#scope) 
 
 [Design](#design)
@@ -30,8 +20,6 @@
   - [Icons](#icons)
   - [Features](#features)
 
-[Code Design](#code-design)
-
 [Future Features](#future-features)
 
 [Security, Defensive Programming and best Practices](#security-defensive-programming-and-best-practices)  
@@ -39,7 +27,7 @@
 [Technology](#technology)
   - [Frameworks and Programs](#frameworks-and-programs)
 
-[Testing](#testing-and-validation)
+[Testing and Validation](#testing-and-validation)
 
  [Version Control and Deployment](#version-control-and-deployment)
 
@@ -50,9 +38,6 @@
   - [Local Deployment](#local-deployment)
   - [PostGres DB Creation](#postgres-db-creation)
   - [Heroku Setup and Configuration](#heroku-set-up-and-configuration)
-  - [DNS Configuration](#dns-configuration)
-
-[Credits](#credits)
 
 [Acknowledgements](#acknowledgements)
 
@@ -139,166 +124,159 @@ The backend implementation was designed with DRY (Don't Repeat Yourself) princip
 ## [Wireframes](#wireframes)
 Wireframes were created with Balsamiq and provided rough initial mockups for how the site should look. Some variation from these occurred as the project developed. 
 
-Homepage
+<details>
+<summary>Homepage</summary>
   <img src="docs/wireframes/homepage.png">
-Subscription Page
+</details>
+<br>
+
+<details>
+<summary>Subscription Page</summary>
   <img src="docs/wireframes/subs_page.png">
-Basket
+</details>
+<br>
+
+<details>
+<summary>Basket</summary>
   <img src="docs/wireframes/basket.png">
-Checkout
+</details>
+<br>
+
+<details>
+<summary>Checkout</summary>
   <img src="docs/wireframes/checkout.png">
-Past Boxes
+</details>
+<br>
+
+<details>
+<summary>Past Boxes</summary>
   <img src="docs/wireframes/past_boxes.png">
-Account Page
+</details>
+<br>
+
+<details>
+<summary>Account Page</summary>
   <img src="docs/wireframes/accounts.png">
+</details>
+<br>
 
 
-    <img src="docs/wireframes/homepage.png">
 ##  [Schema](#schema)
-To enhance security and streamline data management, I opted to leverage Django's built-in User model for authentication and user management. This decision minimised the need for custom table designs while taking advantage of Django's proven security mechanisms, such as password hashing and session management.
+To enhance security and streamline data management, I chose to use Django’s built-in `User` model for authentication and user management. This approach eliminates the need for custom table design while benefiting from Django’s robust, battle-tested security features, including secure password hashing and session handling.
 
-For payment processing, all sensitive billing information is exclusively handled by Stripe. This means that no credit card details are stored on the site itself, significantly reducing risk in the event of a data breach. While PII (Personally Identifiable Information) like home addresses, email addresses, and names are stored for order fulfillment, payment data remains isolated and protected by Stripe's secure environment. This separation ensures that the financial impact of any potential breach is minimised.
+For payment processing, all sensitive billing information is handled exclusively by Stripe. No credit card data is stored on the site, which significantly reduces risk in the event of a data breach. While some personally identifiable information (PII) — such as names, email addresses, and shipping addresses — is stored for order fulfillment, all payment data remains securely isolated within Stripe’s infrastructure. This separation ensures that any potential breach would have minimal financial impact.
 
+The full database schema can be viewed here:  
+**https://erd.dbdesigner.net/designer/schema/1743344075-django-project**  
+A screenshot is also included below for convenience. While the `User` table is not defined in my own models, it is provided by Django and included in the ERD to illustrate its relationships within the system.
+
+<details>
+<summary>ERD</summary>
   <img src="docs/erd.png">
+</details>
+<br>
+
+### Database Model Overview
+
 | Model                  | Purpose                                                                                                                                                                             | Key Fields                                                                                                                                                                                                                                       | Relationships                                                                                     |
 |------------------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|----------------------------------------------------------------------------------------------------|
-| User                   | Stores all user accounts, including regular users and admin accounts.                                                                                                               | [`user_id` (PK), `username`, `email`, `password`, `is_admin` (boolean), `date_joined`]                                                                                                                   | One-to-many with ShippingAddress, StripeSubscriptionMeta, Order, Payment                         |
-| ShippingAddress        | Stores one or more delivery addresses per user. Used for personal or gifted boxes.                                                                                                  | [`shipping_id` (PK), `user_id` (FK) → User, `recipient_name` and full address fields, `is_default` (boolean)]                                                                                            | Many-to-one with User; One-to-many with Order and StripeSubscriptionMeta                         |
-| StripeSubscriptionMeta | Links a Stripe-managed subscription to internal data. Captures shipping address and gift status.                                                                                    | [`id` (PK), `user_id` (FK) → User, `stripe_subscription_id`, `stripe_price_id`, `shipping_address_id` (FK), `is_gift` (boolean), `created_at`, `cancelled_at`]                                           | Many-to-one with User and ShippingAddress; One-to-many with Order                                |
-| Box                    | Admin-created box offerings. Archived boxes stay viewable in history.                                                                                                               | [`box_id` (PK), `name`, `slug`, `description`, `image_url`, `shipping_date` (nullable), `is_active`, `is_archived`, `created_at`]                                                                       | One-to-many with Order and BoxProduct                                                            |
-| Order                  | Represents a single box shipment. Created via Stripe webhook after successful charge.                                                                                               | [`order_id` (PK), `user_id` (FK) → User, `shipping_address_id` (FK) → ShippingAddress, `box_id` (FK) → Box, `stripe_subscription_id` (from Stripe), `order_date`, `scheduled_shipping_date`, `status`]   | Many-to-one with User, ShippingAddress, Box; One-to-one with BoxHistory; One-to-many with Payment |
-| BoxHistory             | Snapshot of the box at time of shipment. Used for historical accuracy.                                                                                                              | [`history_id` (PK), `order_id` (FK) → Order, `box_name`, `slug`, `image_url`, `description`, `created_at`]                                                                                               | One-to-one with Order                                                                            |
-| Payment                | Logs each payment attempt/success. Created by webhook when Stripe charge occurs. Card info is fetched live from Stripe or hydrated at webhook time (e.g. 'Visa •••• 4242').        | [`payment_id` (PK), `user_id` (FK) → User, `order_id` (FK) → Order, `payment_date`, `amount`, `status`, `payment_method`]                                                                                | Many-to-one with User and Order                                                                  |
-| BoxProduct             | Represents each item in a box. Used to display box contents in carousels or lists.                                                                                                  | [`content_id` (PK), `box_id` (FK) → Box, `name`, `image_url`, `description`, `quantity`]                                                                                                                          | Many-to-one with Box                                                                             |
+| **User**               | Stores all user accounts, including regular users and admin accounts.                                                                                                               | `user_id` (PK), `username`, `email`, `password`, `first_name`, `last_name`, `is_staff`, `is_superuser`, `date_joined`                                                                                    | One-to-many with ShippingAddress, StripeSubscriptionMeta, Order, Payment                         |
+| **UserProfile**        | Stores Stripe customer ID for a user (used for customer lookup when creating payments).                                                                                             | `id` (PK), `user_id` (FK) → User, `stripe_customer_id`                                                                                                                                                    | One-to-one with User                                                                              |
+| **ShippingAddress**    | Stores one or more delivery addresses per user. Used for personal or gifted boxes.                                                                                                  | `shipping_id` (PK), `user_id` (FK) → User, `recipient_f_name`, `recipient_l_name`, address fields, `postcode`, `country`, `is_default`, `is_gift_address`, `label`                                        | Many-to-one with User; One-to-many with Order and StripeSubscriptionMeta                         |
+| **StripeSubscriptionMeta** | Links a Stripe-managed subscription to internal data. Captures shipping address and gift status.                                                                                    | `id` (PK), `user_id` (FK) → User, `stripe_subscription_id`, `stripe_price_id`, `shipping_address_id` (FK), `is_gift`, `created_at`, `cancelled_at`                                                       | Many-to-one with User and ShippingAddress; One-to-many with Order                                |
+| **Box**                | Admin-created box offerings. Archived boxes stay viewable in history.                                                                                                               | `box_id` (PK), `name`, `slug`, `description`, `image_url`, `shipping_date`, `is_archived`, `created_at`                                                                                                   | One-to-many with Order and BoxProduct                                                            |
+| **BoxProduct**         | Represents each item in a box. Used to display box contents in carousels or lists.                                                                                                  | `id` (PK), `box_id` (FK) → Box, `name`, `image_url`, `description`, `quantity`                                                                                                                             | Many-to-one with Box                                                                             |
+| **Order**              | Represents a single box shipment. Created via Stripe webhook after successful charge.                                                                                               | `order_id` (PK), `user_id` (FK) → User, `shipping_address_id` (FK) → ShippingAddress, `box_id` (FK) → Box, `stripe_subscription_id`, `stripe_payment_intent_id`, `order_date`, `scheduled_shipping_date`, `status`, `is_gift` | Many-to-one with User, ShippingAddress, Box; One-to-many with Payment                           |
+| **Payment**            | Logs each payment attempt or success. Created by webhook when Stripe charge occurs.                                                                                                 | `payment_id` (PK), `user_id` (FK) → User, `order_id` (FK) → Order, `payment_date`, `amount`, `status`, `payment_method`, `payment_intent_id`                                                              | Many-to-one with User and Order                                                                  |
+
 
 When reading up on Django models, I encountered this, which seemed helpful since I had a few issues with getting tooltips to play nice on my last project. So this seems like it may help with this. https://docs.djangoproject.com/en/3.2/ref/models/fields/#help-text
 
 ##  [UX](#ux)
-UX Design and User Flow
+### UX Design and User Flow
 
 When a user first visits the site, they land on the Home Page, which looks the same for both logged-in and logged-out users. However, navigation menus and buttons dynamically adjust based on the user's authentication status and role. For example, purchase and gift purchase buttons have two distinct versions:
-
-Logged-out Users: These buttons guide users through a registration journey as part of the purchase flow, ensuring every buyer is registered and linked with a Stripe ID.
-
-Logged-in Users: The flow skips registration and goes directly to the purchase stage, streamlining the checkout process.
-
+ - Logged-out Users: These buttons guide users through a registration journey as part of the purchase flow, ensuring every buyer is registered and linked with a Stripe ID.
+ - Logged-in Users: The flow skips registration and goes directly to the purchase stage, streamlining the checkout process.
 This logic guarantees that all users are fully registered before making a purchase, enhancing order tracking and payment processing.
 
-Navigation and Menu Logic
+### Navigation and Menu Logic
 
 Once logged in, users are presented with a tailored menu:
+ - Account Page Access — View and manage orders, addresses, and subscription details.
+ - Logout Button — A simple and accessible way to end the session.
+ - Dynamic Purchase Buttons — Adjust to reflect that the user is authenticated.
 
-Account Page Access — View and manage orders, addresses, and subscription details.
+## Page Overviews:
 
-Logout Button — A simple and accessible way to end the session.
-
-Dynamic Purchase Buttons — Adjust to reflect that the user is authenticated.
-
-Page Overviews:
-
-About Page
+### About Page
 
 The About page provides users with information about the service, including who might benefit from it, typical box contents, and a call to action for subscriptions or single-box purchases.
 
-Buy for Myself / Give as a Gift
+### Buy for Myself / Give as a Gift
 
 Both menu items present similar options:
+ - Users can select from single boxes or four subscription tiers (monthly, quarterly, biannual, annual).
+ - Messaging and layout dynamically adjust to reflect whether the purchase is a gift or for personal use.
 
-Users can select from single boxes or four subscription tiers (monthly, quarterly, biannual, annual).
-
-Messaging and layout dynamically adjust to reflect whether the purchase is a gift or for personal use.
-
-Purchase Flow
-
+### Purchase Flow
 The purchase flow is nearly identical for both personal and gift orders:
+ - 1 Plan Selection: Users choose between a single box or one of four subscription plans.
+ - 2 Address Picker: The user selects a shipping address. If none exist, they can add one at this stage, as well as edit or add new addresses.
 
-Plan Selection: Users choose between a single box or one of four subscription plans.
+ - 3 Gift Divergence:
+ -- For personal orders, users proceed directly to Stripe for payment.
+ -- For gift orders, the user is prompted to enter optional fields: sender's name, recipient's name, recipient's email, and a personalised message. All fields are optional, allowing for anonymous or surprise gifting if desired.
 
-Address Picker: The user selects a shipping address. If none exist, they can add one at this stage, as well as edit or add new addresses.
+ - 4 Stripe Checkout: Users complete their purchase securely via Stripe. If they cancel, they are redirected to a page offering options to retry or return home. Successful purchases take users to a confirmation page with links to account details and order history.
 
-Gift Divergence:
-
-For personal orders, users proceed directly to Stripe for payment.
-
-For gift orders, the user is prompted to enter optional fields: sender's name, recipient's name, recipient's email, and a personalised message. All fields are optional, allowing for anonymous or surprise gifting if desired.
-
-Stripe Checkout: Users complete their purchase securely via Stripe. If they cancel, they are redirected to a page offering options to retry or return home. Successful purchases take users to a confirmation page with links to account details and order history.
-
-My Account Page
-
+### My Account Page
 The My Account page grants users access to:
+ - User Details and Order History — Quick access to past orders and account information.
+ - Change Password — Requires the current password for validation.
+ - Edit Account Information — Update email, username, and names.
+ - Address Management — Add, edit, or remove personal and gift addresses.
+ -- If only one personal address exists, it cannot be deleted while active orders or subscriptions are ongoing to prevent delivery issues.
+ -- Friendly names (e.g., Home, Work) can be assigned for clarity.
 
-User Details and Order History — Quick access to past orders and account information.
-
-Change Password — Requires the current password for validation.
-
-Edit Account Information — Update email, username, and names.
-
-Address Management — Add, edit, or remove personal and gift addresses.
-
-If only one personal address exists, it cannot be deleted while active orders or subscriptions are ongoing to prevent delivery issues.
-
-Friendly names (e.g., Home, Work) can be assigned for clarity.
-
-Order History Page
-
+# Order History Page
 Orders are split into two categories: Subscriptions and Single Boxes.
+ - Each item displays order number, status (Pending, Processing, Shipped, Cancelled), order date, recipient info (if a gift), estimated shipping date, and renewal date for subscriptions.
+ - Users can view more detailed information or cancel subscriptions directly from this page.
+ - A globally-located password-protected modal is used for destructive actions like cancellation to prevent accidental misuse.
 
-Each item displays order number, status (Pending, Processing, Shipped, Cancelled), order date, recipient info (if a gift), estimated shipping date, and renewal date for subscriptions.
-
-Users can view more detailed information or cancel subscriptions directly from this page.
-
-A globally-located password-protected modal is used for destructive actions like cancellation to prevent accidental misuse.
-
-Admin Dashboard
-
+### Admin Dashboard
 If the user is an admin, an additional Admin Menu becomes available, offering access to:
+ - Box Management — Add, edit, delete, or archive boxes.
+ -- Archived automatically if past the current month.
+ -- Cloudinary is used for image uploads, with images optional for early box creation.
+ -- Orphaned products (those not assigned to a box) are listed and can be bulk-added to boxes.
+ - Product Management — Add, remove, or orphan products within a box.
+ -- Products can be edited or deleted, with password-protected modals to prevent accidental removal.
+ -- User Management — View all registered users, their details, and subscription statuses.
+ -- Admins can activate, deactivate, or reset passwords for users, as well as view their account in Stripe for billing support.
+ - Order Management — Monitor order IDs, payment status, order state, and manage subscription cancellations.
 
-Box Management — Add, edit, delete, or archive boxes.
-
-Archived automatically if past the current month.
-
-Cloudinary is used for image uploads, with images optional for early box creation.
-
-Orphaned products (those not assigned to a box) are listed and can be bulk-added to boxes.
-
-Product Management — Add, remove, or orphan products within a box.
-
-Products can be edited or deleted, with password-protected modals to prevent accidental removal.
-
-User Management — View all registered users, their details, and subscription statuses.
-
-Admins can activate, deactivate, or reset passwords for users, as well as view their account in Stripe for billing support.
-
-Order Management — Monitor order IDs, payment status, order state, and manage subscription cancellations.
-
-Security Features
-
+### Security Features
 Where destructive or sensitive actions occur (e.g., cancelling subscriptions, deleting products, changing sensitive user data), password-protected modals are used for defensive programming. Toast notifications are displayed for actions like updates or changes, providing clear feedback to the user.
 
 Additionally, email notifications are triggered for key events:
-
-Order Confirmation
-
-Subscription Renewals
-
-Account State Changes
+ - Order Confirmation
+ - Subscription Renewals
+ - Account State Changes
 
 Emails are currently plaintext, but provide necessary feedback for user assurance.
 
 
 ##  [Colour Palette](#colour-palette)
 The color scheme was chosen late in development to create a welcoming and easy-on-the-eye experience. The primary colors are neutral and calming, with a focus on readability and accessibility.
-
-Primary Color: Various shades of green are used throughout the site, particularly for navigation menus and headers, creating a consistent visual identity.
-
-Button Colors:
-
-Green: Positive actions (e.g., submit, confirm)
-
-Red: Caution or destructive actions (e.g., delete, cancel)
-
-Blue: Neutral actions (e.g., edits, updates)
+ - Primary Color: Various shades of green are used throughout the site, particularly for navigation menus and headers, creating a consistent visual identity.
+ - Button Colors:
+ -- Green: Positive actions (e.g., submit, confirm)
+ -- Red: Caution or destructive actions (e.g., delete, cancel)
+ -- Blue: Neutral actions (e.g., edits, updates)
+ -- Teal: Other buttons where Red, Green, or Blue may already be in or where an alternative colour felt fitting. 
+ -- Grey: Simple actions like back buttons etc. 
 
 This color-coding ensures that users can quickly understand the purpose of each button, enhancing usability and reducing the chance of errors.
 
@@ -306,98 +284,74 @@ By keeping the color scheme simple and purposeful, the site remains both functio
 
 ##  [Typography](#typography)
 Similar to the color palette, font choices were made later in development, with initial focus placed on core functionality. Two Google Fonts were selected to provide clear visual distinction between headings, body text, and navigation elements.
-
-Both fonts are clean, sans-serif, and optimised for readability across devices.
-
-They were also chosen with accessibility in mind, ensuring clarity for all users, including those in the neurodiverse community.
+- Both fonts are clean, sans-serif, and optimised for readability across devices.
+- They were also chosen with accessibility in mind, ensuring clarity for all users, including those in the neurodiverse community.
 
 This careful selection supports readability and user comfort throughout the site experience.
 
 
 ##  [Images](#images)
 Local images are kept to a minimum, with all primary visual assets hosted on Cloudinary. This approach reduces server load, improves site performance, and simplifies image management.
-
-Cloudinary handles image storage, optimisation, and delivery, ensuring fast load times.
-
-This also enables easy updates and versioning without the need for redeployment.
-
-Image URLs are securely referenced, reducing exposure to direct access vulnerabilities.
+- Cloudinary handles image storage, optimisation, and delivery, ensuring fast load times.
+- This also enables easy updates and versioning without the need for redeployment.
+- Image URLs are securely referenced, reducing exposure to direct access vulnerabilities.
 
 By leveraging Cloudinary, the site remains lightweight and efficient, even as image content scales.
 
 ##  [Icons](#icons)
 Icons throughout the site are provided by Font Awesome, enhancing navigation and user interactions with clean, universally recognisable symbols.
-
-Icons are used for key features such as:
-
-Buttons (e.g., edit, delete, submit)
-
-Bullet Points for lists
-
-Navigation Links
-
-Font Awesome ensures consistency and scalability across all devices, maintaining a professional look while simplifying UI elements.
+- Icons are used for key features such as:
+ -- Buttons (e.g., edit, delete, submit)
+ -- Bullet Points for lists
+ -- Navigation Links
+- Font Awesome ensures consistency and scalability across all devices, maintaining a professional look while simplifying UI elements.
 
 This choice keeps the interface intuitive and visually consistent, improving the user experience.
 
-##  [Features](#features)
-
+## [Future Features](#future-features)
 
 Admin Enhancements
-Direct Stripe Links:
-Allowing admins to directly link to customer orders in Stripe would streamline the resolution of billing disputes and provide quick access to payment histories.
-
-Stock Handling and Management:
-Extending the current admin functionality to include stock management would enable real-time inventory tracking. This would allow admins to predict when a box may need to be archived due to low stock levels and help with future planning.
+ - Stock Handling and Management:
+   Extending the current admin functionality to include stock management would enable real-time inventory tracking. This would allow admins to predict when a box may need to be archived due to low stock levels and help with future planning.
 
 Customer Experience Improvements
-Purchase Older Boxes:
-If stock management is implemented, it would allow the sale of older, less popular boxes as single items. This would enable admins to clear out slower-moving inventory while providing more choice to customers. It would also provide valuable insights into which items are in higher demand.
+ - Purchase Older Boxes:
+   If stock management is implemented, it would allow the sale of older, less popular boxes as single items. This would enable admins to clear out slower-moving inventory while providing more choice to customers. It would also provide valuable insights into which items are in higher demand.
 
-Address Lookup Integration:
-Adding a global address lookup service would speed up the checkout process for users and ensure accuracy. This would minimise address-related errors and reduce admin overhead for manual corrections.
+ - Address Lookup Integration:
+   Adding a global address lookup service would speed up the checkout process for users and ensure accuracy. This would minimise address-related errors and reduce admin overhead for manual corrections.
 
-Security and Validation
-reCAPTCHA on Signup Forms:
-Currently, bot-based signups are possible as reCAPTCHA was not implemented due to time constraints. Adding this would enhance security and prevent automated signups.
+ Security and Validation
+  - reCAPTCHA on Signup Forms:
+    Currently, bot-based signups are possible as reCAPTCHA was not implemented due to time constraints. Adding this would enhance security and prevent automated signups.
 
 Communication and Support
-Contact Form:
-A contact form would improve user support options. However, it was not implemented due to previous issues with spam and difficulties integrating Captcha in earlier projects. Future versions will aim to address this with proper spam protection.
-
-Admin Address Visibility:
-As it stands, admins cannot directly view address information linked to orders. This feature would streamline shipping processes and improve overall management.
+ - Contact Form:
+   A contact form would improve user support options. However, it was not implemented due to previous issues with spam and difficulties integrating Captcha in earlier projects. Future versions will aim to address this with proper spam protection.
 
 These planned improvements are designed to build on the solid foundation of the existing platform, enhancing both usability and backend efficiency in future iterations.
 
 
-Security defenceive programming abd best practiceis. 
+# Security, Defensive Programming and Best Practices. 
 Security is a core aspect of the platform, with several layers of protection implemented to safeguard user data and prevent unauthorised changes.
 
 Password Security
 User account passwords are handled entirely by Django's built-in authentication system, which includes:
 
-Password Hashing: All passwords are hashed using industry-standard algorithms, ensuring that raw password data is never stored in the database.
-
-Django Best Practices: By leveraging Django's robust security features, the platform benefits from regular security updates and best practices without custom implementation.
+ - Password Hashing: All passwords are hashed using industry-standard algorithms, ensuring that raw password data is never stored in the database.
+ - Django Best Practices: By leveraging Django's robust security features, the platform benefits from regular security updates and best practices without custom implementation.
 
 Account Change Notifications
 To maintain transparency and security, users receive email notifications whenever their account information is updated. This allows users to be immediately aware of any changes, preventing unauthorised alterations from going unnoticed.
 
 Modal-Based Deletion Protection
 All potentially destructive or sensitive actions are protected by a password-protected modal.
-
-This includes:
-
-Email Changes
-
-Account Deletions
-
-Admin Actions on User Accounts
-
-The modal prompts for the user's password before finalising the action, adding a secure second layer of verification.
-
-This two-stage process ensures that only authenticated users can complete these operations, significantly reducing the risk of accidental or malicious changes.
+ - This includes:
+ -- Email Changes
+ -- Account Deletions
+ -- Admin Actions on User Accounts
+ - The modal prompts for the user's password before finalising the action, adding a secure second layer of verification.
+ - This two-stage process ensures that only authenticated users can complete these operations, significantly reducing the risk of accidental or malicious changes.
 
 This multi-layered approach to security is designed to protect user data, prevent unauthorised access, and maintain the integrity of sensitive account information.
 
@@ -728,9 +682,6 @@ Finally, you can, as mentioned, use the Heroku CLI. Where previously you would n
   ```
   $ git push heroku main
   ```
-
-# Credits
-
 
 # Acknowledgements
  - [Iuliia Konovalova](https://github.com/IuliiaKonovalova), my Code Institute Mentor for your help, insight and advice throughout this project. 
