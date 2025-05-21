@@ -4,13 +4,13 @@
 {% block content %}
 <section class="section">
   <div class="container center-align">
-    <h3>
+    <h2 class="center-align green-text text-darken-3">
       {% if gift %}
         <i class="fas fa-gift" aria-hidden="true"></i> Choose a Gift Plan
       {% else %}
         <i class="fas fa-cube" aria-hidden="true"></i> Choose a Plan
       {% endif %}
-    </h3>
+    </h2>
     <p class="grey-text text-darken-2">
       {{ gift|yesno:"Your recipient will receive a surprise box based on your selection,Choose a plan that suits your hobby lifestyle." }}
     </p>

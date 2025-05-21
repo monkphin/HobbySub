@@ -3,7 +3,7 @@
 
 {% block content %}
 <div class="container" aria-labelledby="edit-user-heading">
-  <h4 id="edit-user-heading">Edit {{ user.username }}</h4>
+  <h2 class="center-align green-text text-darken-3" id="edit-user-heading">Edit {{ user.username }}</h2>
   <form method="POST">
     {% csrf_token %}
 

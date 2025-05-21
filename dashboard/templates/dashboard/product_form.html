@@ -3,7 +3,7 @@
 
 {% block content %}
 <div class="container">
-  <h4 id="product-form-heading">{% if editing %}Edit Product{% else %}Add Product{% endif %}</h4>
+  <h2 class="center-align green-text text-darken-3" id="product-form-heading">{% if editing %}Edit Product{% else %}Add Product{% endif %}</h2>
 
   <form method="post" enctype="multipart/form-data" aria-labelledby="product-form-heading">
     {% csrf_token %}

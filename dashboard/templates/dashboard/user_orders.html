@@ -4,7 +4,7 @@
 
 {% block content %}
 <div class="container" role="region" aria-labelledby="user-orders-heading">
-  <h3 id="user-orders-heading">{{ user.username }}’s Orders</h3>
+  <h2 class="center-align green-text text-darken-3" id="user-orders-heading">{{ user.username }}’s Orders</h2>
 
   <div class="row button-row center-align margin-bottom-2">
     <a href="{% url 'user_admin' %}" class="btn grey darken-1">

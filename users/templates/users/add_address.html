@@ -6,7 +6,7 @@
 
 {% block content %}
 <section class="section center-align">
-  <h2>{% if form.instance.pk %}Edit Address{% else %}Add Address{% endif %}</h2>
+  <h2 class="center-align green-text text-darken-3">{% if form.instance.pk %}Edit Address{% else %}Add Address{% endif %}</h2>
   <div class="row form-wrapper">
     <form method="post" action="{% if next or gift %}?{% if next %}next={{ next|urlencode }}{% endif %}{% if next and gift %}&{% endif %}{% if gift %}gift=true{% endif %}{% else %}#{% endif %}">
       {% include 'partials/form_errors.html' %}

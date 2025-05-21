@@ -308,6 +308,193 @@ Icons throughout the site are provided by Font Awesome, enhancing navigation and
 
 This choice keeps the interface intuitive and visually consistent, improving the user experience.
 
+## [Features](#features#)
+All pages have been designed with a mobile-first approach and are fully responsive across a wide range of devices and screen sizes. Most pages adapt fluidly when the browser is resized, maintaining layout integrity and usability.
+
+Two exceptions — the Box Create/Edit and Product Create/Edit pages — exhibit a known issue where the layout compresses or visually distorts when the browser window is resized. This does not affect functionality and resolves on page refresh. The issue is documented in more detail in the testing section.
+
+### Navbar
+
+<details> 
+<summary>Nav Bar</summary> 
+    <img src="docs/testing/feature-images/navbar.png"> 
+</details> 
+<br> 
+
+<details> 
+<summary>Side Nav</summary> 
+    <img src="docs/testing/feature-images/sidenav.png> 
+</details> 
+<br> 
+
+The navbar is designed to be user-friendly and responsive across both desktop and mobile formats. On smaller screens, it condenses into a hamburger icon that triggers a slide-out side navigation menu when tapped. The navigation dynamically adjusts the visible options based on the user's login status — simplifying the interface for new visitors while providing quick access to relevant features for returning users and administrators.
+
+- Site Name: Functions as a link back to the homepage.
+- Responsive Navigation:
+-- Desktop View:
+--- A fixed top navbar shows key links.
+--- Menu items vary based on login/admin status.
+--- Options by State:
+---- Not Logged In: Home, About, Past Boxes, Buy for Myself, Give as Gift, Register, Login.
+---- Logged In: Home, About, Past Boxes, Buy for Myself, Give as Gift, My Account, Logout.
+---- Admin: All logged-in links plus access to the admin dropdown menu.
+-- Mobile View:
+--- Compact header with a hamburger menu icon.
+--- Tapping the icon opens a side-drawer navigation menu.
+--- Admin and purchase options are grouped under labeled sections with visual dividers for clarity.
+
+The 'Buy for Myself' and 'Give as a Gift' buttons are context-aware:
+- If the user is not logged in, clicking either redirects them to the registration page and then into the purchase flow.
+
+- If the user is logged in, the buttons skip registration and take them directly into the purchase journey.
+This dynamic behaviour helps reduce friction for new users while streamlining the experience for returning customers.
+
+
+### Global (DRY) Confirmation Modal
+
+<details> 
+<summary>Confirmation Modal</summary> 
+    <img src="docs/testing/feature-images/confirmation-modal.png> 
+</details> 
+<br> 
+
+The project uses a single globally available modal for all confirmation-based actions. This includes scenarios where sensitive operations (like deleting an item or cancelling a subscription) require user verification via password entry.
+
+Why it matters:
+- Reusable and DRY-compliant.
+- Ensures secure interaction for destructive actions.
+- Prevents accidental edits or deletions through a consistent interface.
+
+### Global Error Handler
+
+<details> 
+<summary>Confirmation Modal</summary> 
+    <img src="docs/testing/feature-images/error-handler.png> 
+</details> 
+<br> 
+
+A standardised global error handler is used for flashing form and system errors where appropriate (e.g. incorrect password, invalid form input). This keeps user feedback consistent and avoids cluttering templates with one-off error logic.
+
+###Home Page
+
+<details> 
+<summary>Confirmation Modal</summary> 
+    <img src="docs/testing/feature-images/homepage-1.png> 
+    <img src="docs/testing/feature-images/homepage-2.png> 
+    <img src="docs/testing/feature-images/homepage-3.png> 
+</details> 
+<br> 
+
+The home page is likely the first page a user encounters, so it's designed to immediately convey the core purpose and offerings of the site. Two subscription boxes are always displayed:
+- This Month’s Box – includes a carousel of the current box's contents, helping users visualise what they’ll receive.
+- Next Month’s Box – shows the upcoming box's name and a theme image to build interest and encourage early subscriptions.
+
+Fallback images are used if a box is missing its own image, ensuring the layout remains clean and functional even in edge cases.
+
+Below the featured boxes, the homepage provides a simple, visual overview of how the service works, broken into three clear steps:
+- Pick Your Plan
+- We Ship
+- You Enjoy
+These reinforce the straightforward nature of the service.
+Finally, two prominent call-to-action buttons are displayed:
+- Pick a Plan
+- Give as a Gift
+Like the navigation bar, these buttons adapt based on the user’s login status:
+- If the user is not logged in, the buttons redirect to registration before entering the purchase journey.
+- If the user is logged in, they go straight into the appropriate flow.
+This adaptive behaviour helps reduce friction for new users while maintaining quick access for returning customers.
+
+### Login and Registration Pages
+
+<details> 
+<summary>Login and Registrationl</summary> 
+    <img src="docs/testing/feature-images/register.png> 
+    <img src="docs/testing/feature-images/login.png> 
+    <img src="docs/testing/feature-images/confirm-email.png> 
+</details> 
+<br> 
+
+These pages are designed to be straightforward and user-friendly, giving users the ability to either create a new account or sign in to an existing one.
+Upon successful registration, users are sent a confirmation email. This step is required to verify ownership of the provided email address, as the platform handles e-commerce functionality. The confirmation link signs the user in automatically upon activation, minimising friction and helping them move straight into the experience without needing to log in again.
+User authentication and account handling are managed entirely through Django’s built-in systems, meaning password security and validation rules follow Django’s default standards.
+To support usability:
+- The registration page includes a direct link to the login page, making it easy for returning users who may have ended up on the wrong screen.
+- The login page includes a "Forgot Password" link that allows users to securely reset their password if needed.
+- Toast messages are used to provide immediate feedback on actions (e.g., registration success, login errors).
+- An interstitial confirmation page is displayed after registration, reminding users to check their inbox. This page also offers the option to resend the confirmation email in case it wasn’t received.
+
+### About Page
+
+<details> 
+<summary>Login and Registrationl</summary> 
+    <img src="docs/testing/feature-images/about.png> 
+</details> 
+<br> 
+
+The About page introduces the core philosophy and purpose behind Hobby Hub. It explains that the service is tailored for miniature painters, model builders, and tabletop enthusiasts — from complete beginners to seasoned hobbyists. The focus is on delivering inspiration and creativity through monthly curated boxes containing paints, brushes, miniatures, tools, and surprises designed to keep the hobby engaging and enjoyable.
+
+The page emphasizes the project's community-driven ethos, noting that it’s built by hobbyists, for hobbyists; with an emphasis on thoughtful curation over algorithm-driven filler. It also outlines the intended audiences, including new painters, long-time veterans, and gift-givers.
+
+The tone is warm, inviting, and hobby-focused, and the page includes a link encouraging new users to try a one-off box before committing to a subscription.
+
+### Past Boxes Page
+
+<details> 
+<summary>Login and Registrationl</summary> 
+    <img src="docs/testing/feature-images/past-boxes.png> 
+</details> 
+<br> 
+
+The Past Boxes page allows both new and returning users to browse previous subscription boxes. Each box is displayed using a Materialize card layout, featuring the box name, theme image, shipping date, and a short description of the theme. This helps users understand the kind of content typically included in a subscription.
+
+Each card also includes a clickable link that takes the user to a dedicated Past Box Contents page, where they can see exactly what was inside that specific box. This supports transparency and helps set expectations for future boxes.
+
+### Past Boxes Contents Page
+
+<details> 
+<summary>Login and Registrationl</summary> 
+    <img src="docs/testing/feature-images/past-boxes-contents.png> 
+</details> 
+<br> 
+
+The Past Box Contents page shows users the individual items included in a previously shipped box. Each item is displayed in its own Materialize card, featuring an image and a brief description. This gives users a clear view of the quality and variety they can expect from the service and helps build confidence in the value of the subscription.
+
+### Purchase Options (Buy for myself/Buy as a gift)
+
+### Address Selector
+
+### Gift Message
+
+### Purchase Success/Failure/Cancel Pages
+
+### My Account Page
+
+### My Account - Change Password and Edit Account pages. 
+
+### My Account - Order History Page
+
+### My Account - Address Add and Edit Pages
+
+### Administration - Box Admin Page
+
+### Administration - Add/Edit Box Pages
+
+### Administration - Box Products Page
+
+### Administration - Add/Edit Products Page
+
+### Administration - Interstitial Product Pages
+
+### Administration - User Admin Page 
+
+### Administration - User Edit Page
+
+### Administration - User Purchase History Page
+
+### Password Reset Pages
+
+### Error Pages
+
 ## [Future Features](#future-features)
 
 Admin Enhancements

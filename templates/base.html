@@ -30,41 +30,43 @@
         </div>
       {% endif %}
 
+    <div class="navbar-fixed">
       <nav role="navigation">
         <div class="nav-wrapper">
           <div class="container">
-          <a href="{% url 'home' %}" class="brand-logo">Hobby Hub</a>
-      
-          <!-- Desktop menu -->
-          <ul class="right hide-on-med-and-down">
-            <li><a href="{% url 'about' %}">About</a></li>
-            <li><a href="{% url 'past_boxes' %}">Past Boxes</a></li>
-            {% if user.is_authenticated %}
-              <li><a href="{% url 'select_purchase_type' %}?gift=false">Buy for Myself</a></li>
-              <li><a href="{% url 'select_purchase_type' %}?gift=true">Give as a Gift</a></li>
-              <li><a href="{% url 'account' %}">My Account</a></li>
-              <li><a href="{% url 'logout' %}">Logout</a></li>
-            {% else %}
-              <li><a href="{% url 'register' %}?next={% url 'handle_purchase_type' plan='monthly' %}?gift=false">Pick a Plan</a></li>
-              <li><a href="{% url 'register' %}?next={% url 'handle_purchase_type' plan='monthly' %}?gift=true">Give as a gift</a></li>
-              <li><a href="{% url 'register' %}">Register</a></li>
-              <li><a href="{% url 'login' %}">Login</a></li>
-            {% endif %}
-            {% if user.is_staff %}
-              <li class="admin-dropdown-wrapper">
-                <a class="dropdown-trigger" href="#!" data-target="dropdown1">
-                  Administration <i class="fas fa-chevron-down dropdown-icon"></i>
-                </a>
-              </li>
-            {% endif %}
-          </ul>
-        <!-- Burger trigger aligned to screen-right -->
-        <a href="#" data-target="mobile-nav" class="sidenav-trigger right">
-          <i class="fas fa-bars"></i>
-        </a>
+            <a href="{% url 'home' %}" class="brand-logo">Hobby Hub</a>
+        
+              <!-- Desktop menu -->
+              <ul class="right hide-on-med-and-down">
+                <li><a href="{% url 'about' %}">About</a></li>
+                <li><a href="{% url 'past_boxes' %}">Past Boxes</a></li>
+                {% if user.is_authenticated %}
+                  <li><a href="{% url 'select_purchase_type' %}?gift=false">Buy for Myself</a></li>
+                  <li><a href="{% url 'select_purchase_type' %}?gift=true">Give as a Gift</a></li>
+                  <li><a href="{% url 'account' %}">My Account</a></li>
+                  <li><a href="{% url 'logout' %}">Logout</a></li>
+                {% else %}
+                  <li><a href="{% url 'register' %}?next={% url 'handle_purchase_type' plan='monthly' %}?gift=false">Pick a Plan</a></li>
+                  <li><a href="{% url 'register' %}?next={% url 'handle_purchase_type' plan='monthly' %}?gift=true">Give as a gift</a></li>
+                  <li><a href="{% url 'register' %}">Register</a></li>
+                  <li><a href="{% url 'login' %}">Login</a></li>
+                {% endif %}
+                {% if user.is_staff %}
+                  <li class="admin-dropdown-wrapper">
+                    <a class="dropdown-trigger" href="#!" data-target="dropdown1">
+                      Administration <i class="fas fa-chevron-down dropdown-icon"></i>
+                    </a>
+                  </li>
+                {% endif %}
+              </ul>
+              <!-- Burger trigger aligned to screen-right -->
+              <a href="#" data-target="mobile-nav" class="sidenav-trigger right">
+              <i class="fas fa-bars"></i>
+            </a>
+          </div>
         </div>
-      </div>
       </nav>
+    </div>
 
       <ul id="dropdown1" class="dropdown-content">
         <li><a href="{% url 'box_admin' %}">Box Admin</a></li>
@@ -93,6 +95,8 @@
           {% endif %}
 
           {% if user.is_staff %}
+            <li class="divider"></li>
+            <li><strong class="grey-text text-lighten-2">Site Admin</strong></li>
             <li><a href="{% url 'box_admin' %}">Box Admin</a></li>
             <li><a href="{% url 'user_admin' %}">User Admin</a></li>
           {% endif %}

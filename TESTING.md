@@ -72,13 +72,13 @@ Below are the outstanding issues I am aware of. Some of these may be resolved, b
 -- Believed to be resolved but marked as outstanding due to lack of final testing.
 
 ### Email duplication. 
-Description: Emails occasionally send twice for a single event trigger.
-    Likely Cause:
-        Potentially linked to the race conditions affecting subscription ID handling.
-    Mitigation:
-        Adjusted event handling logic.
-        Added checks to prevent duplicate sends.
-    Status: Believed to be resolved but left marked as outstanding pending further testing.
+- Description: Emails occasionally send twice for a single event trigger.
+- Likely Cause:
+-- Potentially linked to the race conditions affecting subscription ID handling.
+- Mitigation:
+-- Adjusted event handling logic.
+-- Added checks to prevent duplicate sends.
+- Status: Believed to be resolved but left marked as outstanding pending further testing.
 
 ### Page rendering issues
 - Description:
@@ -114,10 +114,8 @@ Description: Emails occasionally send twice for a single event trigger.
 - Next Steps / Logging:
 -- Issue remains unresolved. No workaround has been applied yet. Will revisit this after higher-priority tasks or consider commenting out the form submit button disable temporarily for confirmation testing.
 
-
 ## Refactoring and DRY 
-Throughout development, I attempted to adhere to DRY (Don't Repeat Yourself) principles wherever possible, aiming to minimise code duplication and improve maintainability.
-
+Throughout development, I attempted to adhere to DRY (Don't Repeat Yourself) principles wherever possible, aiming to minimise code duplication and improve maintainability. Sadly, in a it of a rush to clean up the front end towards the end of the project things got a bit out of hand with the CSS file. This is something that I plan to revisit and clean up in the future. 
 
 ### Template Reuse
 The front-end leverages a modular design, with reusable templates for common elements and page structures.
@@ -132,6 +130,7 @@ During development, I created stripe_handlers.py as a way to break up growing lo
 - Known Issue:
 -- This function now makes up around two-thirds of the entire file, and is a primary candidate for refactoring.
 -- Its complexity grew during the investigation and debugging of issues like race conditions and duplicate IDs.
+
 I acknowledge that further refactoring is required, particularly for:
 - Breaking out smaller logic components to streamline handle_checkout_session_completed.
 - Improving readability and debugging efficiency by separating concerns into distinct methods.
@@ -158,20 +157,295 @@ This was part of a wider effort to control input behaviour across the platform, 
 ## Validation
 All validation and accessibility testing was carried out manually using browser-based tools and validator services. Due to the nature of Django-based dynamic rendering and user-specific content behind authentication gates, most testing was done by viewing the rendered page source and manually validating the output.
 
+### Tool Usage Balance:
+Lighthouse testing was conducted across a wide range of pages and received the most focus, as it provided actionable feedback on performance, accessibility, and SEO in one go.
+
+WAVE and W3C HTML validation were used more selectively — primarily on form-heavy or complex pages to confirm structure and accessibility. This approach was intentional due to time constraints and the dynamic nature of Django-rendered pages.
+
+The aim was to ensure all core flows were tested with at least one tool, and all major layout or interaction patterns were covered. Not every page was tested with every tool, but representative samples were chosen to surface recurring issues, particularly since there was a lot of re-use of HTML and over multiple pages. 
 
 ### HTML Validation
 Raw HTML was validated using the [W3C Markup Validation Service](https://validator.w3.org/). As Django renders pages dynamically and includes authenticated content, page source HTML was copied and pasted directly into the tool for validation.
 - Critical issues (e.g., malformed elements, missing attributes) were corrected immediately.
-- Minor or cosmetic issues (e.g., redundant attributes or non-breaking semantic tags) were noted but deferred to a future development cycle due to time constraints.
+- Warning/Minor or cosmetic issues (e.g., redundant attributes or non-breaking semantic tags) were noted but deferred to a future development cycle due to time constraints. Since the HTML included the contents of base.html, some of the warnings appear over all pages, since this is a common page throughout the site. 
+
+The results of this are below. 
+
+<details>
+<summary>Index Page</summary>
+  <img src="docs/testing/w3schools/index.png">
+</details>
+<br>
+
+<details>
+<summary>Registration Page</summary>
+  <img src="docs/testing/w3schools/register.png">
+</details>
+<br>
+
+<details>
+<summary>Login Page</summary>
+  <img src="docs/testing/w3schools/login.png">
+</details>
+<br>
+
+
+<details>
+<summary>Past Boxes Page</summary>
+  <img src="docs/testing/w3schools/past-boxes.png">
+</details>
+<br>
+
+
+<details>
+<summary>Past Box Contents Page</summary>
+  <img src="docs/testing/w3schools/past-box-content.png">
+</details>
+<br>
+
+<details>
+<summary>Purchase Selection Page</summary>
+  <img src="docs/testing/w3schools/purchase-select.png">
+</details>
+<br>
+
+<details>
+<summary>Address Selection Page</summary>
+  <img src="docs/testing/w3schools/order-address-select.png">
+</details>
+<br>
+
+<details>
+<summary>Order Cancel Page</summary>
+  <img src="docs/testing/w3schools/order-cancel.png">
+</details>
+<br>
+
+<details>
+<summary>Order Complete Page</summary>
+  <img src="docs/testing/w3schools/order-complete.png">
+</details>
+<br>
+
+<details>
+<summary>Gift Message Page</summary>
+  <img src="docs/testing/w3schools/gift-message.png">
+</details>
+<br>
+
+<details>
+<summary>My Account Page</summary>
+  <img src="docs/testing/w3schools/account-page.png">
+</details>
+<br>
+
+<details>
+<summary>Account Password Change</summary>
+  <img src="docs/testing/w3schools/account-password.png">
+</details>
+<br>
+
+<details>
+<summary>Account Edit Page</summary>
+  <img src="docs/testing/w3schools/account-edit.png">
+</details>
+<br>
+
+<details>
+<summary>Account Orders Page</summary>
+  <img src="docs/testing/w3schools/account-orders.png">
+</details>
+<br>
+
+<details>
+<summary>Box Admin Page</summary>
+  <img src="docs/testing/w3schools/box-admin.png">
+</details>
+<br>
+
+<details>
+<summary>Box Admin Editor Page</summary>
+  <img src="docs/testing/w3schools/box-edit.png">
+</details>
+<br>
+
+<details>
+<summary>Box Admin Product Page</summary>
+  <img src="docs/testing/w3schools/box-products.png">
+</details>
+<br>
+
+<details>
+<summary>Box Admin Product Editor Page</summary>
+  <img src="docs/testing/w3schools/box-product-editor.png">
+</details>
+<br>
+
+<details>
+<summary>Box Admin Assign Products Page</summary>
+  <img src="docs/testing/w3schools/box-assign-products.png">
+</details>
+<br>
+
+<details>
+<summary>Box Admin Remove Product Page</summary>
+  <img src="docs/testing/w3schools/box-remove-product.png">
+</details>
+<br>
+
+<details>
+<summary>User Admin Page</summary>
+  <img src="docs/testing/w3schools/user-admin.png">
+</details>
+<br>
+
+<details>
+<summary>User Admin Edit Page</summary>
+  <img src="docs/testing/w3schools/user-edit.png">
+</details>
+<br>
+
+<details>
+<summary>User Admin Orders Page</summary>
+  <img src="docs/testing/w3schools/user-orders.png">
+</details>
+<br>
 
 ### CSS Validation
 The CSS was validated using the [W3C CSS Validation Service](https://jigsaw.w3.org/css-validator/). This included checking the main stylesheet and any custom overrides.
-- No major CSS syntax issues were found.
+- No CSS syntax issues were found with my own CSS. 
+- External CSS such as that provided by Materialize did have a few errors. 
+
+<details>
+<summary>CSS Results</summary>
+  <img src="docs/testing/w3schools/css.png">
+</details>
+<br>
 
 ### Accessibility
 Accessibility was assessed using the WAVE Chrome plugin, which checks for WCAG compliance and general usability for assistive technologies.
 - Some form labels have contrast ratios below optimal thresholds, which could impact visibility for users with visual impairments. These are noted for revision in a future UI pass. 
+
+<details>
+<summary>Index Page</summary>
+  <img src="docs/testing/wave/index.png">
+</details>
+<br>
  
+<details>
+<summary>Past Boxes Page</summary>
+  <img src="docs/testing/wave/pastboxes.png">
+</details>
+<br>
+
+<details>
+<summary>Past Box Items Page</summary>
+  <img src="docs/testing/wave/pastboxitems.png">
+</details>
+<br>
+
+<details>
+<summary>Purchase Selection Page</summary>
+  <img src="docs/testing/wave/order-choose-box.png">
+</details>
+<br>
+
+<details>
+<summary>Purchase Choose Address Page</summary>
+  <img src="docs/testing/wave/order-choose-address.png">
+</details>
+<br>
+
+<details>
+<summary>Purchase Gift Message Page</summary>
+  <img src="docs/testing/wave/order-gift-message.png">
+</details>
+<br>
+
+<details>
+<summary>Account Page</summary>
+  <img src="docs/testing/wave/account.png">
+</details>
+<br>
+
+<details>
+<summary>Account Edit Page</summary>
+  <img src="docs/testing/wave/account-edit.png">
+</details>
+<br>
+
+<details>
+<summary>Account Password Change Page</summary>
+  <img src="docs/testing/wave/password-form.png">
+</details>
+<br>
+
+<details>
+<summary>Account Order History Page</summary>
+  <img src="docs/testing/wave/account-order-history.png">
+</details>
+<br>
+
+<details>
+<summary>Account Edit Address</summary>
+  <img src="docs/testing/wave/edit-address.png">
+</details>
+<br>
+
+<details>
+<summary>Box Admin Page</summary>
+  <img src="docs/testing/wave/box-manager.png">
+</details>
+<br>
+
+<details>
+<summary>Box Admin Add Box Page</summary>
+  <img src="docs/testing/wave/add-box.png">
+</details>
+<br>
+
+<details>
+<summary>Box Admin Edit Box Page</summary>
+  <img src="docs/testing/wave/edit-box.png">
+</details>
+<br>
+
+<details>
+<summary>Box Admin Box Contents Page</summary>
+  <img src="docs/testing/wave/box-contents.png">
+</details>
+<br>
+
+<details>
+<summary>Box Admin Edit Product</summary>
+  <img src="docs/testing/wave/edit-product.png">
+</details>
+<br>
+
+<details>
+<summary>Box Admin Reassign Products</summary>
+  <img src="docs/testing/wave/reassign-products.png">
+</details>
+<br>
+
+<details>
+<summary>Box Admin Remove Product</summary>
+  <img src="docs/testing/wave/remove-product.png">
+</details>
+<br>
+
+<details>
+<summary>User Manager</summary>
+  <img src="docs/testing/wave/user-manager.png">
+</details>
+<br>
+
+<details>
+<summary>User Order History</summary>
+  <img src="docs/testing/wave/user-orders.png">
+</details>
+<br>
+
 ### Lighthouse Performance Testing
 Performance and accessibility were further assessed using Lighthouse in Chrome DevTools.
 - Each page was tested for performance, accessibility, best practices, and SEO.
@@ -181,8 +455,225 @@ Performance and accessibility were further assessed using Lighthouse in Chrome D
 
 #### Logged Out
 
+<details> 
+<summary>Index Page (Logged Out)</summary> 
+    <img src="docs/testing/lighthouse/index-loggedout.png"> 
+</details> 
+<br> 
+
+<details> 
+<summary>About Page (Logged Out)</summary> 
+    <img src="docs/testing/lighthouse/about-loggedout.png"> 
+</details> 
+<br> 
+
+<details> 
+<summary>Register Page</summary> 
+    <img src="docs/testing/lighthouse/register.png"> 
+</details> 
+<br> 
+
+<details> 
+<summary>Login Page</summary> 
+    <img src="docs/testing/lighthouse/login.png"> 
+</details> 
+<br> 
+
+<details> 
+<summary>Past Boxes Page (Logged Out)</summary> 
+    <img src="docs/testing/lighthouse/pastboxes-loggedout.png"> 
+</details> 
+<br> 
+
+<details> 
+<summary>Past Box Contents Page (Logged Out)</summary> 
+    <img src="docs/testing/lighthouse/pastboxes-content-loggedout.png"> 
+</details> 
+<br>
+
 #### Logged In
- 
+
+<details> 
+<summary>Index Page (Logged In)</summary> 
+    <img src="docs/testing/lighthouse/index-loggedin.png"> 
+</details> 
+<br> 
+
+<details> 
+<summary>About Page (Logged In)</summary> 
+    <img src="docs/testing/lighthouse/about-loggedin.png"> 
+</details> 
+<br> 
+
+<details> 
+<summary>Past Boxes Page (Logged In)</summary> 
+    <img src="docs/testing/lighthouse/pastboxes-loggedin.png"> 
+</details> 
+<br> 
+
+<details> 
+<summary>Past Box Contents Page (Logged In)</summary> 
+    <img src="docs/testing/lighthouse/pastboxes-content-loggedin.png"> 
+</details> 
+<br> 
+
+<details> 
+<summary>Self Plan Selection Page</summary> 
+    <img src="docs/testing/lighthouse/selfplan-loggedin.png"> 
+</details> 
+<br> 
+
+<details> 
+<summary>Self Plan - Address Selection</summary> 
+    <img src="docs/testing/lighthouse/selfplan-address-loggedin.png"> 
+</details> 
+<br>
+
+<details> 
+<summary>Gift Purchase Page</summary> 
+    <img src="docs/testing/lighthouse/giftpurchase-loggedin.png"> 
+</details> 
+<br> 
+
+<details> 
+<summary>Gift Purchase - Shipping Page</summary> 
+    <img src="docs/testing/lighthouse/giftpurchase-shipping.png"> 
+</details> 
+<br> 
+
+<details> 
+<summary>Gift Message Page</summary> 
+    <img src="docs/testing/lighthouse/gift-message.png"> 
+</details> 
+<br> 
+
+<details> 
+<summary>Cancelled Order Page</summary> 
+    <img src="docs/testing/lighthouse/cancelledorder.png"> 
+</details> 
+<br> 
+
+<details> 
+<summary>Successful Order Page</summary> 
+    <img src="docs/testing/lighthouse/successfulorder.png"> 
+</details> 
+<br> 
+
+<details> 
+<summary>Account Page</summary> 
+    <img src="docs/testing/lighthouse/account-loggedin.png"> 
+</details> 
+<br> 
+
+<details> 
+<summary>Order History Page</summary> 
+    <img src="docs/testing/lighthouse/account-orderhistory.png"> 
+</details> 
+<br> 
+
+<details> 
+<summary>Address Form Page</summary> 
+    <img src="docs/testing/lighthouse/addressform.png"> 
+</details> 
+<br> 
+
+<details> 
+<summary>Edit Account Page</summary> 
+    <img src="docs/testing/lighthouse/editaccount.png"> 
+</details> 
+<br> 
+
+<details> 
+<summary>Password Reset - Form Page</summary> 
+    <img src="docs/testing/lighthouse/passwordreset-form.png"> 
+</details> 
+<br> 
+
+<details> 
+<summary>Password Reset - Email Sent Page</summary> 
+    <img src="docs/testing/lighthouse/passwordresetemail.png"> 
+</details> 
+<br> 
+
+<details> 
+<summary>Password Reset - Confirm Email Page</summary> 
+    <img src="docs/testing/lighthouse/passwordresetemailconfirm.png"> 
+</details> 
+<br>
+
+<details> 
+<summary>Password Reset - Complete Page</summary> 
+    <img src="docs/testing/lighthouse/passwordresetemailcomplete.png"> 
+</details> 
+<br> 
+
+<details> 
+<summary>Box Admin Add Box Page</summary> 
+    <img src="docs/testing/lighthouse/addbox.png"> 
+</details> 
+<br> 
+
+<details> 
+<summary>Box Admin Edit Box Page</summary> 
+    <img src="docs/testing/lighthouse/editbox.png"> 
+</details> 
+<br> 
+
+<details> 
+<summary>Box Admin Add Product Page</summary> 
+    <img src="docs/testing/lighthouse/addproduct.png"> 
+</details>
+<br> 
+
+<details> 
+<summary>Box Admin Edit Product Page</summary> 
+    <img src="docs/testing/lighthouse/editproduct.png"> 
+</details> 
+<br> 
+
+<details> 
+<summary>Box Admin Assign Product to Box Page</summary> 
+    <img src="docs/testing/lighthouse/assignproduct.png"> 
+</details> 
+<br> 
+
+<details> 
+<summary>Box Admin Box Contents Page</summary> 
+    <img src="docs/testing/lighthouse/boxcontents.png"> 
+</details> 
+<br> 
+
+<details> 
+<summary>Box Admin Page</summary> 
+    <img src="docs/testing/lighthouse/boxmanager.png"> 
+</details> 
+<br> 
+
+<details> 
+<summary>User Admin Page</summary> 
+    <img src="docs/testing/lighthouse/useradmin.png"> 
+</details> 
+<br>
+
+<details> 
+<summary>Edit User Admin Page</summary> 
+    <img src="docs/testing/lighthouse/edituseradmin.png"> 
+</details> 
+<br> 
+
+<details> 
+<summary>User Order Admin Page</summary> 
+    <img src="docs/testing/lighthouse/userorderadmin.png"> 
+</details> 
+<br> 
+
+<details> 
+<summary>Error Page</summary> 
+    <img src="docs/testing/lighthouse/errorpage.png"> 
+</details> 
+<br>
+
+
 ### User Testing
  
 #### User Story Testing
@@ -235,6 +726,14 @@ A full breakdown is provided below.## Successes
 
 ### JavaScript Testing
 JavaScript code was tested using [JSHint](https://jshint.com/). No critical issues were identified during testing. Minor warnings were reviewed and addressed where relevant. Full results are included below.
+
+The JSHint report showed one compatibility warning related to optional chaining, which requires ES11 support. Since modern browsers fully support this, no changes were made. Two undefined variables (M and GLOBALS) were also flagged, but these are contextually valid within the local script scope and not runtime errors. Cyclomatic complexity and function size metrics were noted but did not indicate maintainability concerns.
+
+<details> 
+<summary>JSHint Test Results</summary> 
+    <img src="docs/testing/jshint.png"> 
+</details> 
+<br>
 
 ### Python Testing
 Python code was validated using the Code Institute-provided [PEP8 Compliance Checker](https://pep8ci.herokuapp.com/). All key files were tested, and any critical style or formatting issues were resolved. Minor whitespace or stylistic warnings were reviewed but de-prioritised due to time constraints.
