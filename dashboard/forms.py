@@ -114,7 +114,6 @@ class BoxForm(forms.ModelForm):
             'description',
             'image',
             'shipping_date',
-            'is_archived'
         ]
         widgets = {
             'name': forms.TextInput(attrs={'class': 'validate'}),

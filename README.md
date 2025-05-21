@@ -323,7 +323,7 @@ Two exceptions — the Box Create/Edit and Product Create/Edit pages — exhibit
 
 <details> 
 <summary>Side Nav</summary> 
-    <img src="docs/testing/feature-images/sidenav.png> 
+    <img src="docs/testing/feature-images/sidenav.png"> 
 </details> 
 <br> 
 
@@ -354,7 +354,7 @@ This dynamic behaviour helps reduce friction for new users while streamlining th
 
 <details> 
 <summary>Confirmation Modal</summary> 
-    <img src="docs/testing/feature-images/confirmation-modal.png> 
+    <img src="docs/testing/feature-images/confirmation-modal.png"> 
 </details> 
 <br> 
 
@@ -369,7 +369,7 @@ Why it matters:
 
 <details> 
 <summary>Confirmation Modal</summary> 
-    <img src="docs/testing/feature-images/error-handler.png> 
+    <img src="docs/testing/feature-images/error-handler.png"> 
 </details> 
 <br> 
 
@@ -379,9 +379,9 @@ A standardised global error handler is used for flashing form and system errors 
 
 <details> 
 <summary>Confirmation Modal</summary> 
-    <img src="docs/testing/feature-images/homepage-1.png> 
-    <img src="docs/testing/feature-images/homepage-2.png> 
-    <img src="docs/testing/feature-images/homepage-3.png> 
+    <img src="docs/testing/feature-images/homepage-1.png"> 
+    <img src="docs/testing/feature-images/homepage-2.png"> 
+    <img src="docs/testing/feature-images/homepage-3.png"> 
 </details> 
 <br> 
 
@@ -407,10 +407,10 @@ This adaptive behaviour helps reduce friction for new users while maintaining qu
 ### Login and Registration Pages
 
 <details> 
-<summary>Login and Registrationl</summary> 
-    <img src="docs/testing/feature-images/register.png> 
-    <img src="docs/testing/feature-images/login.png> 
-    <img src="docs/testing/feature-images/confirm-email.png> 
+<summary>Login and Registration</summary> 
+    <img src="docs/testing/feature-images/register.png"> 
+    <img src="docs/testing/feature-images/login.png"> 
+    <img src="docs/testing/feature-images/confirm-email.png"> 
 </details> 
 <br> 
 
@@ -426,8 +426,8 @@ To support usability:
 ### About Page
 
 <details> 
-<summary>Login and Registrationl</summary> 
-    <img src="docs/testing/feature-images/about.png> 
+<summary>About Page</summary> 
+    <img src="docs/testing/feature-images/about.png"> 
 </details> 
 <br> 
 
@@ -440,8 +440,8 @@ The tone is warm, inviting, and hobby-focused, and the page includes a link enco
 ### Past Boxes Page
 
 <details> 
-<summary>Login and Registrationl</summary> 
-    <img src="docs/testing/feature-images/past-boxes.png> 
+<summary>Past Boxes</summary> 
+    <img src="docs/testing/feature-images/past-boxes.png"> 
 </details> 
 <br> 
 
@@ -452,8 +452,8 @@ Each card also includes a clickable link that takes the user to a dedicated Past
 ### Past Boxes Contents Page
 
 <details> 
-<summary>Login and Registrationl</summary> 
-    <img src="docs/testing/feature-images/past-boxes-contents.png> 
+<summary>Past Box Contents</summary> 
+    <img src="docs/testing/feature-images/past-boxes-contents.png"> 
 </details> 
 <br> 
 
@@ -461,39 +461,312 @@ The Past Box Contents page shows users the individual items included in a previo
 
 ### Purchase Options (Buy for myself/Buy as a gift)
 
+<details> 
+<summary>Purchase Options</summary> 
+    <img src="docs/testing/feature-images/purchase-options.png"> 
+</details> 
+<br> 
+
+The Purchase Options page is designed with DRY principles in mind, supporting both the 'Buy for Myself' and 'Give as Gift' flows using shared logic and templates.
+
+Users are presented with a set of subscription choices displayed as Materialize cards. Each card outlines the key details of the plan — including billing frequency, total cost, and any savings associated with longer-term commitments. Users can choose between four subscription durations or a one-off box, making it easy to find an option that suits their needs or gift intentions.
+
+The page adapts its messaging and actions to reflect the user's journey, ensuring a clear and consistent experience without duplicating code or components.
+
 ### Address Selector
+
+<details> 
+<summary>Address Selector</summary> 
+    <img src="docs/testing/feature-images/choose-address.png"> 
+</details> 
+<br> 
+
+The Address Selector page allows users to choose from their saved addresses or add and edit addresses as needed. Like the Purchase Options page, it’s built using DRY principles to minimize code repetition and streamline logic.
+
+User addresses are displayed using styled Materialize cards that clearly present full address details, including name, address lines, and contact number. This layout ensures a clean, easy-to-read selection interface.
+
+Although default addresses are supported across the platform, this page intentionally bypasses the need for one during the purchase journey. Users must explicitly choose an address during checkout, which ensures clarity and reduces the risk of deliveries being sent to an outdated or unintended location.
+
+In future iterations, default addresses may be used as fall backs for failed address lookups or missing data — particularly for standard (non-gift) subscriptions.
+
+The concept of a default address is not applied to gift addresses. This is by design: each gift purchase is treated as a discrete transaction, often going to a different recipient or address with each purchase. Assigning a single “default” gift address would risk incorrect deliveries or introduce unnecessary complexity into the gifting flow once the fall back was implemented.
 
 ### Gift Message
 
+<details> 
+<summary>Gift Message</summary> 
+    <img src="docs/testing/feature-images/gift-message.png"> 
+</details> 
+<br> 
+
+If the user is on a “Give as Gift” journey, they encounter a unique step in the purchase process: the option to include a personalised gift message. This page is the only point of divergence from the standard “Buy for Myself” flow.
+
+The gift message is entirely optional, allowing users to leave it blank if they want the gift to remain a surprise. If completed, the message is used to send an email to the recipient — it is not stored in the database beyond that single email action. This helps protect recipient privacy and avoid unnecessary data retention.
+
+There are several potential improvements identified for future iterations:
+
+- Conditional Field Requirements: Currently, users can partially complete the form (e.g., adding an email but no message), which can lead to unclear or incomplete notifications. A future enhancement could enforce that if any field is filled in, the others become required.
+
+- Card-Based Gift Messages: Instead of sending an email, users could opt to include the message inside the physical box, printed as a card. This would require storing the message data and marking it with a flag on submission.
+
+- Scheduled Email Sends: For gifts tied to special occasions (like birthdays), allowing delayed delivery of the gift email would improve the user experience — but again, this would require temporary storage of the gift metadata and a background job to manage the email schedule.
+
+Despite its simplicity, this page plays a key role in personalising the gifting experience and hints at future functionality that could enrich the platform further.
+
 ### Purchase Success/Failure/Cancel Pages
+
+<details> 
+<summary>Cancelled Message</summary> 
+    <img src="docs/testing/feature-images/cancelled.png"> 
+</details> 
+<br> 
+
+Once the user selects their address (or completes the gift message form), they are redirected to Stripe to complete their payment.
+
+From there, they may be returned to one of three nearly identical pages depending on the outcome of the transaction:
+- Success – Confirms the order or subscription was completed and offers navigation to their account or the homepage.
+- Cancelled – Informs the user that they exited the payment process and provides an option to restart or return home.
+- Failed – Notifies the user that something went wrong during the payment process and suggests retrying or seeking support.
+Each page is intentionally simple, offering clear next steps and minimizing friction after checkout events.
 
 ### My Account Page
 
-### My Account - Change Password and Edit Account pages. 
+<details> 
+<summary>My Account</summary> 
+    <img src="docs/testing/feature-images/my-account-1.png"> 
+    <img src="docs/testing/feature-images/my-account-2.png"> 
+</details> 
+<br> 
+
+The My Account page allows users to manage their profile and shipping details.
+Upon loading, users are shown a summary card with key account information — including their name, join date, and a brief overview of their account activity. From this page, users can:
+- View order history
+- Change their password
+- Edit account details
+- Delete their account
+Further down, saved addresses are displayed in grouped cards — separated into Personal and Gift addresses. Users can add, edit, delete, or set a personal address as default.
+For safety, the delete button is disabled on any address linked to an active order or subscription, preventing accidental loss of required shipping data.
+
+### My Account - Change Password Page
+
+<details> 
+<summary>Change Password</summary> 
+    <img src="docs/testing/feature-images/change-password.png"> 
+</details> 
+<br> 
+
+This is a straightforward form that allows users to change their password. For security, the user must enter their current password and confirm the new password by entering it twice. This helps prevent accidental changes and ensures basic account safety standards are met.
+
+### My Account - Edit Account pages. 
+
+<details> 
+<summary>Edit Account</summary> 
+    <img src="docs/testing/feature-images/edit-account.png"> 
+</details> 
+<br> 
+
+This page consists of two separate cards: one for changing the user's email address, and the other for updating their username and display name.
+The email change form is protected using the site's global confirmation modal, requiring the user to enter their password before the change is accepted. This provides an extra layer of security for a critical account-level update.
+While a future iteration may extend this protection to all account changes, the current design prioritises ease of use by only enforcing password confirmation where most necessary.
 
 ### My Account - Order History Page
 
+<details> 
+<summary>Order History</summary> 
+    <img src="docs/testing/feature-images/order-history.png"> 
+</details> 
+<br> 
+
+The order history page allows users to view all their past and current orders, separated into single box purchases and subscription orders. Each order is displayed within its own card, showing:
+- Order number
+- Status (e.g. Processing, Shipped)
+- Order date
+- If it's a gift: the recipient’s name and postcode
+- Estimated shipping date
+- For subscriptions: either the subscription start date or next renewal date, depending on the subscription type
+Users can cancel active subscriptions directly from this page. Currently, cancellations are set to take effect after the final prepaid box in a multi-month plan (3, 6, or 12-month) has shipped. In future iterations, immediate cancellation with partial refund support may be considered.
+To improve usability, especially on accounts with many orders, two "Back" buttons are provided — one at the top and one at the bottom. The top button is conditionally shown when a user has four or more orders, offering a minor quality-of-life improvement by reducing scrolling. Future enhancements could include pagination to better handle large order histories.
+
 ### My Account - Address Add and Edit Pages
 
+<details> 
+<summary>Edit/Add Address</summary> 
+    <img src="docs/testing/feature-images/order-history.png"> 
+</details> 
+<br> 
+
+These pages - Add Address and Edit Address - share the same underlying template and logic, so they’re grouped together here.
+They allow users to enter or update address details for both personal and gift purposes. The form dynamically adapts based on the context: if the user is adding or editing a gift address, the "Set as default" option is hidden, as gift addresses are not eligible to be marked as default. For personal addresses, this option is shown where applicable.
+The consistent form structure ensures users can manage their address book with minimal friction across different parts of the site.
 ### Administration - Box Admin Page
+
+<details> 
+<summary>Box Admin</summary> 
+    <img src="docs/testing/feature-images/box-admin-1.png">
+    <img src="docs/testing/feature-images/box-admin-2.png"> 
+</details> 
+<br> 
+
+This is the first of two admin landing pages, presenting a full list of all current, upcoming, and past boxes in the system. Each box is displayed as a Materialize card, showing its name, scheduled shipping date, and archived status (boxes from previous months are automatically marked as "Archived" to prevent confusion).
+
+Admins can:
+- Add new boxes
+- Edit existing ones
+- View and manage box contents
+- Delete boxes if needed
+
+At the bottom of the page is an include that renders a list of orphaned box items — products that exist in the database but are not currently assigned to any box. Admins can:
+- Add new items
+- Reassign or delete items in bulk using checkboxes
+- Edit or delete individual items using the buttons on each card
+
+This page is designed for clarity and efficiency, helping admins manage inventory and box assignments with minimal friction.
 
 ### Administration - Add/Edit Box Pages
 
+<details> 
+<summary>Add/Edit Box</summary> 
+    <img src="docs/testing/feature-images/edit-box.png">
+</details> 
+<br> 
+
+These two pages are effectively the same — both provide simple forms that allow admins to set a name, description, upload an image, and choose a shipping date.
+
+Images are hosted on Cloudinary. If an image already exists for a box, it is displayed as a preview when editing. While uploading an image is optional (enabling admins to plan boxes in advance), the site includes fallback images to ensure visual continuity. This means that even if an image is forgotten or delayed, the relevant pages will still display a placeholder.
+
+Boxes are automatically archived based on their shipping date — if the date falls before the end of the current month, the system flags them as archived. For this reason, there is no manual archive checkbox on the form.
+
 ### Administration - Box Products Page
+
+<details> 
+<summary>Box Contents</summary> 
+    <img src="docs/testing/feature-images/box-contents-1.png">
+    <img src="docs/testing/feature-images/box-contents-2.png"> 
+</details> 
+<br> 
+
+The Box Contents page allows admins to add, remove, and edit the products assigned to a specific box. New products can be created directly from this page using the "Add Product" button, which automatically links them to the box currently being viewed.
+Each product is displayed in a card with options to edit, remove, or delete:
+- The Edit button opens a form to update the product's name, quantity, image, or description.
+- The Remove button unassigns the product from the box (without deleting it), placing it in the orphaned products list.
+- The Delete button permanently removes the product from the system and is password-protected to prevent accidental deletion.
+At the bottom of the page, the Orphaned Products section is included — mirroring the functionality from the Box Admin page. Here, admins can select and reassign products to the current box using a context-aware Reassign button, or delete them in bulk or individually.
 
 ### Administration - Add/Edit Products Page
 
+<details> 
+<summary>Add/edit Product</summary> 
+    <img src="docs/testing/feature-images/edit-product.png">
+</details> 
+<br> 
+
+The Add/Edit Product pages closely mirror the structure of the Add/Edit Box pages, with a few key differences.
+
+Instead of a date picker, the product form includes two dropdowns: one for selecting the quantity (up to 10 units per item), and one for choosing the box to assign the product to. This allows admins to create and assign a product in one step, streamlining the process.
+
+As with boxes, product images are hosted on Cloudinary. If an image already exists, it will be displayed on the edit page for quick reference. Image uploads are optional at the time of creation — fallback images are used elsewhere on the site to ensure layout consistency in case the admin forgets to upload one, or if a product is created while waiting for assets to be provided.
+
 ### Administration - Interstitial Product Pages
+
+<details> 
+<summary>Assign Product</summary> 
+    <img src="docs/testing/feature-images/assign-products.png">
+</details> 
+<br> 
+
+The admin section includes two transitional pages for managing products: one for bulk reassignment and one for product removal.
+
+The product removal confirmation page is a legacy element, originally created before the global password confirmation modal was introduced. While it’s likely no longer in active use, it has been intentionally retained in case any overlooked flow still references it. This serves as a fallback safety net during testing or future development.
+
+The bulk reassignment page allows admins to assign multiple orphaned products to a single box. It’s a deliberately simple form: a list of the selected products, a dropdown menu to choose the destination box, and buttons to confirm the reassignment or cancel the action. This helps streamline the process of cleaning up unassigned inventory.
 
 ### Administration - User Admin Page 
 
-### Administration - User Edit Page
+<details> 
+<summary>User Admin</summary> 
+    <img src="docs/testing/feature-images/user-admin.png">
+</details> 
+<br> 
+The second of the two admin landing pages is the User Admin page. Here, admins are presented with a list of all registered users, each displayed in a card format. Each card shows the user’s username, email address, admin status, and active status. A set of action buttons is provided to:
+
+- View the user’s account in Stripe
+- Access their order history
+- Edit the user’s details
+- Trigger a password reset email
+- Deactivate the account
+
+Deactivation was chosen over full deletion to preserve historical billing data and support regulatory compliance. However, if complete deletion is ever required (e.g., under GDPR), this can still be handled via the Django admin panel.
+Admin accounts cannot be deactivated through this interface, as doing so would revoke their access to the site. To deactivate an admin, their admin privileges must first be removed. For this reason, the Deactivate button is always disabled for admin users.
 
 ### Administration - User Purchase History Page
 
+<details> 
+<summary>Purchase HIstory</summary> 
+    <img src="docs/testing/feature-images/purchase-history.png">
+</details> 
+<br> 
+
+The User Purchase History page is one of the most important admin tools, providing a detailed view of a user's orders. Each order is presented in its own card, displaying key information including:
+
+- Order number
+- Order date
+- Linked box
+- Gift status (if applicable)
+- Payment amount
+- Payment status, including timestamp if paid
+- Direct link to the order/subscription in Stripe
+- Shipping address via a modal (where available)
+
+Admins can also transition the order status between Pending, Processing, Shipped, and Cancelled, allowing for flexible order management. This page offers a complete overview of both one-off purchases and subscription-based orders in a single interface, helping staff track fulfilment and payment issues efficiently.
+
+### Administration - User Edit Page
+
+<details> 
+<summary>User Edit</summary> 
+    <img src="docs/testing/feature-images/edit-user.png">
+</details> 
+<br> 
+
+Admins can view and edit user account details when needed — for example, to update a username, email address, or to initiate a password reset. They can also toggle a user’s active status or grant/revoke admin privileges.
+
+Any significant change (e.g. password reset, email update, activation/deactivation) requires the admin to confirm their own password for security purposes. Password resets are handled via the same secure email-based process available to users directly, ensuring that admin users never have access to a user’s actual password.
+
+This approach maintains account integrity while giving staff the necessary tools to support users efficiently.
+
 ### Password Reset Pages
 
+<details> 
+<summary>Password Reset </summary> 
+    <img src="docs/testing/feature-images/password-reset-1.png">
+    <img src="docs/testing/feature-images/password-reset-2.png">
+    <img src="docs/testing/feature-images/password-reset-3.png">
+    <img src="docs/testing/feature-images/password-reset-4.png">
+</details> 
+<br> 
+
+Password resets can be triggered by both users and admins. For users, this is done via the login page; for admins, it’s available through the user management interface.
+
+The reset process includes several straightforward pages:
+
+- A confirmation screen prompting the user to provide their email address.
+- A confirmation page advising them to check their emails. 
+- A password reset form accessed via a secure emailed link.
+- A success page confirming the password has been updated.
+
+To enhance security, users must enter the email associated with their account before a reset email is sent this ensures messages are only delivered to verified addresses already in the system. The simplicity of the flow reflects its focused purpose: securely resetting a password with minimal friction.
+
+
 ### Error Pages
+
+<details> 
+<summary>Password Reset </summary> 
+    <img src="docs/testing/feature-images/404.png">
+</details> 
+<br> 
+
+The site includes custom error pages for HTTP status codes 403 (Forbidden), 404 (Not Found), and 500 (Server Error). While each page features slightly different messaging tailored to the specific error, they share a consistent layout and design for clarity and cohesion.
+
+These pages help maintain a user-friendly experience even when something goes wrong, guiding users back to the main areas of the site rather than leaving them at a dead end.
 
 ## [Future Features](#future-features)
 
@@ -739,7 +1012,7 @@ Local deployment allows for the testing of modified files before uploading them 
 
  - We've already covered cloning a repo above. However, you may also need to pull any modules you're using. This can be done with the below command. 
   ```
-  pip install requirements -r requirements.txt
+  pip install -r requirements.txt
   ```
  
 Once the required modules are imported, you will also need to ensure you have a local env.py file, since this should never be uploaded to GitHub and can be set to be ignored using the .gitignore file as previously mentioned.
@@ -834,7 +1107,7 @@ The requirements file will need to be updated any time new modules and imports a
  - Creating the Procfile can be done either manually, by creating the Procfile itself and then editing its contents in a text editor or IDE or via CLI. 
  - To create via CLI simply issue the below command, assuming your flask app is launched from run.py, otherwise, this will need to be changed to whatever this file is called, e.g. app.py. 
   ''' 
-  echo web: python app.py > Procfile
+  echo web: python manage.py runserver > Procfile
   '''
 
  - To deploy your code on Heroku, you can either use the Heroku terminal, or alternatively configure the app on Heroku to auto deploy whenever you push a commit to github. 

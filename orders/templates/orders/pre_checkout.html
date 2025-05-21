@@ -19,6 +19,7 @@
     <header class="center-align">
       <h2 class="center-align green-text text-darken-3">Gift Message</h2>
     </header>
+    <p><strong>Optional:</strong> Fill out the form to send a gift email to your recipient. Leave it blank if you'd prefer to keep the gift a surprise.</p>
     <form id="gift-message-form" method="post" action="{% url 'gift_message' plan %}">
       {% csrf_token %}
       <div class="container gift-message">
