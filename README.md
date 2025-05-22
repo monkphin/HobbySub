@@ -47,6 +47,8 @@
 
 HobbySub is a Django-powered subscription box service for miniature painters and hobbyists, delivering curated tools, paints, and inspiration each month.
 
+<img src="docs/mockup.png">
+
 [The deployed website can be found here](https://hobbyhub-d1fc032e6c82.herokuapp.com/)
 
 # Site Concept
