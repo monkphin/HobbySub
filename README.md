@@ -920,7 +920,15 @@ I work with VSCode, so use the built-in CLI to run the commands needed to clone 
 3. In a web browser, I navigated to the GitHub repository for the project and clicked on the green '<> Code' button, this presented me with several options for cloning. I selected the 'HTTPS' option and copied the URL in the text field.
 4. In Visual Studio Code’s terminal, I typed git clone https://github.com/monkphin/HobbySub.git and pressed enter, which cloned the repo to my local machine as shown by the below output.
    ```
-    Code here
+    darren.burrows@OVO-W34X2Q1C7N VSCode % git clone https://github.com/monkphin/HobbySub.git
+    Cloning into 'HobbySub'...
+    remote: Enumerating objects: 3497, done.
+    remote: Counting objects: 100% (213/213), done.
+    remote: Compressing objects: 100% (160/160), done.
+    remote: Total 3497 (delta 68), reused 142 (delta 42), pack-reused 3284 (from 1)
+    Receiving objects: 100% (3497/3497), 37.43 MiB | 26.77 MiB/s, done.
+    Resolving deltas: 100% (1692/1692), done.
+    darren.burrows@OVO-W34X2Q1C7N VSCode % 
    ```
 
 
