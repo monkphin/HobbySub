@@ -25,7 +25,7 @@
 
 # Testing and Validation
 
-## 📊 Test Summary
+## Test Summary
 
 | Test Type                | Status         | Notes                                                  |
 |--------------------------|----------------|--------------------------------------------------------|
@@ -470,7 +470,8 @@ Performance and accessibility were further assessed using Lighthouse in Chrome D
 - Each page was tested for performance, accessibility, best practices, and SEO.
 - Focus was placed primarily on performance scores, given the heavy use of images and Stripe integrations.
 - Results varied slightly by page — this is expected due to dynamic content and external dependencies (e.g., Stripe, Cloudinary).
-
+- SEO scores were significantly lower on pages that require user login or admin access. While this might appear negative at first glance, it's actually a positive outcome; private content should not be indexed by search engines. The low visibility of these pages confirms that access restrictions are working as intended. 
+- Similarly, publicly accessible error pages (e.g. 404, 500) also scored low. This is also a desirable result, as such pages should not rank highly or appear in search results.
 
 #### Logged Out
 
@@ -902,7 +903,7 @@ The test suite is divided across different apps and core functionality:
     Users:
         Validates account views, address management, password resets, and account deletion.
 
-A full HTML breakdown of test coverage has been included in the docs/htmlcov folder on this Repo. 
+A full HTML breakdown of test coverage is included in the docs/htmlcov folder of this repository and can be viewed directly [here.](https://monkphin.github.io/HobbySub/htmlcov/)
 
 ## Warnings and Notes:
 The test run completed successfully with 65 tests passing and 2 warnings:
