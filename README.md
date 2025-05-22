@@ -811,9 +811,9 @@ To maintain transparency and security, users receive email notifications wheneve
 Modal-Based Deletion Protection
 All potentially destructive or sensitive actions are protected by a password-protected modal.
  - This includes:
- -- Email Changes
- -- Account Deletions
- -- Admin Actions on User Accounts
+   - Email Changes
+   - Account Deletions
+   - Admin Actions on User Accounts
  - The modal prompts for the user's password before finalising the action, adding a secure second layer of verification.
  - This two-stage process ensures that only authenticated users can complete these operations, significantly reducing the risk of accidental or malicious changes.
 
