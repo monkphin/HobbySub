@@ -995,19 +995,34 @@ This creates the commit, ready to be pushed to Github and will show some output 
 
 eg: 
   ```
-  Code here
+  darren.burrows@OVO-W34X2Q1C7N HobbySub % git commit -m "Added code exceprts to readme.md"
+  [main ab39487] Added code exceprts to readme.md
+   1 file changed, 9 insertions(+), 1 deletion(-)
   ```
 
 3. Finally, to push the changes to git type 
   ```
   git push
   ```
-This should generate some output to confirm the actions being taken to transfer the files to GitHub. 
+  
+This should generate some output to confirm the actions being taken to transfer the files to GitHub. This can also provide issues or alertsa that you made need to be aware of, such as the moderate vulnerability reported here - this is documented in my testing file
 eg: 
   ```
-  Code here
-  ```
-
+  darren.burrows@OVO-W34X2Q1C7N HobbySub % git push
+  Enumerating objects: 5, done.
+  Counting objects: 100% (5/5), done.
+  Delta compression using up to 8 threads
+  Compressing objects: 100% (3/3), done.
+  Writing objects: 100% (3/3), 577 bytes | 577.00 KiB/s, done.
+  Total 3 (delta 2), reused 0 (delta 0), pack-reused 0
+  remote: Resolving deltas: 100% (2/2), completed with 2 local objects.
+  remote: 
+  remote: GitHub found 1 vulnerability on monkphin/HobbySub's default branch (1 moderate). To find out more, visit:
+  remote:      https://github.com/monkphin/HobbySub/security/dependabot/2
+  remote: 
+  To https://github.com/monkphin/HobbySub.git
+   c405ede..ab39487  main -> main
+ ```
 
 ### Working on Multiple Devices
 Assuming you have already cloned the repo to any other computers you may want to work on the code on, you need to ensure that you have the latest version of the code. Luckily this is relatively simple, using a single command.
