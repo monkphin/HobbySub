@@ -10,9 +10,7 @@
 
 [User Stories](#user-stories)
 
-[Scope](#scope) 
-
-[Design](#design)
+[Design Choices](#design-choices)
 
   - [Wireframes](#wireframes)
   - [Schema](#schema)
@@ -51,7 +49,7 @@ HobbySub is a Django-powered subscription box service for miniature painters and
 
 [The deployed website can be found here](https://hobbyhub-d1fc032e6c82.herokuapp.com/)
 
-# Site Concept
+# Site Concept(#site-concept)
 HobbySub is an online eCommerce site for tabletop wargame and model making hobbyists. It provides a mystery-box subscription service, which ships a new box of hobby supplies every month based on a specific theme. Subscriptions are available on a monthly, quarterly (3-month), biannual (6-month), or annual basis, with discounted pricing for longer commitments. Users can also purchase single boxes, if they're not yet ready to subscribe. The site has logic built into it to allow for purchases to be bought as items for the user, or as a gift to someone else, with personalised gift emails sent out when the item is ordered. 
 
 To manage and prioritise tasks, I used a Kanban board to track project progress from inception to completion, alongside a MoSCoW board for structured planning and prioritisation. 
@@ -60,7 +58,7 @@ To manage and prioritise tasks, I used a Kanban board to track project progress 
 
 [My Kanban board can be found here](https://github.com/users/monkphin/projects/6/views/1)
 
-## Site Owner Goals
+## Site Owner Goals(#site-owner-goals)
 
  - Provide a secure and scalable platform to sell and manage subscription-based box offerings.
  - Allow users to easily subscribe to recurring boxes or gift one-off boxes to others.
@@ -74,7 +72,7 @@ To manage and prioritise tasks, I used a Kanban board to track project progress 
  - Deploy the platform on scalable, cloud-based infrastructure with minimal downtime.
  - Reduce support load through clear UI, meaningful feedback, and user-accessible history.
 
-## Visitor Goals
+## Visitor Goals(#visitor-goals)
 
  - Browse available subscription box options and view what types of products they typically include.
  - View detailed info about each months box: theme, contents summary, and shipping frequency options.
@@ -89,7 +87,7 @@ To manage and prioritise tasks, I used a Kanban board to track project progress 
  - Get help or support quickly if they run into issues with orders, addresses, or billing.
 
 
-# User Stories
+# User Stories(#user-stories)
 
 | **Category**                | **User Story**                                                                                      |
 |----------------------------|------------------------------------------------------------------------------------------------------|
@@ -118,7 +116,7 @@ To manage and prioritise tasks, I used a Kanban board to track project progress 
 
 
 
-# Design Choices
+# Design Choices(#design-choices)
 
 The initial site design is intentionally minimal, leveraging Materialize for a clean, responsive layout. This choice was made to prioritise backend functionality and Stripe integration over heavy front-end customisation. By using Materialize's grid and component system, development time was optimised, allowing more focus on core application logic and data flow.
 
