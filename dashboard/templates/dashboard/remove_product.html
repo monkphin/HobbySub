@@ -1,16 +1,30 @@
-{% extends 'base.html' %}
-{% block title %}Remove Product{% endblock %}
-
-{% block content %}
+{% extends 'base.html' %} {% block title %}Remove Product{% endblock %} {% block
+content %}
 <div class="container">
-  <h2 class="center-align green-text text-darken-3">Remove <strong>{{ product.name }}</strong> from the box?</h2>
-  <p>This will keep the product in the system, but unlink it from the current box.</p>
+  <h2 class="center-align green-text text-darken-3">
+    Remove <strong>{{ product.name }}</strong> from the box?
+  </h2>
+  <p>
+    This will keep the product in the system, but unlink it from the current
+    box.
+  </p>
 
   <form method="post">
     <div class="button-row">
       {% csrf_token %}
-      <button type="submit" class="btn red darken-2" aria-label="Remove Product">Remove</button>
-      <a href="{% url 'edit_box_products' product.box.id %}" class="btn grey darken-1" aria-label="Cancel">Cancel</a>
+      <button
+        type="submit"
+        class="btn red darken-2"
+        aria-label="Remove Product"
+      >
+        Remove
+      </button>
+      <a
+        href="{% url 'edit_box_products' product.box.id %}"
+        class="btn grey darken-1"
+        aria-label="Cancel"
+        >Cancel</a
+      >
     </div>
   </form>
 </div>

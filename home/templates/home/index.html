@@ -1,115 +1,182 @@
-{% extends 'base.html' %}
-{% load static %}
+{% extends 'base.html' %} {% load static %} {% block title %}Welcome to Hobby
+Hub{% endblock %} {% block content %}
+<div class="container">
+  <!-- Hero Section -->
+  <section class="section center-align">
+    <img
+      src="https://res.cloudinary.com/dlmbpbtfx/image/upload/w_700,ar_1:1,c_fill,g_auto,e_art:hokusai/v1745248603/hero_wwmnq8.png"
+      alt="Your hobby delivered to your door"
+      class="responsive-img z-depth-1 hero-image"
+    />
+  </section>
 
-{% block title %}Welcome to Hobby Hub{% endblock %}
+  <div class="section-divider"></div>
 
-{% block content %}
-  <div class="container">
-
-    <!-- Hero Section -->
-    <section class="section center-align">
-      <img src="https://res.cloudinary.com/dlmbpbtfx/image/upload/w_700,ar_1:1,c_fill,g_auto,e_art:hokusai/v1745248603/hero_wwmnq8.png" 
-           alt="Your hobby delivered to your door" class="responsive-img z-depth-1 hero-image">
-    </section>
-
-    <div class="section-divider"></div>
-
-    <!-- How It Works -->
-    <section class="section">
-      <h2 class="center-align  text-darken-3">How It Works</h2>
-      <div class="row center-align">
-        <div class="col s12 m4">
-          <i class="fa-solid fa-gifts fa-3x green-text text-darken-3" aria-hidden="true"></i>
-          <h5>Pick Your Plan</h5>
-          <p>Choose how long you want to subscribe — or gift a one-off box.</p>
-        </div>
-        <div class="col s12 m4">
-          <i class="fa-solid fa-truck-fast fa-3x green-text text-darken-3"  aria-hidden="true"></i>
-          <h5>We Ship</h5>
-          <p>Boxes ship on the 1st of each month, loaded with surprise contents.</p>
-        </div>
-        <div class="col s12 m4">
-          <i class="fa-solid fa-paintbrush fa-3x green-text text-darken-3"  aria-hidden="true"></i>
-          <h5>You Enjoy</h5>
-          <p>Paint, build, and explore new gear — every month.</p>
-        </div>
+  <!-- How It Works -->
+  <section class="section">
+    <h2 class="center-align text-darken-3">How It Works</h2>
+    <div class="row center-align">
+      <div class="col s12 m4">
+        <i
+          class="fa-solid fa-gifts fa-3x green-text text-darken-3"
+          aria-hidden="true"
+        ></i>
+        <h5>Pick Your Plan</h5>
+        <p>Choose how long you want to subscribe — or gift a one-off box.</p>
       </div>
-    </section>
-
-    <div class="section-divider"></div>
-
-    <!-- Call to Action -->
-    <section class="section center-align">
-      <h1 class="flow-text">Unbox Hobby Joy Monthly</h1>
-      <p class="lead">Get curated miniatures, paints, and hobby gear delivered to your door.</p>
-      {% if user.is_authenticated %}
-        <a href="{% url 'select_purchase_type' %}?gift=false" class="btn btn-large green darken-3">Pick a Plan</a>
-        <a href="{% url 'select_purchase_type' %}?gift=true" class="btn btn-large teal lighten-2 black-text">Give as a Gift</a>
-      {% else %}
-        <a href="{% url 'register' %}?next={% url 'select_purchase_type' %}?gift=false" class="btn btn-large green">Pick a Plan</a>
-        <a href="{% url 'register' %}?next={% url 'select_purchase_type' %}?gift=true" class="btn btn-large teal lighten-2 black-text">Give as a Gift</a>
-      {% endif %}
-    </section>
-
-    <div class="section-divider"></div>
-
-    <!-- Current Box Preview -->
-    {% if box %}
-      <section class="section center-align" role="region" aria-labelledby="current-box-heading">
-        <h2 id="current-box-heading" class="text-darken-3">This Month’s Box</h2>
-        {% if box.image %}
-          <img src="{{ box.image.url }}" alt="{{ box.name }}" class="responsive-img box-preview-image z-depth-2" onerror="this.onerror=null;this.src='https://res.cloudinary.com/dlmbpbtfx/image/upload/v1747743568/ifeiea8bmpc80sx3g8wr.png';">
-        {% else %}
-          <img src="https://res.cloudinary.com/dlmbpbtfx/image/upload/v1747743568/ifeiea8bmpc80sx3g8wr.png" alt="Default image for {{ box.name }}" class="responsive-img box-preview-image z-depth-2">
-        {% endif %}
-
-
-        <h5>{{ box.name }}</h5>
-        <p class="grey-text text-darken-3">{{ box.description|truncatewords:25 }}</p>
-
-        <h6>Box Contents</h6>
-        <div class="carousel">
-          {% for item in box.products.all %}
-            <div class="carousel-item">
-            {% if item.image %}
-              <img src="{{ item.image.url }}" alt="{{ item.name }}" onerror="this.onerror=null;this.src='https://res.cloudinary.com/dlmbpbtfx/image/upload/v1747743568/ifeiea8bmpc80sx3g8wr.png';">
-            {% else %}
-              <img src="https://res.cloudinary.com/dlmbpbtfx/image/upload/v1747743568/ifeiea8bmpc80sx3g8wr.png" alt="Default image for {{ item.name }}">
-            {% endif %}
-              <h6>{{ item.name }}</h6>
-            </div>
-          {% endfor %}
-        </div>
-      </section>
-    {% endif %}
-
-    <div class="section-divider"></div>
-
-    <!-- Next Box Preview -->
-    {% if next_box %}
-      <section class="section center-align" role="region" aria-labelledby="next-box-heading">
-        <h2 id="next-box-heading" class="text-darken-3">Coming Next Month!</h2>
-        <h3>{{ next_box.name }}</h3>
-        {% if next_box.image %}
-          <img src="{{ next_box.image.url }}" alt="{{ next_box.name }}" class="responsive-img box-preview-image z-depth-2" onerror="this.onerror=null;this.src='https://res.cloudinary.com/dlmbpbtfx/image/upload/v1747743568/ifeiea8bmpc80sx3g8wr.png';">
-        {% else %}
-          <img src="https://res.cloudinary.com/dlmbpbtfx/image/upload/v1747743568/ifeiea8bmpc80sx3g8wr.png" alt="Default image for {{ next_box.name }}" class="responsive-img box-preview-image z-depth-2">
-        {% endif %}
-        <p class="grey-text text-darken-2">Ships {{ next_box.shipping_date|date:"d M Y" }}</p>
-        <p class="grey-text text-darken-2">{{ next_box.description|truncatewords:20 }}</p>
-      </section>
-    {% endif %}
-
-    <!-- No Boxes Fallback -->
-    {% if not box and not next_box %}
-      <section class="section center-align">
-        <h5 class="grey-text text-darken-2">No active boxes at the moment — check back soon!</h5>
-        <p class="grey-text text-darken-1">
-          We're preparing something special. New boxes are added monthly, so keep your brushes ready!
+      <div class="col s12 m4">
+        <i
+          class="fa-solid fa-truck-fast fa-3x green-text text-darken-3"
+          aria-hidden="true"
+        ></i>
+        <h5>We Ship</h5>
+        <p>
+          Boxes ship on the 1st of each month, loaded with surprise contents.
         </p>
-        <a class="btn disabled">Boxes Coming Soon</a>
-      </section>
+      </div>
+      <div class="col s12 m4">
+        <i
+          class="fa-solid fa-paintbrush fa-3x green-text text-darken-3"
+          aria-hidden="true"
+        ></i>
+        <h5>You Enjoy</h5>
+        <p>Paint, build, and explore new gear — every month.</p>
+      </div>
+    </div>
+  </section>
+
+  <div class="section-divider"></div>
+
+  <!-- Call to Action -->
+  <section class="section center-align">
+    <h1 class="flow-text">Unbox Hobby Joy Monthly</h1>
+    <p class="lead">
+      Get curated miniatures, paints, and hobby gear delivered to your door.
+    </p>
+    {% if user.is_authenticated %}
+    <a
+      href="{% url 'select_purchase_type' %}?gift=false"
+      class="btn btn-large green darken-3"
+      >Pick a Plan</a
+    >
+    <a
+      href="{% url 'select_purchase_type' %}?gift=true"
+      class="btn btn-large teal lighten-2 black-text"
+      >Give as a Gift</a
+    >
+    {% else %}
+    <a
+      href="{% url 'register' %}?next={% url 'select_purchase_type' %}?gift=false"
+      class="btn btn-large green"
+      >Pick a Plan</a
+    >
+    <a
+      href="{% url 'register' %}?next={% url 'select_purchase_type' %}?gift=true"
+      class="btn btn-large teal lighten-2 black-text"
+      >Give as a Gift</a
+    >
+    {% endif %}
+  </section>
+
+  <div class="section-divider"></div>
+
+  <!-- Current Box Preview -->
+  {% if box %}
+  <section
+    class="section center-align"
+    role="region"
+    aria-labelledby="current-box-heading"
+  >
+    <h2 id="current-box-heading" class="text-darken-3">This Month’s Box</h2>
+    {% if box.image %}
+    <img
+      src="{{ box.image.url }}"
+      alt="{{ box.name }}"
+      class="responsive-img box-preview-image z-depth-2"
+      onerror="this.onerror=null;this.src='https://res.cloudinary.com/dlmbpbtfx/image/upload/v1747743568/ifeiea8bmpc80sx3g8wr.png';"
+    />
+    {% else %}
+    <img
+      src="https://res.cloudinary.com/dlmbpbtfx/image/upload/v1747743568/ifeiea8bmpc80sx3g8wr.png"
+      alt="Default image for {{ box.name }}"
+      class="responsive-img box-preview-image z-depth-2"
+    />
     {% endif %}
 
-  </div>
+    <h5>{{ box.name }}</h5>
+    <p class="grey-text text-darken-3">
+      {{ box.description|truncatewords:25 }}
+    </p>
+
+    <h6>Box Contents</h6>
+    <div class="carousel">
+      {% for item in box.products.all %}
+      <div class="carousel-item">
+        {% if item.image %}
+        <img
+          src="{{ item.image.url }}"
+          alt="{{ item.name }}"
+          onerror="this.onerror=null;this.src='https://res.cloudinary.com/dlmbpbtfx/image/upload/v1747743568/ifeiea8bmpc80sx3g8wr.png';"
+        />
+        {% else %}
+        <img
+          src="https://res.cloudinary.com/dlmbpbtfx/image/upload/v1747743568/ifeiea8bmpc80sx3g8wr.png"
+          alt="Default image for {{ item.name }}"
+        />
+        {% endif %}
+        <h6>{{ item.name }}</h6>
+      </div>
+      {% endfor %}
+    </div>
+  </section>
+  {% endif %}
+
+  <div class="section-divider"></div>
+
+  <!-- Next Box Preview -->
+  {% if next_box %}
+  <section
+    class="section center-align"
+    role="region"
+    aria-labelledby="next-box-heading"
+  >
+    <h2 id="next-box-heading" class="text-darken-3">Coming Next Month!</h2>
+    <h3>{{ next_box.name }}</h3>
+    {% if next_box.image %}
+    <img
+      src="{{ next_box.image.url }}"
+      alt="{{ next_box.name }}"
+      class="responsive-img box-preview-image z-depth-2"
+      onerror="this.onerror=null;this.src='https://res.cloudinary.com/dlmbpbtfx/image/upload/v1747743568/ifeiea8bmpc80sx3g8wr.png';"
+    />
+    {% else %}
+    <img
+      src="https://res.cloudinary.com/dlmbpbtfx/image/upload/v1747743568/ifeiea8bmpc80sx3g8wr.png"
+      alt="Default image for {{ next_box.name }}"
+      class="responsive-img box-preview-image z-depth-2"
+    />
+    {% endif %}
+    <p class="grey-text text-darken-2">
+      Ships {{ next_box.shipping_date|date:"d M Y" }}
+    </p>
+    <p class="grey-text text-darken-2">
+      {{ next_box.description|truncatewords:20 }}
+    </p>
+  </section>
+  {% endif %}
+
+  <!-- No Boxes Fallback -->
+  {% if not box and not next_box %}
+  <section class="section center-align">
+    <h5 class="grey-text text-darken-2">
+      No active boxes at the moment — check back soon!
+    </h5>
+    <p class="grey-text text-darken-1">
+      We're preparing something special. New boxes are added monthly, so keep
+      your brushes ready!
+    </p>
+    <a class="btn disabled">Boxes Coming Soon</a>
+  </section>
+  {% endif %}
+</div>
 {% endblock %}

@@ -1,46 +1,79 @@
-{% extends 'base.html' %}
-{% block title %}Edit {{ user.username }}{% endblock %}
-
-{% block content %}
+{% extends 'base.html' %} {% block title %}Edit {{ user.username }}{% endblock
+%} {% block content %}
 <div class="container" aria-labelledby="edit-user-heading">
-  <h2 class="center-align green-text text-darken-3" id="edit-user-heading">Edit {{ user.username }}</h2>
+  <h2 class="center-align green-text text-darken-3" id="edit-user-heading">
+    Edit {{ user.username }}
+  </h2>
   <form method="POST">
     {% csrf_token %}
 
     <div class="input-field">
-      <input id="username" name="username" type="text" value="{{ form.username.value }}" class="validate">
-      <label for="username" class="{% if form.username.value %}active{% endif %}">Username</label>
+      <input
+        id="username"
+        name="username"
+        type="text"
+        value="{{ form.username.value }}"
+        class="validate"
+      />
+      <label
+        for="username"
+        class="{% if form.username.value %}active{% endif %}"
+        >Username</label
+      >
       {% if form.username.errors %}
-        <span class="helper-text red-text">{{ form.username.errors.0 }}</span>
+      <span class="helper-text red-text">{{ form.username.errors.0 }}</span>
       {% endif %}
     </div>
 
     <div class="input-field">
-      <input id="email" name="email" type="email" value="{{ form.email.value }}" class="validate">
-      <label for="email" class="{% if form.email.value %}active{% endif %}">Email</label>
+      <input
+        id="email"
+        name="email"
+        type="email"
+        value="{{ form.email.value }}"
+        class="validate"
+      />
+      <label for="email" class="{% if form.email.value %}active{% endif %}"
+        >Email</label
+      >
       {% if form.email.errors %}
-        <span class="helper-text red-text">{{ form.email.errors.0 }}</span>
+      <span class="helper-text red-text">{{ form.email.errors.0 }}</span>
       {% endif %}
-    </div>  
+    </div>
 
     <div class="card-panel grey lighten-4">
       <p><strong>Last Login:</strong> {{ last_login|date:"d M Y H:i" }}</p>
       <p><strong>Date Joined:</strong> {{ date_joined|date:"d M Y H:i" }}</p>
     </div>
-    
+
     <p>
       <label for="is_staff">
-        <input id="is_staff" type="checkbox" name="is_staff" {% if form.is_staff.value %}checked{% endif %} />
+        <input
+          id="is_staff"
+          type="checkbox"
+          name="is_staff"
+          {%
+          if
+          form.is_staff.value
+          %}checked{%
+          endif
+          %}
+        />
         <span>Admin user?</span>
       </label>
       {% if form.is_staff.errors %}
-        <span class="helper-text red-text">{{ form.is_staff.errors.0 }}</span>
+      <span class="helper-text red-text">{{ form.is_staff.errors.0 }}</span>
       {% endif %}
     </p>
 
     <div class="row">
       <div class="col s12 m6 l3">
-        <button type="button" class="btn admin-update-user-btn" data-id="{{ user.id }}" aria-label="Save">
+        <button
+          type="button"
+          class="btn admin-update-user-btn"
+          data-id="{{ user.id }}"
+          aria-label="Save"
+        >
           Save
         </button>
       </div>
@@ -48,26 +81,29 @@
         <a href="{% url 'user_admin' %}" class="btn grey">Cancel</a>
       </div>
       <div class="col s12 m6 l3">
-        <a href="#" class="btn orange admin-password-reset-btn" data-id="{{ user.id }}" aria-label="Reset {{ user.username }}'s password">
+        <a
+          href="#"
+          class="btn orange admin-password-reset-btn"
+          data-id="{{ user.id }}"
+          aria-label="Reset {{ user.username }}'s password"
+        >
           Reset Password
         </a>
       </div>
       {% if not user.is_superuser %}
-        <div class="col s12 m6 l3">
-          <a href="#"
-            class="btn {% if not user.is_active %}activate-btn{% else %}deactivate-btn{% endif %} admin-toggle-state-btn"
-            data-id="{{ user.id }}"
-            aria-label="{% if not user.is_active %}Activate{% else %}Deactivate{% endif %} {{ user.username }}'s account">
-            {% if not user.is_active %}
-              Activate Account
-            {% else %}
-              Deactivate Account
-            {% endif %}
-          </a>
-        </div>
+      <div class="col s12 m6 l3">
+        <a
+          href="#"
+          class="btn {% if not user.is_active %}activate-btn{% else %}deactivate-btn{% endif %} admin-toggle-state-btn"
+          data-id="{{ user.id }}"
+          aria-label="{% if not user.is_active %}Activate{% else %}Deactivate{% endif %} {{ user.username }}'s account"
+        >
+          {% if not user.is_active %} Activate Account {% else %} Deactivate
+          Account {% endif %}
+        </a>
+      </div>
       {% endif %}
     </div>
-
   </form>
 </div>
 {% endblock %}

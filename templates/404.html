@@ -1,12 +1,12 @@
-{% extends "base.html" %}
-{% block title %}Not Found{% endblock %}
-
-{% block content %}
+{% extends "base.html" %} {% block title %}Not Found{% endblock %} {% block
+content %}
 <div class="container center-align error-container" role="main">
   <i class="fas fa-exclamation-triangle fa-3x red-text" aria-hidden="true"></i>
   <h1 class="sr-only">404 – Page Not Found</h1>
   <h3>Page Not Found (404)</h3>
   <p>Oops! That page doesn't exist.</p>
-  <a href="{% url 'home' %}" class="btn" aria-label="Return to homepage">Return Home</a>
+  <a href="{% url 'home' %}" class="btn" aria-label="Return to homepage"
+    >Return Home</a
+  >
 </div>
 {% endblock %}

@@ -1,24 +1,34 @@
-{% extends 'base.html' %}
-{% load static %}
-
-{% block title %}Order Successful{% endblock %}
-
-{% block content %}
+{% extends 'base.html' %} {% load static %} {% block title %}Order Successful{%
+endblock %} {% block content %}
 <section class="section center-align">
   {% if request.GET.sub == 'monthly' %}
   <h2 class="center-align green-text text-darken-3">Thanks for subscribing!</h2>
-  <p>Your HobbyCrate subscription is now active. You'll receive a confirmation email shortly.</p>  
+  <p>
+    Your HobbyCrate subscription is now active. You'll receive a confirmation
+    email shortly.
+  </p>
   {% else %}
   <h2 class="green-text text-darken-2">Thank you for your order!</h2>
-  <p>Your payment has been successfully processed. You'll receive a confirmation email shortly.</p>
+  <p>
+    Your payment has been successfully processed. You'll receive a confirmation
+    email shortly.
+  </p>
   {% endif %}
- 
-  <br>
+
+  <br />
   <div class="button-row-utility center-align">
-    <a href="{% url 'account' %}" class="btn teal darken-3" aria-label="Go to your account overview">
+    <a
+      href="{% url 'account' %}"
+      class="btn teal darken-3"
+      aria-label="Go to your account overview"
+    >
       <i class="fas fa-user left" aria-hidden="true"></i> Go to My Account
     </a>
-    <a href="{% url 'home' %}" class="btn blue darken-1" aria-label="Return to the homepage">
+    <a
+      href="{% url 'home' %}"
+      class="btn blue darken-1"
+      aria-label="Return to the homepage"
+    >
       <i class="fas fa-home left" aria-hidden="true"></i> Return Home
     </a>
   </div>

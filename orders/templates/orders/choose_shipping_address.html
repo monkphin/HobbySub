@@ -1,44 +1,68 @@
-{% extends "base.html" %}
-{% block title %}Choose Shipping Address{% endblock %}
-
+{% extends "base.html" %} {% block title %}Choose Shipping Address{% endblock %}
 {% block content %}
 <section class="section container">
-  <h2 class="green-text text-darken-3 center-align">Choose a Shipping Address</h2>
+  <h2 class="green-text text-darken-3 center-align">
+    Choose a Shipping Address
+  </h2>
   {% if gift %}
-    <p class="center-align grey-text text-darken-2">These are your gift recipient addresses.</p>
+  <p class="center-align grey-text text-darken-2">
+    These are your gift recipient addresses.
+  </p>
   {% else %}
-    <p class="center-align grey-text text-darken-2">These are your personal delivery addresses.</p>
-  {% endif %}
-  {% if addresses %}
+  <p class="center-align grey-text text-darken-2">
+    These are your personal delivery addresses.
+  </p>
+  {% endif %} {% if addresses %}
 
   <div class="address-grid">
     {% for address in addresses %}
     <div class="col">
-      <div class="card z-depth-1 address-card {% if address.is_gift_address %}gift-address{% else %}personal-address{% endif %}">
+      <div
+        class="card z-depth-1 address-card {% if address.is_gift_address %}gift-address{% else %}personal-address{% endif %}"
+      >
         <div class="card-content left-align">
           {% if address.label %}
-            <span class="grey-text text-darken-1">({{ address.label }})</span>
+          <span class="grey-text text-darken-1">({{ address.label }})</span>
           {% endif %}
-          <p class="grey-text text-darken-2"><strong>{{ address.recipient_f_name }} {{ address.recipient_l_name }}</strong></p>
+          <p class="grey-text text-darken-2">
+            <strong
+              >{{ address.recipient_f_name }} {{ address.recipient_l_name
+              }}</strong
+            >
+          </p>
           <p>{{ address.address_line_1 }}</p>
-          {% if address.address_line_2 %}<p>{{ address.address_line_2 }}</p>{% endif %}
+          {% if address.address_line_2 %}
+          <p>{{ address.address_line_2 }}</p>
+          {% endif %}
           <p>{{ address.town_or_city }}</p>
           <p>{{ address.county }}</p>
           <p>{{ address.postcode }}</p>
           <p>{{ address.country }}</p>
           <p><em>{{ address.phone_number }}</em></p>
           {% if address.is_default %}
-            <span class="new badge green darken-3" data-badge-caption="Default"></span>
+          <span
+            class="new badge green darken-3"
+            data-badge-caption="Default"
+          ></span>
           {% endif %}
         </div>
 
         <div class="card-action flex-actions">
           <form method="POST">
             {% csrf_token %}
-            <input type="hidden" name="shipping_address" value="{{ address.id }}">
-            <button type="submit" class="btn green darken-3">Deliver to this address</button>
+            <input
+              type="hidden"
+              name="shipping_address"
+              value="{{ address.id }}"
+            />
+            <button type="submit" class="btn green darken-3">
+              Deliver to this address
+            </button>
           </form>
-          <a href="{% url 'edit_address' address.id %}?next={{ request.get_full_path|urlencode }}" class="btn teal darken-2 white-text">
+          <a
+            href="{% url 'edit_address' address.id %}?next={{ request.get_full_path|urlencode }}"
+            class="btn teal darken-2 white-text"
+          >
             <i class="fas fa-edit left"></i> Edit
           </a>
         </div>
@@ -48,11 +72,14 @@
   </div>
 
   {% else %}
-    <p class="red-text center-align">You don't have any saved addresses yet.</p>
+  <p class="red-text center-align">You don't have any saved addresses yet.</p>
   {% endif %}
 
   <div class="section center-align">
-    <a href="{% url 'add_address' %}?next={% url 'choose_shipping_address' plan=plan %}?gift={{ gift }}" class="btn-flat">
+    <a
+      href="{% url 'add_address' %}?next={% url 'choose_shipping_address' plan=plan %}?gift={{ gift }}"
+      class="btn-flat"
+    >
       <i class="fas fa-plus left"></i> Add a New Address
     </a>
   </div>

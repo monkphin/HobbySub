@@ -1,53 +1,65 @@
-{% extends 'base.html' %}
-{% load static %}
-
-{% block title %}Past Boxes{% endblock %}
-
-{% block content %}
+{% extends 'base.html' %} {% load static %} {% block title %}Past Boxes{%
+endblock %} {% block content %}
 <div class="container">
   <section class="section">
     <h2 class="center-align green-text text-darken-3">Past Boxes</h2>
     <p class="center-align grey-text text-darken-2">
-      Explore the kits we've sent out to our subscribers — every box is packed with hobby inspiration.
+      Explore the kits we've sent out to our subscribers — every box is packed
+      with hobby inspiration.
     </p>
   </section>
 
   <div class="past-boxes-grid row">
     {% for box in past_boxes %}
-      <div class="col s12 m6 l4">
-        <div class="card hoverable z-depth-1" role="group" aria-labelledby="box-{{ forloop.counter }}-title">
-
-          <a href="{% url 'box_detail' box.slug %}" class="card-image-link">
-            <div class="card-image">
-              {% if box.image %}
-                <img src="{{ box.image.url }}"
-                    alt="{{ box.name }}"
-                    class="responsive-img box-card-image"
-                    onerror="this.onerror=null;this.src='https://res.cloudinary.com/dlmbpbtfx/image/upload/v1747743568/ifeiea8bmpc80sx3g8wr.png';">
-              {% else %}
-                <img src="https://res.cloudinary.com/dlmbpbtfx/image/upload/v1747743568/ifeiea8bmpc80sx3g8wr.png"
-                    alt="Fallback image for {{ box.name }}"
-                    class="responsive-img box-card-image">
-              {% endif %}
-            </div>
-          </a>
-
-          <div class="card-content">
-            <h3 id="box-{{ forloop.counter }}-title" class="box-title-inline">
-              <a href="{% url 'box_detail' box.slug %}" class="green-text text-darken-3">
-                {{ box.name }}
-              </a>
-            </h3>
-            <p class="grey-text text-darken-2"><em>{{ box.shipping_date|date:"F Y" }}</em></p>
-            <p class="grey-text text-darken-2 no-margin-fix">{{ box.description|truncatewords:25 }}</p>
+    <div class="col s12 m6 l4">
+      <div
+        class="card hoverable z-depth-1"
+        role="group"
+        aria-labelledby="box-{{ forloop.counter }}-title"
+      >
+        <a href="{% url 'box_detail' box.slug %}" class="card-image-link">
+          <div class="card-image">
+            {% if box.image %}
+            <img
+              src="{{ box.image.url }}"
+              alt="{{ box.name }}"
+              class="responsive-img box-card-image"
+              onerror="this.onerror=null;this.src='https://res.cloudinary.com/dlmbpbtfx/image/upload/v1747743568/ifeiea8bmpc80sx3g8wr.png';"
+            />
+            {% else %}
+            <img
+              src="https://res.cloudinary.com/dlmbpbtfx/image/upload/v1747743568/ifeiea8bmpc80sx3g8wr.png"
+              alt="Fallback image for {{ box.name }}"
+              class="responsive-img box-card-image"
+            />
+            {% endif %}
           </div>
-        </div>
+        </a>
 
+        <div class="card-content">
+          <h3 id="box-{{ forloop.counter }}-title" class="box-title-inline">
+            <a
+              href="{% url 'box_detail' box.slug %}"
+              class="green-text text-darken-3"
+            >
+              {{ box.name }}
+            </a>
+          </h3>
+          <p class="grey-text text-darken-2">
+            <em>{{ box.shipping_date|date:"F Y" }}</em>
+          </p>
+          <p class="grey-text text-darken-2 no-margin-fix">
+            {{ box.description|truncatewords:25 }}
+          </p>
+        </div>
       </div>
+    </div>
     {% empty %}
-      <div class="col s12">
-        <p class="center-align grey-text">No past boxes available yet — check back soon!</p>
-      </div>
+    <div class="col s12">
+      <p class="center-align grey-text">
+        No past boxes available yet — check back soon!
+      </p>
+    </div>
     {% endfor %}
   </div>
 </div>
