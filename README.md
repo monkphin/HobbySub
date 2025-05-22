@@ -1027,15 +1027,51 @@ eg:
 ### Working on Multiple Devices
 Assuming you have already cloned the repo to any other computers you may want to work on the code on, you need to ensure that you have the latest version of the code. Luckily this is relatively simple, using a single command.
 
+However prior to doing this, its worth while checking the current sync state in case you crate any conflicts, which can be achicved using git status, as seen below. 
+
+```
+darre@Anton MINGW64 ~/Code/HobbySub (main)
+$ git status
+On branch main
+Your branch is behind 'origin/main' by 21 commits, and can be fast-forwarded.
+  (use "git pull" to update your local branch)
+
+nothing to commit, working tree clean
+(venv) 
+```
+
+From the above we know the machine I'm working on has an older version of the code base stored on it, with no issues with changes that are out of sync with whats on Github, so we are safe to pull the content, using git pull. 
   ```
   git pull
   ```
 This will show some output to show what files its downloading from github as well as any changes or adjustments made to files that are stored locally and need to be updated
-eg
+
   ```
-  Code here
+  $ git pull
+  Updating 0a8e58e..8a71c23
+  Fast-forward
+  .flake8                               |   2 +-
+  README.md                             | 139 +++++-----
+  boxes/templates/boxes/box_detail.html | 101 ++++++---
+  dashboard/views.py                    |  57 ++++-
+  docs/deployment/deploy-menu.png       | Bin 0 -> 9196 bytes
+  home/templates/home/index.html        | 283 ++++++++++++++---------
+  orders/views.py                       |  64 ++++--
+  users/templates/users/account.html    |  96 ++++----
+  10 files changed, 553 insertions(+), 254 deletions(-)
   ```
- 
+
+And again, we can run a quick status check to confirm all changes are synced. 
+
+  ```
+  $ git status
+  On branch main
+  Your branch is up to date with 'origin/main'.
+
+  nothing to commit, working tree clean
+  (venv)
+  ```
+
 ## Branching and Merging
 
 During development, I used a Git branching strategy to keep main features and experimental code isolated from the main branch.
