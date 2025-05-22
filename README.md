@@ -159,7 +159,7 @@ Wireframes were created with Balsamiq and provided rough initial mockups for how
 
 <details>
 <summary>Account Page</summary>
-  <img src="docs/wireframes/accounts.png">
+  <img src="docs/wireframes/account.png">
 </details>
 <br>
 
