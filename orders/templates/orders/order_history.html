@@ -1,55 +1,61 @@
-{% extends "base.html" %} {% block title %}Order History{% endblock %} {% block
-content %}
-<section class="section container">
-  {% with subscriptions|length as subs_count %} {% with orders|length as
-  orders_count %} {% with subs_count|add:orders_count as total_orders %} {% if
-  total_orders >= 4 %}
-  <div class="row button-row center-align">
-    <!-- Button rendered only on longer pages showing more than 4 orders-->
-    <a
-      href="{% url 'account' %}"
-      class="btn grey lighten-1 black-text"
-      aria-label="Back"
-    >
-      <i class="fas fa-arrow-left left" aria-hidden="true"></i> Back
-    </a>
-  </div>
-  {% endif %} {% endwith %} {% endwith %} {% endwith %}
+{% extends "base.html" %}
+{% block title %}Order History{% endblock %}
 
+{% block content %}
+<section class="section container">
+
+  {% with subscriptions|length as subs_count %}
+  {% with orders|length as orders_count %}
+    {% with subs_count|add:orders_count as total_orders %}
+      {% if total_orders >= 4 %}
+        <div class="row button-row center-align">
+          <!-- Button rendered only on longer pages showing more than 4 orders-->
+          <a href="{% url 'account' %}" class="btn grey lighten-1 black-text" aria-label="Back">
+            <i class="fas fa-arrow-left left" aria-hidden="true"></i> Back
+          </a>
+        </div>     
+      {% endif %}
+    {% endwith %}
+  {% endwith %}
+  {% endwith %}
+  
   <section aria-labelledby="subs-heading">
     <h2 id="subs-heading">Subscription Orders</h2>
     {% if subscriptions %}
-    <ul class="collection" role="list">
-      {% for order in subscriptions %} {% include
-      "orders/partials/order_list_item.html" %} {% endfor %}
-    </ul>
+      <ul class="collection" role="list">
+        {% for order in subscriptions %}
+          {% include "orders/partials/order_list_item.html" %}
+        {% endfor %}
+      </ul>
     {% else %}
-    <p>You don't have any subscription orders yet.</p>
+      <p>You don't have any subscription orders yet.</p>
     {% endif %}
   </section>
-
+  
   <section aria-labelledby="oneoff-heading">
     <h2 id="oneoff-heading">One-Off Orders</h2>
     {% if orders %}
-    <ul class="collection" role="list">
-      {% for order in orders %} {% include
-      "orders/partials/order_list_item.html" %} {% endfor %}
-    </ul>
+      <ul class="collection" role="list">
+        {% for order in orders %}
+          {% include "orders/partials/order_list_item.html" %}
+        {% endfor %}
+      </ul>
     {% else %}
-    <p>You haven’t placed any one-off orders yet.</p>
+      <p>You haven’t placed any one-off orders yet.</p>
     {% endif %}
   </section>
 
   <div class="row button-row center-align">
-    <a
-      href="{% url 'account' %}"
-      class="btn grey lighten-1 black-text"
-      aria-label="Back"
-    >
+    <a href="{% url 'account' %}" class="btn grey lighten-1 black-text" aria-label="Back">
       <i class="fas fa-arrow-left left" aria-hidden="true"></i> Back
     </a>
   </div>
+
 </section>
-{% for order in subscriptions %} {% include "orders/partials/order_modal.html"
-%} {% endfor %} {% for order in orders %} {% include
-"orders/partials/order_modal.html" %} {% endfor %} {% endblock %}
+{% for order in subscriptions %}
+  {% include "orders/partials/order_modal.html" %}
+{% endfor %}
+{% for order in orders %}
+  {% include "orders/partials/order_modal.html" %}
+{% endfor %}
+{% endblock %}

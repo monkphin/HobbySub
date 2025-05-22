@@ -1,29 +1,19 @@
-{% extends 'base.html' %} {% block title %}Check Your Email{% endblock %} {%
-block content %}
-<section
-  class="section center-align"
-  role="region"
-  aria-labelledby="email-confirm-heading"
->
-  <h2 id="email-confirm-heading" class="center-align green-text text-darken-3">
-    Almost there!
-  </h2>
-  <p>We've sent you a confirmation email to activate your account.</p>
-  <p>
-    <strong
-      >Please click the link in that email to complete your
-      registration.</strong
-    >
-  </p>
-  <p>If you can't find it, check your spam folder.</p>
+{% extends 'base.html' %}
 
+{% block title %}Check Your Email{% endblock %}
+
+{% block content %}
+<section class="section center-align" role="region" aria-labelledby="email-confirm-heading">
+  <h2 id="email-confirm-heading" class="center-align green-text text-darken-3">Almost there!</h2>
+  <p>We've sent you a confirmation email to activate your account.</p>
+  <p><strong>Please click the link in that email to complete your registration.</strong></p>
+  <p>If you can't find it, check your spam folder.</p>
+  
   <div class="row flex-gap">
-    <a
-      href="{% url 'resend_activation' %}?email={{ email }}"
-      class="btn teal darken-3"
-      >RESEND EMAIL</a
-    >
+    <a href="{% url 'resend_activation' %}?email={{ email }}" class="btn teal darken-3">RESEND EMAIL</a>
     <a href="{% url 'home' %}" class="btn green darken-3">BACK TO HOME</a>
-  </div>
+</div>
+
+
 </section>
 {% endblock %}

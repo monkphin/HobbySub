@@ -1,5 +1,7 @@
-{% extends 'base.html' %} {% block title %}Box Manager{% endblock %} {% block
-content %}
+{% extends 'base.html' %}
+{% block title %}Box Manager{% endblock %}
+
+{% block content %}
 <div class="container">
   <h2 class="center-align green-text text-darken-3">Box Manager</h2>
 
@@ -12,60 +14,39 @@ content %}
   <div class="container" role="region" aria-labelledby="existing-boxes-heading">
     <h4 id="existing-boxes-heading">Existing Boxes</h4>
 
-    <div class="row">
-      {% for box in boxes %}
-      <div class="col s12">
-        <div
-          class="card horizontal hoverable"
-          role="group"
-          aria-labelledby="box-title-{{ box.id }}"
-        >
-          <div class="card-stacked">
-            <div class="card-content">
-              <p id="box-title-{{ box.id }}" class="box-title-inline">
-                <strong>{{ box.name }}</strong> — {{ box.shipping_date|date:"d M
-                Y" }}
-              </p>
-              <div class="archive-badge-container">
-                {% if box.is_archived %}
-                <span
-                  class="new badge red archive-badge"
-                  data-badge-caption="Archived"
-                ></span>
-                {% endif %}
-              </div>
+<div class="row">
+  {% for box in boxes %}
+    <div class="col s12">
+      <div class="card horizontal hoverable" role="group" aria-labelledby="box-title-{{ box.id }}">
+        <div class="card-stacked">
+          <div class="card-content">
+            <p id="box-title-{{ box.id }}" class="box-title-inline">
+              <strong>{{ box.name }}</strong> — {{ box.shipping_date|date:"d M Y" }}
+            </p>
+            <div class="archive-badge-container">
+              {% if box.is_archived %}
+                <span class="new badge red archive-badge" data-badge-caption="Archived"></span>
+              {% endif %}
             </div>
-            <div class="card-action admin-btn-group">
-              <a
-                href="{% url 'edit_box' box.id %}"
-                class="btn-small green darken-3"
-                aria-label="Edit Box"
-              >
-                <i class="fas fa-pencil-alt left"></i> Edit
-              </a>
-              <a
-                href="{% url 'edit_box_products' box.id %}"
-                class="btn-small blue darken-2"
-                aria-label="Edit Box Products"
-              >
-                <i class="fas fa-box-open left"></i> Products
-              </a>
-              <a
-                href="#!"
-                class="btn-small red darken-2 delete-box-btn"
-                data-id="{{ box.id }}"
-                aria-label="Delete Box"
-              >
-                <i class="fas fa-trash-alt left"></i> Delete
-              </a>
-            </div>
+          </div>
+          <div class="card-action admin-btn-group">
+            <a href="{% url 'edit_box' box.id %}" class="btn-small green darken-3" aria-label="Edit Box">
+              <i class="fas fa-pencil-alt left"></i> Edit
+            </a>
+            <a href="{% url 'edit_box_products' box.id %}" class="btn-small blue darken-2" aria-label="Edit Box Products">
+              <i class="fas fa-box-open left"></i> Products
+            </a>
+            <a href="#!" class="btn-small red darken-2 delete-box-btn" data-id="{{ box.id }}" aria-label="Delete Box">
+              <i class="fas fa-trash-alt left"></i> Delete
+            </a>
           </div>
         </div>
       </div>
-      {% endfor %}
     </div>
+  {% endfor %}
+</div>
 
-    {% include 'dashboard/partials/product_list.html' with product=product %}
-  </div>
+{% include 'dashboard/partials/product_list.html' with product=product %}
+</div>
 </div>
 {% endblock %}

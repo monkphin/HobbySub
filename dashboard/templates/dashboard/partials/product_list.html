@@ -2,118 +2,76 @@
   <h4>Orphaned Products (Unassigned)</h4>
 
   {% if orphaned_products %}
-  <form
-    id="orphaned-products-form"
-    method="POST"
-    action="{% if box %}{% url 'assign_orphaned_to_box' box.id %}{% else %}{% url 'manage_orphaned_products' %}{% endif %}"
-  >
-    {% csrf_token %}
-    <input type="hidden" name="action" id="orphaned-action" />
-    <!-- Top action bar -->
-    <div class="button-row-orphans">
+    <form id="orphaned-products-form" method="POST" action="{% if box %}{% url 'assign_orphaned_to_box' box.id %}{% else %}{% url 'manage_orphaned_products' %}{% endif %}">
+      {% csrf_token %}
+      <input type="hidden" name="action" id="orphaned-action">
+      <!-- Top action bar -->
+      <div class="button-row-orphans">
       <a href="{% url 'add_products' %}" class="btn teal darken-3">
         <i class="fas fa-plus"></i> Add
       </a>
-      {% if not box %}
-      <button
-        type="submit"
-        class="btn blue darken-2 orphan-action-btn"
-        data-action="reassign"
-        aria-label="reassign"
-      >
-        <i class="fas fa-exchange-alt"></i> Reassign
-      </button>
-      {% endif %} {% if box %}
-      <button
-        type="submit"
-        name="assign_to_box"
-        value="1"
-        class="btn blue darken-2"
-        data-action="assign"
-        aria-label="Assign to box"
-      >
-        <i class="fas fa-plus"></i> Assign to Box
-      </button>
-      {% endif %}
-      <button
-        type="button"
-        id="orphaned-bulk-delete-btn"
-        class="btn red darken-2 orphan-action-btn"
-        aria-label="Delete"
-      >
+        {% if not box %}
+          <button type="submit" class="btn blue darken-2 orphan-action-btn" data-action="reassign" aria-label="reassign">
+          <i class="fas fa-exchange-alt"></i> Reassign
+          </button>
+        {% endif %}
+        {% if box %}
+          <button type="submit" name="assign_to_box" value="1" class="btn blue darken-2" data-action="assign" aria-label="Assign to box">
+            <i class="fas fa-plus"></i> Assign to Box
+          </button>
+        {% endif %}
+        <button type="button" id="orphaned-bulk-delete-btn" class="btn red darken-2 orphan-action-btn" aria-label="Delete">
         <i class="fas fa-trash-alt"></i> Delete
-      </button>
+        </button>
     </div>
 
-    <!-- Product cards -->
-    <div class="row">
-      {% for product in orphaned_products %}
-      <div class="col s12 m6">
-        <div class="card hoverable">
-          <div class="card-image">
-            {% if product.image %}
-            <img
-              src="{{ product.image.url }}"
-              alt="{{ product.name }}"
-              class="responsive-img product-card-image"
-              onerror="this.onerror=null;this.src='https://res.cloudinary.com/dlmbpbtfx/image/upload/v1747743568/ifeiea8bmpc80sx3g8wr.png';"
-            />
-            {% else %}
-            <img
-              src="https://res.cloudinary.com/dlmbpbtfx/image/upload/v1747743568/ifeiea8bmpc80sx3g8wr.png"
-              alt="Fallback image for {{ product.name }}"
-              class="responsive-img product-card-image"
-            />
-            {% endif %}
+      <!-- Product cards -->
+      <div class="row">
+        {% for product in orphaned_products %}
+          <div class="col s12 m6">
+            <div class="card hoverable">
+              <div class="card-image">
+                {% if product.image %}
+                  <img src="{{ product.image.url }}"
+                      alt="{{ product.name }}"
+                      class="responsive-img product-card-image"
+                      onerror="this.onerror=null;this.src='https://res.cloudinary.com/dlmbpbtfx/image/upload/v1747743568/ifeiea8bmpc80sx3g8wr.png';">
+                {% else %}
+                  <img src="https://res.cloudinary.com/dlmbpbtfx/image/upload/v1747743568/ifeiea8bmpc80sx3g8wr.png"
+                      alt="Fallback image for {{ product.name }}"
+                      class="responsive-img product-card-image">
+                {% endif %}
+              </div>
+              <div class="card-content valign-wrapper">
+                <label>
+                  <input type="checkbox" name="product_ids" value="{{ product.id }}">
+                  <span class="black-text">
+                    <strong class="green-text text-darken-3">{{ product.name }}</strong>
+                    (x{{ product.quantity }})
+                  </span>
+                </label>
+              </div>
+              <div class="card-action center orphan-ctrl-btn">
+                <a href="{% url 'edit_product' product.id %}" class="btn-small green darken-3" aria-label="Edit">
+                  <i class="fas fa-edit left"></i> Edit
+                </a>
+                <button type="button" class="btn-small red darken-2 delete-product-btn" data-id="{{ product.id }}" aria-label="Delete Orphaned Product">
+                  <i class="fas fa-trash left"></i> Delete
+                </button>
+              </div>
+            </div>
           </div>
-          <div class="card-content valign-wrapper">
-            <label>
-              <input
-                type="checkbox"
-                name="product_ids"
-                value="{{ product.id }}"
-              />
-              <span class="black-text">
-                <strong class="green-text text-darken-3"
-                  >{{ product.name }}</strong
-                >
-                (x{{ product.quantity }})
-              </span>
-            </label>
-          </div>
-          <div class="card-action center orphan-ctrl-btn">
-            <a
-              href="{% url 'edit_product' product.id %}"
-              class="btn-small green darken-3"
-              aria-label="Edit"
-            >
-              <i class="fas fa-edit left"></i> Edit
-            </a>
-            <button
-              type="button"
-              class="btn-small red darken-2 delete-product-btn"
-              data-id="{{ product.id }}"
-              aria-label="Delete Orphaned Product"
-            >
-              <i class="fas fa-trash left"></i> Delete
-            </button>
-          </div>
-        </div>
+        {% endfor %}
       </div>
-      {% endfor %}
-    </div>
-  </form>
+    </form>
   {% else %}
-  <p class="grey-text center-align">No orphaned products found.</p>
-  {% if not box %}
-  <div class="center-align">
-    <a
-      href="{% url 'add_products' %}"
-      class="btn teal darken-3"
-      aria-label="Add Orphaned Product"
-    >
-      <i class="fas fa-plus left"></i> Add Product
-    </a>
-  </div>
-  {% endif %} {% endif %}
+    <p class="grey-text center-align">No orphaned products found.</p>
+      {% if not box %}
+        <div class="center-align">
+          <a href="{% url 'add_products' %}" class="btn teal darken-3" aria-label="Add Orphaned Product">
+            <i class="fas fa-plus left"></i> Add Product
+          </a>
+        </div>
+      {% endif %}
+    {% endif %}
 </div>

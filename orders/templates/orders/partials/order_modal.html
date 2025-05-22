@@ -1,61 +1,59 @@
+
 {% load custom_filters %}
 
 <!-- Modal for Order Details -->
 <div id="order-modal-{{ order.id }}" class="modal">
   <div class="modal-content">
     <h4 id="order-modal-title-{{ order.id }}">Order #{{ order.id }}</h4>
-    <div
-      role="dialog"
-      aria-labelledby="order-modal-title-{{ order.id }}"
-      aria-modal="true"
-    >
+    <div role="dialog" aria-labelledby="order-modal-title-{{ order.id }}" aria-modal="true">
       <p><strong>Status:</strong> {{ order.status|title }}</p>
       <p><strong>Order Date:</strong> {{ order.order_date|date:"F j, Y" }}</p>
-
-      {% with payments_by_order|get_item:order.id as payment %} {% if payment %}
-      <p>
-        <strong>Payment:</strong> £{{ payment.amount }} — {{
-        payment.status|title }}
-      </p>
-      <p><strong>Date:</strong> {{ payment.payment_date|date:"M d, Y H:i" }}</p>
-      {% else %}
-      <p><strong>Payment:</strong> Not recorded</p>
-      {% endif %} {% endwith %}
-
+        
+      {% with payments_by_order|get_item:order.id as payment %}
+        {% if payment %}
+          <p><strong>Payment:</strong> £{{ payment.amount }} — {{ payment.status|title }}</p>
+          <p><strong>Date:</strong> {{ payment.payment_date|date:"M d, Y H:i" }}</p>
+        {% else %}
+          <p><strong>Payment:</strong> Not recorded</p>
+        {% endif %}
+      {% endwith %}
+        
       <p><strong>Shipping Address:</strong></p>
       {% if order.shipping_address %}
       <p>
-        {{ order.shipping_address.recipient_f_name }} {{
-        order.shipping_address.recipient_l_name }}<br />
-        {{ order.shipping_address.address_line_1 }}<br />
-        {% if order.shipping_address.address_line_2 %} {{
-        order.shipping_address.address_line_2 }}<br />
-        {% endif %} {{ order.shipping_address.town_or_city }}<br />
-        {% if order.shipping_address.county %} {{ order.shipping_address.county
-        }}<br />
-        {% endif %} {{ order.shipping_address.postcode }}<br />
-        {{ order.shipping_address.country.name }}<br />
+        {{ order.shipping_address.recipient_f_name }} {{ order.shipping_address.recipient_l_name }}<br>
+        {{ order.shipping_address.address_line_1 }}<br>
+        {% if order.shipping_address.address_line_2 %}
+          {{ order.shipping_address.address_line_2 }}<br>
+        {% endif %}
+        {{ order.shipping_address.town_or_city }}<br>
+        {% if order.shipping_address.county %}
+          {{ order.shipping_address.county }}<br>
+        {% endif %}
+        {{ order.shipping_address.postcode }}<br>
+        {{ order.shipping_address.country.name }}<br>
         {{ order.shipping_address.phone_number }}
       </p>
       {% else %}
-      <p><em>Not available</em></p>
-      {% endif %} {% if order.scheduled_shipping_date %}
-      <p>
-        <strong>Estimated Shipping Date:</strong> {{
-        order.scheduled_shipping_date|date:"F j, Y" }}
-      </p>
-      {% endif %} {% if order.box %}
-      <p><strong>Box:</strong> {{ order.box.name }}</p>
+        <p><em>Not available</em></p>
       {% endif %}
 
+      {% if order.scheduled_shipping_date %}
+        <p><strong>Estimated Shipping Date:</strong> {{ order.scheduled_shipping_date|date:"F j, Y" }}</p>
+      {% endif %}
+        
+      {% if order.box %}
+        <p><strong>Box:</strong> {{ order.box.name }}</p>
+      {% endif %}
+            
       <p><strong>Gift:</strong> {{ order.is_gift|yesno:"Yes,No" }}</p>
     </div>
   </div>
 
-  <!-- Modal Footer -->
-  <div class="modal-footer btn-group">
-    <button class="btn modal-close waves-effect waves-light green darken-3">
-      Close
-    </button>
-  </div>
+    <!-- Modal Footer -->
+    <div class="modal-footer btn-group">
+        <button class="btn modal-close waves-effect waves-light green darken-3">
+            Close
+        </button>
+    </div>
 </div>

@@ -1,59 +1,29 @@
-{% extends 'base.html' %} {% block title %}About{% endblock %} {% block content
-%}
-<div class="container section" role="region" aria-labelledby="about-heading">
-  <h2 id="about-heading" class="center-align green-text text-darken-3">
-    About Hobby Hub
-  </h2>
+{% extends 'base.html' %}
+{% block title %}About{% endblock %}
 
-  <p>
-    Hobby Hub is a subscription box for miniature painters, model builders, and
-    tabletop creatives. Whether you're just starting out or you're already deep
-    in the hobby, our goal is simple:
-  </p>
+{% block content %}
+<div class="container section" role="region" aria-labelledby="about-heading">
+  <h2 id="about-heading" class="center-align green-text text-darken-3">About Hobby Hub</h2>
+
+  <p>Hobby Hub is a subscription box for miniature painters, model builders, and tabletop creatives. Whether you're just starting out or you're already deep in the hobby, our goal is simple:</p>
 
   <blockquote>
     <strong>Deliver inspiration to your door, every single month.</strong>
   </blockquote>
 
-  <p>
-    Each box includes a curated mix of paints, brushes, miniatures, accessories,
-    and surprises — chosen to help you try new things, keep your queue fresh,
-    and rekindle your hobby joy.
-  </p>
+  <p>Each box includes a curated mix of paints, brushes, miniatures, accessories, and surprises — chosen to help you try new things, keep your queue fresh, and rekindle your hobby joy.</p>
 
-  <p>
-    We're hobbyists too. We know what it's like to get stuck in a rut,
-    overwhelmed by your pile of shame, or just unsure what to try next. That’s
-    why each box is built not just for quality, but for creative momentum.
-  </p>
+  <p>We're hobbyists too. We know what it's like to get stuck in a rut, overwhelmed by your pile of shame, or just unsure what to try next. That’s why each box is built not just for quality, but for creative momentum.</p>
 
-  <p>
-    No algorithms. No excess plastic. Just thoughtful selections, delivered
-    monthly.
-  </p>
+  <p>No algorithms. No excess plastic. Just thoughtful selections, delivered monthly.</p>
 
   <h5>Who It’s For</h5>
   <ul>
-    <li>
-      <i class="fa-solid fa-paintbrush left" aria-hidden="true"></i>New painters
-      looking for guidance and gear
-    </li>
-    <li>
-      <i class="fa-solid fa-dice left" aria-hidden="true"></i>Veterans wanting
-      to shake up their routine
-    </li>
-    <li>
-      <i class="fa-solid fa-gift left" aria-hidden="true"></i>Gift-givers who
-      want to delight a hobbyist in their life
-    </li>
+    <li><i class="fa-solid fa-paintbrush left" aria-hidden="true"></i>New painters looking for guidance and gear</li>
+    <li><i class="fa-solid fa-dice left" aria-hidden="true"></i>Veterans wanting to shake up their routine</li>
+    <li><i class="fa-solid fa-gift left" aria-hidden="true"></i>Gift-givers who want to delight a hobbyist in their life</li>
   </ul>
 
-  <p>
-    Still curious? You can
-    <a href="{% url 'select_purchase_type' %}?gift=false"
-      >start with a single box</a
-    >
-    — no subscription required.
-  </p>
+  <p>Still curious? You can <a href="{% url 'select_purchase_type' %}?gift=false">start with a single box</a> — no subscription required.</p>
 </div>
 {% endblock %}

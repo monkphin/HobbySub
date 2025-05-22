@@ -1,9 +1,10 @@
-{% extends 'base.html' %} {% block title %}Box Contents{% endblock %} {% block
-content %}
+{% extends 'base.html' %}
+{% block title %}Box Contents{% endblock %}
+
+{% block content %}
 <div class="container">
-  <h2 class="center-align green-text text-darken-3">
-    Contents of "{{ box.name }}"
-  </h2>
+  
+  <h2 class="center-align green-text text-darken-3">Contents of "{{ box.name }}"</h2>
 
   <div class="row button-row center-align">
     <a href="{% url 'box_admin' %}" class="btn grey darken-1">
@@ -16,66 +17,48 @@ content %}
   </div>
 
   <div class="product-grid">
-    {% if products %} {% for product in products %}
-    <div class="col">
-      <div
-        class="card"
-        role="group"
-        aria-labelledby="product-title-{{ product.id }}"
-      >
-        <div class="card-image">
-          {% if product.image %}
-          <img
-            src="{{ product.image.url }}"
-            alt="{{ product.name }}"
-            class="responsive-img product-card-image"
-            onerror="this.onerror=null;this.src='https://res.cloudinary.com/dlmbpbtfx/image/upload/v1747743568/ifeiea8bmpc80sx3g8wr.png';"
-          />
-          {% else %}
-          <img
-            src="https://res.cloudinary.com/dlmbpbtfx/image/upload/v1747743568/ifeiea8bmpc80sx3g8wr.png"
-            alt="Fallback image for {{ product.name }}"
-            class="responsive-img product-card-image"
-          />
-          {% endif %}
+    {% if products %}
+      {% for product in products %}
+        <div class="col">
+          <div class="card" role="group" aria-labelledby="product-title-{{ product.id }}">
+            <div class="card-image">
+              {% if product.image %}
+                <img src="{{ product.image.url }}"
+                    alt="{{ product.name }}"
+                    class="responsive-img product-card-image"
+                    onerror="this.onerror=null;this.src='https://res.cloudinary.com/dlmbpbtfx/image/upload/v1747743568/ifeiea8bmpc80sx3g8wr.png';">
+              {% else %}
+                <img src="https://res.cloudinary.com/dlmbpbtfx/image/upload/v1747743568/ifeiea8bmpc80sx3g8wr.png"
+                    alt="Fallback image for {{ product.name }}"
+                    class="responsive-img product-card-image">
+              {% endif %}
+            </div>
+            <div class="card-content">
+              <h5 id="product-title-{{ product.id }}">{{ product.name }}</h5>
+              <p>{{ product.description|default:"No description" }}</p>
+              <p><strong>Quantity:</strong> {{ product.quantity }}</p>
+            </div>
+            <div class="card-action product-ctrl-btn">
+              <a href="{% url 'edit_product' product.id %}" class="btn-small green darken-3" aria-label="Edit Product">
+                <i class="fas fa-edit"></i> Edit
+              </a>
+              <a href="{% url 'remove_product_from_box' product.id %}?box_id={{ box.id }}" class="btn-small teal darken-3" aria-label="Remove Product from Box">
+                <i class="fas fa-trash-alt"></i> Remove
+              </a>
+              <a href="#!" class="btn-small red darken-2 delete-product-btn" data-id="{{ product.id }}" aria-label="Delete Product">
+                <i class="fas fa-trash-alt"></i> Delete
+              </a>
+            </div>
+          </div>
         </div>
-        <div class="card-content">
-          <h5 id="product-title-{{ product.id }}">{{ product.name }}</h5>
-          <p>{{ product.description|default:"No description" }}</p>
-          <p><strong>Quantity:</strong> {{ product.quantity }}</p>
-        </div>
-        <div class="card-action product-ctrl-btn">
-          <a
-            href="{% url 'edit_product' product.id %}"
-            class="btn-small green darken-3"
-            aria-label="Edit Product"
-          >
-            <i class="fas fa-edit"></i> Edit
-          </a>
-          <a
-            href="{% url 'remove_product_from_box' product.id %}?box_id={{ box.id }}"
-            class="btn-small teal darken-3"
-            aria-label="Remove Product from Box"
-          >
-            <i class="fas fa-trash-alt"></i> Remove
-          </a>
-          <a
-            href="#!"
-            class="btn-small red darken-2 delete-product-btn"
-            data-id="{{ product.id }}"
-            aria-label="Delete Product"
-          >
-            <i class="fas fa-trash-alt"></i> Delete
-          </a>
-        </div>
-      </div>
-    </div>
-    {% endfor %} {% else %}
-    <p>No products in this box yet.</p>
+      {% endfor %}
+    {% else %}
+      <p>No products in this box yet.</p>
     {% endif %}
   </div>
 
   {% include 'dashboard/partials/product_list.html' with product=product %}
+
 </div>
 
 {% endblock %}

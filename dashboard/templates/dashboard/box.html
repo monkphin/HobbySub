@@ -1,78 +1,76 @@
-{% extends "base.html" %} {% block title %}Add New Box{% endblock %} {% block
-content %}
+
+{% extends "base.html" %}
+{% block title %}Add New Box{% endblock %}
+
+{% block content %}
 <div class="container" role="region" aria-labelledby="box-form-heading">
-  <h2 class="center-align green-text text-darken-3" id="box-form-heading">
-    {% if editing %}Edit Box{% else %}Add New Box{% endif %}
-  </h2>
+  <h2 class="center-align green-text text-darken-3" id="box-form-heading">{% if editing %}Edit Box{% else %}Add New Box{% endif %}</h2>
+
 
   <form method="post" enctype="multipart/form-data" aria-label="Edit Box">
     {% csrf_token %}
 
-    <div class="row">
-      <div class="input-field col s12">
-        {{ form.name.label_tag }} {{ form.name }}
-      </div>
+  <div class="row">
+    <div class="input-field col s12">
+      {{ form.name.label_tag }}
+      {{ form.name }}
     </div>
+  </div>
 
-    <div class="row">
-      <div class="input-field col s12">
-        {{ form.description.label_tag }} {{ form.description }}
-      </div>
+  <div class="row">
+    <div class="input-field col s12">
+      {{ form.description.label_tag }}
+      {{ form.description }}
     </div>
+  </div>
 
-    <div class="file-field input-field">
-      <div class="btn teal darken-3">
-        <span>Upload Image</span>
-        {{ form.image.as_widget }}
-      </div>
-      <div class="file-path-wrapper">
-        <input
-          class="file-path validate"
-          type="text"
-          placeholder="Upload an image"
-        />
-      </div>
+  <div class="file-field input-field">
+    <div class="btn teal darken-3">
+      <span>Upload Image</span>
+      {{ form.image.as_widget }}
     </div>
+    <div class="file-path-wrapper">
+      <input class="file-path validate" type="text" placeholder="Upload an image">
+    </div>
+  </div>
 
-    {% if box and box.image %}
+  {% if box and box.image %}
     <p>Current Image:</p>
-    <img
-      src="{{ box.image.url }}"
-      alt="Current image"
-      class="responsive-img small-preview"
-    />
-    {% endif %}
+    <img src="{{ box.image.url }}" alt="Current image" class="responsive-img small-preview">
+  {% endif %}
 
-    <div class="input-field">
-      {{ form.shipping_date.label_tag }} {{ form.shipping_date }}
-    </div>
+  <div class="input-field">
+    {{ form.shipping_date.label_tag }}
+    {{ form.shipping_date }}
+  </div>
 
-    {% if form.errors %}
+  {% if form.errors %}
     <div class="card-panel red lighten-4 red-text text-darken-4">
       <ul>
-        {% for field in form %} {% for error in field.errors %}
-        <li><strong>{{ field.label }}:</strong> {{ error }}</li>
-        {% endfor %} {% endfor %} {% for error in form.non_field_errors %}
-        <li>{{ error }}</li>
+        {% for field in form %}
+          {% for error in field.errors %}
+            <li><strong>{{ field.label }}:</strong> {{ error }}</li>
+          {% endfor %}
+        {% endfor %}
+        {% for error in form.non_field_errors %}
+          <li>{{ error }}</li>
         {% endfor %}
       </ul>
     </div>
-    {% endif %}
+  {% endif %}
 
-    <div class="button-row">
-      <button class="btn green darken-3" type="submit">
-        {% if editing %}Update{% else %}Save{% endif %}
-      </button>
-      <a href="{% url 'box_admin' %}" class="btn grey darken-1">Cancel</a>
-      {% if box %}
-      <a
-        href="{% url 'edit_box_products' box.id %}"
-        class="btn blue darken-2 white-text"
-        >Manage Products</a
-      >
-      {% endif %}
-    </div>
+  <div class="button-row">
+    <button class="btn green darken-3" type="submit">
+      {% if editing %}Update{% else %}Save{% endif %}
+    </button>
+    <a href="{% url 'box_admin' %}" class="btn grey darken-1">Cancel</a>
+    {% if box %}
+      <a href="{% url 'edit_box_products' box.id %}" class="btn blue darken-2 white-text">Manage Products</a>
+    {% endif %}
+  </div>
+  
   </form>
 </div>
+
 
 {% endblock %}

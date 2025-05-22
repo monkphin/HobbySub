@@ -4,107 +4,69 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
-    <meta charset="UTF-8" />
+    <meta charset="UTF-8">
     <title>{% block title %}Hobby Hub{% endblock %}</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
     <!-- Materialize CSS -->
-    <link
-      rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css"
-    />
-
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
+    
     <!-- Local Styling -->
-    <link rel="stylesheet" href="{% static 'css/style.css' %}" />
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
     <!-- Favicon links -->
-    <link
-      rel="icon"
-      type="image/png"
-      sizes="32x32"
-      href="{% static 'img/favicon-32x32.png' %}"
-    />
-    <link
-      rel="icon"
-      type="image/png"
-      sizes="16x16"
-      href="{% static 'img/favicon-16x16.png' %}"
-    />
-    <link
-      rel="apple-touch-icon"
-      sizes="180x180"
-      href="{% static 'img/apple-touch-icon.png' %}"
-    />
-    <link rel="shortcut icon" href="{% static 'img/favicon.ico' %}" />
+    <link rel="icon" type="image/png" sizes="32x32" href="{% static 'img/favicon-32x32.png' %}">
+    <link rel="icon" type="image/png" sizes="16x16" href="{% static 'img/favicon-16x16.png' %}">
+    <link rel="apple-touch-icon" sizes="180x180" href="{% static 'img/apple-touch-icon.png' %}">
+    <link rel="shortcut icon" href="{% static 'img/favicon.ico' %}">
   </head>
-  <body>
+<body>
     <header>
+
       {% if messages %}
-      <div id="toast-container">
-        {% for message in messages %}
-        <div class="toast {{ message.tags }}">{{ message }}</div>
-        {% endfor %}
-      </div>
+        <div id="toast-container">
+          {% for message in messages %}
+            <div class="toast {{ message.tags }}">{{ message }}</div>
+          {% endfor %}
+        </div>
       {% endif %}
 
-      <div class="navbar-fixed">
-        <nav role="navigation">
-          <div class="nav-wrapper">
-            <div class="container">
-              <a href="{% url 'home' %}" class="brand-logo">Hobby Hub</a>
-
+    <div class="navbar-fixed">
+      <nav role="navigation">
+        <div class="nav-wrapper">
+          <div class="container">
+            <a href="{% url 'home' %}" class="brand-logo">Hobby Hub</a>
+        
               <!-- Desktop menu -->
               <ul class="right hide-on-med-and-down">
                 <li><a href="{% url 'about' %}">About</a></li>
                 <li><a href="{% url 'past_boxes' %}">Past Boxes</a></li>
                 {% if user.is_authenticated %}
-                <li>
-                  <a href="{% url 'select_purchase_type' %}?gift=false"
-                    >Buy for Myself</a
-                  >
-                </li>
-                <li>
-                  <a href="{% url 'select_purchase_type' %}?gift=true"
-                    >Give as a Gift</a
-                  >
-                </li>
-                <li><a href="{% url 'account' %}">My Account</a></li>
-                <li><a href="{% url 'logout' %}">Logout</a></li>
+                  <li><a href="{% url 'select_purchase_type' %}?gift=false">Buy for Myself</a></li>
+                  <li><a href="{% url 'select_purchase_type' %}?gift=true">Give as a Gift</a></li>
+                  <li><a href="{% url 'account' %}">My Account</a></li>
+                  <li><a href="{% url 'logout' %}">Logout</a></li>
                 {% else %}
-                <li>
-                  <a
-                    href="{% url 'register' %}?next={% url 'handle_purchase_type' plan='monthly' %}?gift=false"
-                    >Pick a Plan</a
-                  >
-                </li>
-                <li>
-                  <a
-                    href="{% url 'register' %}?next={% url 'handle_purchase_type' plan='monthly' %}?gift=true"
-                    >Give as a gift</a
-                  >
-                </li>
-                <li><a href="{% url 'register' %}">Register</a></li>
-                <li><a href="{% url 'login' %}">Login</a></li>
-                {% endif %} {% if user.is_staff %}
-                <li class="admin-dropdown-wrapper">
-                  <a class="dropdown-trigger" href="#!" data-target="dropdown1">
-                    Administration
-                    <i class="fas fa-chevron-down dropdown-icon"></i>
-                  </a>
-                </li>
+                  <li><a href="{% url 'register' %}?next={% url 'handle_purchase_type' plan='monthly' %}?gift=false">Pick a Plan</a></li>
+                  <li><a href="{% url 'register' %}?next={% url 'handle_purchase_type' plan='monthly' %}?gift=true">Give as a gift</a></li>
+                  <li><a href="{% url 'register' %}">Register</a></li>
+                  <li><a href="{% url 'login' %}">Login</a></li>
+                {% endif %}
+                {% if user.is_staff %}
+                  <li class="admin-dropdown-wrapper">
+                    <a class="dropdown-trigger" href="#!" data-target="dropdown1">
+                      Administration <i class="fas fa-chevron-down dropdown-icon"></i>
+                    </a>
+                  </li>
                 {% endif %}
               </ul>
               <!-- Burger trigger aligned to screen-right -->
-              <a
-                href="#"
-                data-target="mobile-nav"
-                class="sidenav-trigger right"
-              >
-                <i class="fas fa-bars"></i>
-              </a>
-            </div>
+              <a href="#" data-target="mobile-nav" class="sidenav-trigger right">
+              <i class="fas fa-bars"></i>
+            </a>
           </div>
-        </nav>
-      </div>
+        </div>
+      </nav>
+    </div>
 
       <ul id="dropdown1" class="dropdown-content">
         <li><a href="{% url 'box_admin' %}">Box Admin</a></li>
@@ -117,77 +79,59 @@
           <li><a href="{% url 'about' %}">About</a></li>
           <li><a href="{% url 'past_boxes' %}">Past Boxes</a></li>
           {% if user.is_authenticated %}
-          <li><a href="{% url 'account' %}">My Account</a></li>
-          <li><a href="{% url 'logout' %}">Logout</a></li>
-          <li class="divider"></li>
-          <li><strong class="grey-text text-lighten-2">Get a Box</strong></li>
-          <li>
-            <a href="{% url 'select_purchase_type' %}?gift=false"
-              >Buy for Myself</a
-            >
-          </li>
-          <li>
-            <a href="{% url 'select_purchase_type' %}?gift=true"
-              >Give as a Gift</a
-            >
-          </li>
+            <li><a href="{% url 'account' %}">My Account</a></li>
+            <li><a href="{% url 'logout' %}">Logout</a></li>
+            <li class="divider"></li>
+            <li><strong class="grey-text text-lighten-2">Get a Box</strong></li>
+            <li><a href="{% url 'select_purchase_type' %}?gift=false">Buy for Myself</a></li>
+            <li><a href="{% url 'select_purchase_type' %}?gift=true">Give as a Gift</a></li>
           {% else %}
-          <li><a href="{% url 'register' %}">Register</a></li>
-          <li><a href="{% url 'login' %}">Login</a></li>
-          <li class="divider"></li>
-          <li><strong class="grey-text text-darken-2">Get a Box</strong></li>
-          <li>
-            <a
-              href="{% url 'register' %}?next={% url 'handle_purchase_type' plan='monthly' %}?gift=false"
-              >Pick a Plan</a
-            >
-          </li>
-          <li>
-            <a
-              href="{% url 'register' %}?next={% url 'handle_purchase_type' plan='monthly' %}?gift=true"
-              >Give as a gift</a
-            >
-          </li>
-          {% endif %} {% if user.is_staff %}
-          <li class="divider"></li>
-          <li><strong class="grey-text text-lighten-2">Site Admin</strong></li>
-          <li><a href="{% url 'box_admin' %}">Box Admin</a></li>
-          <li><a href="{% url 'user_admin' %}">User Admin</a></li>
+            <li><a href="{% url 'register' %}">Register</a></li>
+            <li><a href="{% url 'login' %}">Login</a></li>
+            <li class="divider"></li>
+            <li><strong class="grey-text text-darken-2">Get a Box</strong></li>
+            <li><a href="{% url 'register' %}?next={% url 'handle_purchase_type' plan='monthly' %}?gift=false">Pick a Plan</a></li>
+            <li><a href="{% url 'register' %}?next={% url 'handle_purchase_type' plan='monthly' %}?gift=true">Give as a gift</a></li>
+          {% endif %}
+
+          {% if user.is_staff %}
+            <li class="divider"></li>
+            <li><strong class="grey-text text-lighten-2">Site Admin</strong></li>
+            <li><a href="{% url 'box_admin' %}">Box Admin</a></li>
+            <li><a href="{% url 'user_admin' %}">User Admin</a></li>
           {% endif %}
         </ul>
       </div>
+
     </header>
 
     <main role="main">
-      {% block content %}
-      <!-- Page-specific content will go here -->
-      {% endblock %}
+        {% block content %}
+        <!-- Page-specific content will go here -->
+        {% endblock %}
     </main>
 
     <footer aria-label="Site footer">
-      <p>&copy; 2025 Hobby Hub</p>
+        <p>&copy; 2025 Hobby Hub</p>
     </footer>
     <!-- Materialize JS -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
     <!-- FontAWesome JS Kit -->
-    <script
-      src="https://kit.fontawesome.com/f862737888.js"
-      crossorigin="anonymous"
-    ></script>
+    <script src="https://kit.fontawesome.com/f862737888.js" crossorigin="anonymous"></script>
     <!-- Local JS -->
     <script>
       const GLOBALS = {
-        csrfToken: "{{ csrf_token }}",
+        csrfToken: '{{ csrf_token }}',
         urls: {
           deleteAccount: '{% url "secure_delete_account" %}',
-          deleteAddressBase: "/accounts/secure_delete_address/", // id gets added dynamically
+          deleteAddressBase: '/accounts/secure_delete_address/', // id gets added dynamically
           cancelSubscription: '{% url "secure_cancel_subscription" %}',
           changeEmail: '{% url "change_email" %}',
           orphanedBulkDelete: '{% url "manage_orphaned_products" %}',
-        },
-      };
+        }
+      }
     </script>
-    <script src="{% static 'js/script.js' %}"></script>
+    <script src="{% static 'js/script.js' %}"></script>   
     {% include 'partials/confirmation_modal.html' %}
-  </body>
+</body>
 </html>

@@ -1,40 +1,26 @@
-{% extends 'base.html' %} {% block title %}{% if editing %}Edit Product{% else
-%}Add Product{% endif %}{% endblock %} {% block content %}
-<div class="container">
-  <h2 class="center-align green-text text-darken-3" id="product-form-heading">
-    {% if editing %}Edit Product{% else %}Add Product{% endif %}
-  </h2>
+{% extends 'base.html' %}
+{% block title %}{% if editing %}Edit Product{% else %}Add Product{% endif %}{% endblock %}
 
-  <form
-    method="post"
-    enctype="multipart/form-data"
-    aria-labelledby="product-form-heading"
-  >
+{% block content %}
+<div class="container">
+  <h2 class="center-align green-text text-darken-3" id="product-form-heading">{% if editing %}Edit Product{% else %}Add Product{% endif %}</h2>
+
+  <form method="post" enctype="multipart/form-data" aria-labelledby="product-form-heading">
     {% csrf_token %}
     <div class="input-field">{{ form.name.label_tag }}{{ form.name }}</div>
-    <div class="input-field">
-      {{ form.description.label_tag }}{{ form.description }}
-    </div>
+    <div class="input-field">{{ form.description.label_tag }}{{ form.description }}</div>
     <div class="file-field input-field">
       <div class="btn teal darken-3">
         <span>Upload Image</span>
         {{ form.image.as_widget }}
       </div>
       <div class="file-path-wrapper">
-        <input
-          class="file-path validate"
-          type="text"
-          placeholder="Upload an image"
-        />
+        <input class="file-path validate" type="text" placeholder="Upload an image">
       </div>
     </div>
     {% if editing and product and product.image %}
-    <p>Current Image:</p>
-    <img
-      src="{{ product.image.url }}"
-      alt="{{ product.name }}"
-      class="responsive-img small-preview"
-    />
+      <p>Current Image:</p>
+      <img src="{{ product.image.url }}" alt="{{ product.name }}" class="responsive-img small-preview">
     {% endif %}
     <div class="section">
       <label for="{{ form.quantity.id_for_label }}">Quantity</label>
@@ -45,13 +31,11 @@
       <label for="{{ form.box.id_for_label }}">Box</label>
       {{ form.box }}
     </div>
-    {% endif %}
-    <div class="button-row">
-      <button type="submit" class="btn green darken-3" aria-label="Save">
-        {% if editing %}Update{% else %}Save{% endif %}
-      </button>
-      <a href="{% url 'box_admin' %}" class="btn grey darken-1">Cancel</a>
-    </div>
+  {% endif %}
+  <div class="button-row">
+    <button type="submit" class="btn green darken-3" aria-label="Save">{% if editing %}Update{% else %}Save{% endif %}</button>
+    <a href="{% url 'box_admin' %}" class="btn grey darken-1">Cancel</a>
+  </div>
   </form>
 </div>
 {% endblock %}

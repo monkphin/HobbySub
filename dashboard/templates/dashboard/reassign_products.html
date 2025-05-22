@@ -1,9 +1,9 @@
-{% extends 'base.html' %} {% block title %}Reassign Orphaned Products{% endblock
-%} {% block content %}
+{% extends 'base.html' %}
+{% block title %}Reassign Orphaned Products{% endblock %}
+
+{% block content %}
 <div class="container">
-  <h2 id="reassign-heading" class="center-align green-text text-darken-3">
-    Reassign Orphaned Products
-  </h2>
+  <h2 id="reassign-heading" class="center-align green-text text-darken-3">Reassign Orphaned Products</h2>
 
   <form method="POST" aria-labelledby="reassign-heading">
     {% csrf_token %}
@@ -11,38 +11,26 @@
       <select name="box_id" required>
         <option value="" disabled selected>Choose a box to reassign</option>
         {% for box in boxes %}
-        <option value="{{ box.id }}">
-          {{ box.name }} — {{ box.shipping_date|date:"d M Y" }}
-        </option>
+          <option value="{{ box.id }}">{{ box.name }} — {{ box.shipping_date|date:"d M Y" }}</option>
         {% endfor %}
       </select>
       <label>Select Box</label>
     </div>
-
+    
     <div role="region" aria-labelledby="selected-products-heading">
       <h5 id="selected-products-heading">Selected Products:</h5>
       <ul class="collection">
         {% for product in products %}
-        <li class="collection-item">
-          {{ product.name }} (x{{ product.quantity }})
-        </li>
+          <li class="collection-item">{{ product.name }} (x{{ product.quantity }})</li>
         {% endfor %}
       </ul>
     </div>
 
     <div class="section center-align">
-      <button
-        type="submit"
-        class="btn green darken-3"
-        aria-label="Reassign Products"
-      >
+      <button type="submit" class="btn green darken-3" aria-label="Reassign Products">
         <i class="fas fa-check left"></i> Reassign Products
       </button>
-      <a
-        href="{% url 'box_admin' %}"
-        class="btn red darken-2"
-        aria-label="Cancel"
-      >
+      <a href="{% url 'box_admin' %}" class="btn red darken-2" aria-label="Cancel">
         <i class="fas fa-times left"></i> Cancel
       </a>
     </div>

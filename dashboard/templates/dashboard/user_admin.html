@@ -1,106 +1,83 @@
-{% extends 'base.html' %} {% block title %}User Manager{% endblock %} {% block
-content %}
+{% extends 'base.html' %}
+{% block title %}User Manager{% endblock %}
+
+{% block content %}
 <div class="container">
   <h2 class="center-align green-text text-darken-3">User Manager</h2>
 
   {% if users %}
-  <div class="row admin-user-boxes-grid">
-    {% for user in users %}
+    <div class="row admin-user-boxes-grid">
+      {% for user in users %}
 
-    <div class="col s12 m6 l4">
-      <div class="card hoverable" aria-labelledby="user-{{ user.id }}-name">
-        <div class="card-content">
-          <h5
-            id="user-{{ user.id }}-name"
-            class="truncate"
-            title="{{ user.username }}"
-          >
-            {{ user.username }}
-          </h5>
-          <p><strong>Email:</strong> {{ user.email }}</p>
-          <p><strong>Admin:</strong> {{ user.is_staff|yesno:"Yes,No" }}</p>
-          <p>
-            <strong>Status:</strong>
-            {% if user.is_active %}
-            <span class="green-text text-darken-3">Active</span>
-            {% else %}
-            <span class="red-text">Inactive</span>
-            {% endif %}
-          </p>
+      
+<div class="col s12 m6 l4">
+  <div class="card hoverable" aria-labelledby="user-{{ user.id }}-name">
+    <div class="card-content">
+      <h5 id="user-{{ user.id }}-name" class="truncate" title="{{ user.username }}">{{ user.username }}</h5>
+      <p><strong>Email:</strong> {{ user.email }}</p>
+      <p><strong>Admin:</strong> {{ user.is_staff|yesno:"Yes,No" }}</p>
+      <p>
+        <strong>Status:</strong>
+        {% if user.is_active %}
+          <span class="green-text text-darken-3">Active</span>
+        {% else %}
+          <span class="red-text">Inactive</span>
+        {% endif %}
+      </p>
 
-          <p class="stripe-button-wrapper">
-            {% if user.profile.stripe_customer_id %}
-            <a
-              href="https://dashboard.stripe.com/test/customers/{{ user.profile.stripe_customer_id }}"
-              target="_blank"
-              class="btn-small grey darken-3"
-              aria-label="View Stripe profile for {{ user.username }}"
-            >
-              <i class="fa fa-cc-stripe left admin-btn"></i>Stripe
-            </a>
-            {% else %}
-            <span class="red-text">Not Linked</span>
-            {% endif %}
-          </p>
-        </div>
-
-        <div class="card-action">
-          <div class="row">
-            <div class="col s12 m6">
-              <a
-                href="{% url 'user_orders' user.id %}"
-                class="btn green darken-3 btn-block admin-btn"
-                >Orders</a
-              >
-            </div>
-            <div class="col s12 m6">
-              <a
-                href="{% url 'edit_user' user.id %}"
-                class="btn blue darken-2 btn-block admin-btn"
-                aria-label="Edit {{ user.username }}’s account"
-                >Edit</a
-              >
-            </div>
-            <div class="col s12">
-              <a
-                href="#"
-                class="btn teal darken-3 btn-block admin-password-reset-btn admin-btn"
-                data-id="{{ user.id }}"
-              >
-                Reset Password
-              </a>
-            </div>
-
-            {% if user.is_superuser %}
-            <div class="col s12">
-              <button
-                class="btn grey lighten-1 btn-block disabled tooltipped admin-btn"
-                data-tooltip="Admins cannot be deactivated"
-                disabled
-              >
-                Deactivate
-              </button>
-            </div>
-            {% else %}
-            <div class="col s12">
-              <a
-                href="#"
-                class="btn btn-block {% if user.is_active %}red darken-2 deactivate-btn{% else %}teal activate-btn{% endif %} admin-btn admin-toggle-state-btn"
-                data-id="{{ user.id }}"
-              >
-                {% if user.is_active %}Deactivate{% else %}Activate{% endif %}
-              </a>
-            </div>
-            {% endif %}
-          </div>
-        </div>
-      </div>
+      <p class="stripe-button-wrapper">
+        {% if user.profile.stripe_customer_id %}
+          <a href="https://dashboard.stripe.com/test/customers/{{ user.profile.stripe_customer_id }}" 
+             target="_blank" 
+             class="btn-small grey darken-3"
+             aria-label="View Stripe profile for {{ user.username }}">
+            <i class="fa fa-cc-stripe left admin-btn"></i>Stripe
+          </a>
+        {% else %}
+          <span class="red-text">Not Linked</span>
+        {% endif %}
+      </p>
     </div>
 
-    {% endfor %}
+    <div class="card-action">
+      <div class="row">
+        <div class="col s12 m6">
+          <a href="{% url 'user_orders' user.id %}" class="btn green darken-3 btn-block admin-btn">Orders</a>
+        </div>
+        <div class="col s12 m6">
+          <a href="{% url 'edit_user' user.id %}" class="btn blue darken-2 btn-block admin-btn" aria-label="Edit {{ user.username }}’s account">Edit</a>
+        </div>
+        <div class="col s12">
+          <a href="#" class="btn teal darken-3 btn-block admin-password-reset-btn admin-btn" data-id="{{ user.id }}">
+            Reset Password
+          </a>
+        </div>
+
+        {% if user.is_superuser %}
+          <div class="col s12">
+            <button class="btn grey lighten-1 btn-block disabled tooltipped admin-btn" data-tooltip="Admins cannot be deactivated" disabled>
+              Deactivate
+            </button>
+          </div>
+        {% else %}
+          <div class="col s12">
+            <a href="#" 
+               class="btn btn-block {% if user.is_active %}red darken-2 deactivate-btn{% else %}teal activate-btn{% endif %} admin-btn admin-toggle-state-btn" 
+               data-id="{{ user.id }}">
+              {% if user.is_active %}Deactivate{% else %}Activate{% endif %}
+            </a>
+          </div>
+        {% endif %}
+      </div>
+    </div>
   </div>
+</div>
+
+
+      {% endfor %}
+    </div>
   {% else %}
-  <p class="center-align">No users found.</p>
+    <p class="center-align">No users found.</p>
   {% endif %}
 
   <p class="center-align grey-text text-darken-2">

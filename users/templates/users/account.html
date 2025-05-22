@@ -1,5 +1,9 @@
-{% extends 'base.html' %} {% load static %} {% block title %}My Account{%
-endblock %} {% block content %}
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}My Account{% endblock %}
+
+{% block content %}
 
 <section class="section center-align">
   <h2 class="center-align green-text text-darken-3">My Account</h2>
@@ -9,23 +13,13 @@ endblock %} {% block content %}
     <div class="details-wrapper">
       <div class="card details-card">
         <div class="card-content padded-card-content">
-          <p>
-            <strong>Name:</strong> {{ request.user.first_name }} {{
-            request.user.last_name }}
-          </p>
+          <p><strong>Name:</strong> {{ request.user.first_name }} {{ request.user.last_name }}</p>
           <p><strong>Username:</strong> {{ request.user.username }}</p>
           <p><strong>Email:</strong> {{ request.user.email }}</p>
-          <p>
-            <strong>Joined:</strong> {{ request.user.date_joined|date:"d M Y" }}
-          </p>
+          <p><strong>Joined:</strong> {{ request.user.date_joined|date:"d M Y" }}</p>
         </div>
         <div class="card-action center-btn">
-          <a
-            href="{% url 'order_history' %}"
-            class="btn green darken-3 white-text"
-            aria-label="Order History"
-            >Order History</a
-          >
+          <a href="{% url 'order_history' %}" class="btn green darken-3 white-text" aria-label="Order History">Order History</a>
         </div>
       </div>
     </div>
@@ -36,23 +30,9 @@ endblock %} {% block content %}
 
 <section class="section center-align">
   <div class="chip-container button-wrapper">
-    <a
-      href="{% url 'change_password' %}"
-      class="btn-small blue darken-3 white-text"
-      aria-label="Change your password"
-      >Change Password</a
-    >
-    <a
-      href="{% url 'edit_account' %}"
-      class="btn-small green darken-3 white-text"
-      aria-label="Edit your account"
-      >Edit Account</a
-    >
-    <button
-      id="delete-account-btn"
-      class="btn-small red darken-3 white-text"
-      aria-label="Delete your account"
-    >
+    <a href="{% url 'change_password' %}" class="btn-small blue darken-3 white-text" aria-label="Change your password">Change Password</a>
+    <a href="{% url 'edit_account' %}" class="btn-small green darken-3 white-text" aria-label="Edit your account">Edit Account</a>
+    <button id="delete-account-btn" class="btn-small red darken-3 white-text" aria-label="Delete your account">
       Delete Account
     </button>
   </div>
@@ -64,56 +44,48 @@ endblock %} {% block content %}
   <h3>Saved Addresses</h3>
 
   <div class="row button-container">
-    <a
-      href="{% url 'add_address' %}?gift=false&next={{ request.path }}"
-      class="btn teal darken-2 white-text"
-    >
+    <a href="{% url 'add_address' %}?gift=false&next={{ request.path }}" class="btn teal darken-2 white-text">
       <i class="fas fa-plus left"></i> Add Personal Address
     </a>
 
-    <a
-      href="{% url 'add_address' %}?gift=true&next={{ request.path }}"
-      class="btn teal darken-2 white-text"
-    >
+    <a href="{% url 'add_address' %}?gift=true&next={{ request.path }}" class="btn teal darken-2 white-text">
       <i class="fas fa-gift left"></i> Add Gift Address
     </a>
   </div>
-
+  
   <!-- Personal Addresses -->
   <section aria-labelledby="personal-addresses-heading">
-    <h5 id="personal-addresses-heading" class="center-align">
-      Your Personal Addresses
-    </h5>
+    <h5 id="personal-addresses-heading" class="center-align">Your Personal Addresses</h5>
     {% if personal_addresses %}
-    <div class="address-grid">
-      {% for address in personal_addresses %}
-      <div class="col">
-        {% include "users/includes/address_card.html" with address=address %}
+      <div class="address-grid">
+        {% for address in personal_addresses %}
+          <div class="col">
+            {% include "users/includes/address_card.html" with address=address %}
+          </div>
+        {% endfor %}
       </div>
-      {% endfor %}
-    </div>
     {% else %}
-    <p class="grey-text">You have no personal addresses saved.</p>
+      <p class="grey-text">You have no personal addresses saved.</p>
     {% endif %}
   </section>
 
   <!-- Gift Addresses -->
   <section aria-labelledby="gift-addresses-heading">
-    <h5 id="gift-addresses-heading" class="center-align">
-      Gift Recipient Addresses
-    </h5>
+    <h5 id="gift-addresses-heading" class="center-align">Gift Recipient Addresses</h5>
     {% if gift_addresses %}
-    <div class="address-grid">
-      {% for address in gift_addresses %}
-      <div class="col">
-        {% include "users/includes/address_card.html" with address=address %}
+      <div class="address-grid">
+        {% for address in gift_addresses %}
+          <div class="col">
+            {% include "users/includes/address_card.html" with address=address %}
+          </div>
+        {% endfor %}
       </div>
-      {% endfor %}
-    </div>
     {% else %}
-    <p class="grey-text">You have no gift recipient addresses saved.</p>
+      <p class="grey-text">You have no gift recipient addresses saved.</p>
     {% endif %}
-  </section>
+    </section>
+
+
 </section>
 
 {% endblock %}

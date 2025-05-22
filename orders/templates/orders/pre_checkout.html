@@ -1,55 +1,54 @@
-{% extends 'base.html' %} {% load static %} {% block title %}Checkout{% endblock
-%} {% block content %} {% if form.errors %}
-<div class="card-panel red lighten-4">
-  <ul>
-    {% for field, errors in form.errors.items %}
-    <li><strong>{{ field }}:</strong> {{ errors }}</li>
-    {% endfor %}
-  </ul>
-</div>
-{% endif %}
+{% extends 'base.html' %}
+{% load static %}
 
-<section class="section center-align">
-  <header class="center-align">
-    <h2 class="center-align green-text text-darken-3">Gift Message</h2>
-  </header>
-  <p>
-    <strong>Optional:</strong> Fill out the form to send a gift email to your
-    recipient. Leave it blank if you'd prefer to keep the gift a surprise.
-  </p>
-  <form
-    id="gift-message-form"
-    method="post"
-    action="{% url 'gift_message' plan %}"
-  >
-    {% csrf_token %}
-    <div class="container gift-message">
-      <div class="row">
-        <div class="input-field col s12">
-          {{ form.recipient_name.label_tag }} {{ form.recipient_name }}
-        </div>
-        <div class="input-field col s12">
-          {{ form.recipient_email.label_tag }} {{ form.recipient_email }}
-        </div>
-        <div class="input-field col s12">
-          {{ form.sender_name.label_tag }} {{ form.sender_name }}
-        </div>
-        <div class="input-field col s12">
-          {{ form.gift_message.label_tag }} {{ form.gift_message }}
-        </div>
-      </div>
+{% block title %}Checkout{% endblock %}
 
-      <div class="row button-row center-align">
-        <button
-          class="btn teal darken-2"
-          type="submit"
-          aria-label="Proceed to payment and checkout"
-        >
-          <i class="fas fa-credit-card left"></i> Proceed to Checkout
-        </button>
+{% block content %}
+
+  {% if form.errors %}
+      <div class="card-panel red lighten-4">
+          <ul>
+              {% for field, errors in form.errors.items %}
+                  <li><strong>{{ field }}:</strong> {{ errors }}</li>
+              {% endfor %}
+          </ul>
       </div>
-    </div>
-  </form>
-</section>
+  {% endif %}
+
+  <section class="section center-align">
+    <header class="center-align">
+      <h2 class="center-align green-text text-darken-3">Gift Message</h2>
+    </header>
+    <p><strong>Optional:</strong> Fill out the form to send a gift email to your recipient. Leave it blank if you'd prefer to keep the gift a surprise.</p>
+    <form id="gift-message-form" method="post" action="{% url 'gift_message' plan %}">
+      {% csrf_token %}
+      <div class="container gift-message">
+        <div class="row">
+          <div class="input-field col s12">
+            {{ form.recipient_name.label_tag }}
+            {{ form.recipient_name }}
+          </div>
+          <div class="input-field col s12">
+            {{ form.recipient_email.label_tag }}
+            {{ form.recipient_email }}
+          </div>
+          <div class="input-field col s12">
+            {{ form.sender_name.label_tag }}
+            {{ form.sender_name }}
+          </div>
+          <div class="input-field col s12">
+            {{ form.gift_message.label_tag }}
+            {{ form.gift_message }}
+          </div>
+        </div>
+
+        <div class="row button-row center-align">
+          <button class="btn teal darken-2" type="submit" aria-label="Proceed to payment and checkout">
+            <i class="fas fa-credit-card left"></i> Proceed to Checkout
+          </button>
+        </div> 
+      </div>
+    </form>
+  </section>
 
 {% endblock %}

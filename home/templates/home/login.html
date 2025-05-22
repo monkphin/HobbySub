@@ -1,35 +1,33 @@
-{% extends 'base.html' %} {% load static %} {% block title %}Login{% endblock %}
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Login{% endblock %}
+
 {% block content %}
-<section
-  class="section center-align"
-  role="region"
-  aria-labelledby="login-heading"
->
-  <h2 id="login-heading" class="center-align green-text text-darken-3">
-    Login
-  </h2>
+  <section class="section center-align" role="region" aria-labelledby="login-heading">
+    <h2 id="login-heading" class="center-align green-text text-darken-3">Login</h2>
 
-  <div class="row form-wrapper">
-    <form method="post" role="form" aria-describedby="login-heading">
-      {% csrf_token %}
+    <div class="row form-wrapper">
+      <form method="post" role="form" aria-describedby="login-heading">
+        {% csrf_token %}
+        
+        <div class="input-field col s12">
+          {% include 'partials/form_errors.html' %}
+          {{ form.username.label_tag }}
+          {{ form.username }}
+        </div>
 
-      <div class="input-field col s12">
-        {% include 'partials/form_errors.html' %} {{ form.username.label_tag }}
-        {{ form.username }}
-      </div>
+        <div class="input-field col s12">
+          {{ form.password.label_tag }}
+          {{ form.password }}
+        </div>
 
-      <div class="input-field col s12">
-        {{ form.password.label_tag }} {{ form.password }}
-      </div>
+        <button type="submit" class="btn teal darken-3" aria-label="Log in">Log In</button>
 
-      <button type="submit" class="btn teal darken-3" aria-label="Log in">
-        Log In
-      </button>
-
-      <div class="right-align">
-        <a href="{% url 'password_reset' %}">Forgot your password?</a>
-      </div>
-    </form>
-  </div>
-</section>
+        <div class="right-align">
+          <a href="{% url 'password_reset' %}">Forgot your password?</a>
+        </div>
+      </form>
+    </div>
+  </section>
 {% endblock %}
