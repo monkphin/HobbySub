@@ -124,7 +124,7 @@ class BoxForm(forms.ModelForm):
                     'rows': 4
                 }
             ),
-            'image': forms.FileInput(attrs={'accept': 'image/*'}),  # ✅ this line is the fix
+            'image': forms.FileInput(attrs={'accept': 'image/*'}),
             'is_archived': forms.CheckboxInput(),
         }
 

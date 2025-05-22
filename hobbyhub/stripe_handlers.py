@@ -46,7 +46,7 @@ def handle_checkout_session_completed(session):
     user_id = metadata.get('user_id')
     address_id = metadata.get('shipping_address_id')
 
-    # 🔍 Check the explicit gift flag
+    # Check the explicit gift flag
     gift_flag = metadata.get('gift', 'false').lower() == 'true'
     is_gift = gift_flag
     logger.info(
@@ -414,7 +414,7 @@ def handle_checkout_session_completed(session):
                         f"[EMAIL] Gift confirmation sent to {recipient_email}"
                     )
                 else:
-                    # 🚨 **Graceful logging for incomplete data**
+                    # Graceful logging for incomplete data
                     logger.warning(
                         "[EMAIL WARNING] Gift selected but recipient "
                         "information is incomplete: "

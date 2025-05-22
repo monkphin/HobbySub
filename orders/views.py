@@ -155,14 +155,14 @@ def gift_message(request, plan):
             try:
                 is_subscription = plan != 'oneoff'
 
-                # 👇🏻 Get gift metadata AND FORCE IS_GIFT
+                # Get gift metadata AND FORCE IS_GIFT
                 gift_metadata = get_gift_metadata(
                     form,
                     request.user.id,
                     address_id=shipping_id
                 )
 
-                # 🚩 Hardcode is_gift to true if the session holds it
+                # Hardcode is_gift to true if the session holds it
                 is_gift = request.session.get('is_gift', False)
                 gift_metadata['gift'] = 'true' if is_gift else 'false'
 
@@ -185,7 +185,7 @@ def gift_message(request, plan):
                         'shipping': build_shipping_details(shipping_address),
                     }
 
-                # 🚀 Force the session to save again before checkout
+                # Force the session to save again before checkout
                 request.session.modified = True
                 request.session.save()
 
@@ -461,11 +461,11 @@ def order_history(request):
             # Attempt to retrieve `current_period_end`
             current_period_end = None
 
-            # 🗝️ First, try to get it from the subscription items
+            # First, try to get it from the subscription items
             if "items" in stripe_subscription and len(stripe_subscription["items"]["data"]) > 0:
                 current_period_end = stripe_subscription["items"]["data"][0].get("current_period_end")
 
-            # 🚀 If it wasn't found, fallback to `billing_cycle_anchor`
+            # If it wasn't found, fallback to `billing_cycle_anchor`
             if not current_period_end:
                 current_period_end = stripe_subscription.get("billing_cycle_anchor")
 

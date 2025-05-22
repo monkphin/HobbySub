@@ -954,7 +954,7 @@ def update_order_status(request, order_id):
                 f"Order #{order.id} status updated to Shipped."
             )
 
-            # 🎯 Send the shipping confirmation email here
+            # Send the shipping confirmation email here
             send_shipping_confirmation_email(order.user, order.box)
 
             # Log the email event

@@ -593,12 +593,12 @@ def test_concurrent_subscription_creation(mock_stripe):
     time.sleep(5)
 
     # Assertions
-    logging.debug("🕵️‍♂️ Verifying StripeSubscriptionMeta entries...")
+    logging.debug("Verifying StripeSubscriptionMeta entries...")
     subs = StripeSubscriptionMeta.objects.filter(
         stripe_subscription_id=stripe_session['subscription']
     )
     count = subs.count()
-    logging.debug(f"🔎 Found {count} StripeSubscriptionMeta entries.")
+    logging.debug(f"Found {count} StripeSubscriptionMeta entries.")
 
     # Final Assertion
     assert count == 1, (
