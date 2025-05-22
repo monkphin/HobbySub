@@ -817,6 +817,41 @@ All potentially destructive or sensitive actions are protected by a password-pro
 
 This multi-layered approach to security is designed to protect user data, prevent unauthorised access, and maintain the integrity of sensitive account information.
 
+## Security Advisory: Django strip_tags() Vulnerability
+As of final submission, the project uses Django 4.2.x, which includes a known moderate severity vulnerability affecting strip_tags() and striptags filters. This issue may lead to denial-of-service (DoS) via slow processing when handling malformed or incomplete HTML tags.
+
+<details> 
+<summary>Strip Tags</summary> 
+    <img src="docs/strip_tags.png">
+</details> 
+<br> 
+
+Issue: Affects django.utils.html.strip_tags() and the related striptags template filter.
+
+CVE / Advisory: Dependabot Alert #2
+
+Status: Patch available in Django 4.2.21 or later.
+
+Planned Action: Will be addressed in future post-submission update by upgrading Django to the patched version.
+
+Currently, no user input is passed into strip_tags() in this project, so exploit likelihood is low — but the dependency alert is valid and will be resolved as part of ongoing maintenance.
+
+  ```
+  darren.burrows@OVO-W34X2Q1C7N HobbySub % grep -r 'striptags' .
+  darren.burrows@OVO-W34X2Q1C7N HobbySub % 
+  ```
+
+  ```
+  darren.burrows@OVO-W34X2Q1C7N HobbySub % grep -r 'strip_tags' .
+
+  ./README.md:## Security Advisory: Django strip_tags() Vulnerability
+  ./README.md:As of final submission, the project uses Django 4.2.x, which includes a known moderate severity vulnerability affecting strip_tags() and striptags filters. This issue may lead to denial-of-service (DoS) via slow processing when handling malformed or incomplete HTML tags.
+  ./README.md:Issue: Affects django.utils.html.strip_tags() and the related striptags template filter.
+  ./README.md:Currently, no user input is passed into strip_tags() in this project, so exploit likelihood is low — but the dependency alert is valid and will be resolved as part of ongoing maintenance.
+  darren.burrows@OVO-W34X2Q1C7N HobbySub % 
+  ```
+
+
 # Technology
 ## Frameworks and Programs
  ### Languages
