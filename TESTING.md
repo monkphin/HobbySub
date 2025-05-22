@@ -1,5 +1,7 @@
 # **HobbySub Testing**
  
+<details>
+<summary>Table of Contents</summary>
 [Testing and Validation](#testing-and-validation)
  
  - [Usage Based Functionality Testing](#usage-based-functionality-testing)
@@ -19,7 +21,8 @@
  - [Device and Browser Testing](#device-and-browser-testing)
  - [Responsiveness](#responsiveness)
  - [Automated testing](#automated-testing)
- 
+</details>
+
 # Testing and Validation
  
 ## Usage based functionality testing
@@ -33,7 +36,7 @@ Throughout development, I tested features and functions organically to ensure th
 Although this method was not fully documented step-by-step, it enabled rapid identification and correction of bugs during the development process.
 
 # Bugs, Issues and challenges 
-While I have resolved many of the issues encountered during development, a few outstanding problems remain. These are currently mitigated through logging and defensive programming but are still present. Despite automated testing, these bugs only during manual testing, making them difficult to trace.
+While I have resolved many of the issues encountered during development, a few outstanding problems remain. These are currently mitigated through logging and defensive programming but are still present. Despite the automated test coverage, these bugs only manifested during hands-on, usage-based testing. making them difficult to trace.
 
 ## Unresolved Bugs 
 Below are the outstanding issues I am aware of. Some of these may be resolved, but I lack the time to fully test to my satisfaction to be 100% certain. 
@@ -115,7 +118,7 @@ Below are the outstanding issues I am aware of. Some of these may be resolved, b
 -- Issue remains unresolved. No workaround has been applied yet. Will revisit this after higher-priority tasks or consider commenting out the form submit button disable temporarily for confirmation testing.
 
 ## Refactoring and DRY 
-Throughout development, I attempted to adhere to DRY (Don't Repeat Yourself) principles wherever possible, aiming to minimise code duplication and improve maintainability. Sadly, in a it of a rush to clean up the front end towards the end of the project things got a bit out of hand with the CSS file. This is something that I plan to revisit and clean up in the future. 
+Throughout development, I attempted to adhere to DRY (Don't Repeat Yourself) principles wherever possible, aiming to minimise code duplication and improve maintainability. Sadly, in a bit of a rush to clean up the front end towards the end of the project things got a bit out of hand with the CSS file. This is something that I plan to revisit and clean up in the future. 
 
 ### Template Reuse
 The front-end leverages a modular design, with reusable templates for common elements and page structures.
@@ -681,7 +684,9 @@ Each user story was tested and categorised as either:
 - Success – Fully meets the criteria
 - Partial Success – Some elements met, but not all
 - Failed – Does not meet the expected outcome
-A full breakdown is provided below.## Successes 
+A full breakdown is provided below.
+
+## Successes 
 
 | **User Story**                                                                                       | **Notes** |
 |------------------------------------------------------------------------------------------------------|----------|
@@ -699,7 +704,6 @@ A full breakdown is provided below.## Successes
 | As an admin, I want to view all orders, linked subscriptions, and user details for support or fulfillment. | Met – admins can view user orders, payment states, shipping addresses, and link directly to related Stripe records. |
 | As a user, I want the site to be easy to navigate, even on mobile, so I can find what I need quickly. | Met – the site uses a simple, responsive layout with clearly placed features. |
 | As a user, I want clear feedback when I complete actions (e.g., subscribing, pausing, paying). | Met – toast messages provide feedback for user and admin actions. |
-| As a user, I want the site to support screen readers and keyboard navigation for accessibility. | Partial – WAVE testing identified some contrast issues and missing labels. Critical problems were fixed, but some form label contrast issues remain. |
 | As an admin, I want to manage boxes, subscriptions, and orders via a secure dashboard. | Met – admins have access to a secure custom dashboard for managing users, boxes, products, and orders. |
 
 
@@ -712,7 +716,7 @@ A full breakdown is provided below.## Successes
 | As a user, I want to choose or update the shipping address for each subscription. | Partially met – users can add, edit, and remove addresses, but cannot change the address on an active subscription once created. |
 | As a user, I want to see confirmation of successful or failed payments. | Partially met – payment success/failure is tracked via Stripe and displayed in user/admin views, but this has not been fully tested. |
 | As a user, I want to update my payment method if my card changes. | Partially met – this should be possible via Stripe’s customer portal, but has not been fully tested in this project. |
-| As a user, I want the site to support screen readers and keyboard navigation for accessibility. | Partially met – tab-based navigation has been tested, and ARIA/accessibility tags were used where possible, but screen reader testing has not been performed. |
+| As a user, I want the site to support screen readers and keyboard navigation for accessibility. | Partially met – Screen reader testing was not completed due to time constraints, but semantic HTML and ARIA labels were used where feasible. |
 
 
 #### Failed to meet
@@ -888,3 +892,8 @@ The test run completed successfully with 65 tests passing and 2 warnings:
 ## Summary:
 Automated tests have been vital in catching issues early and preventing regressions. The remaining warnings have been logged for review during the future development cycles.
 
+
+# Known Limitations
+- Only one subscription box is offered; no box selection is currently available.
+- Admin features are not protected by a CSRF exemption — admins are trusted users in this version.
+- Some accessibility contrast issues and ARIA gaps remain; future iterations will improve semantic clarity.

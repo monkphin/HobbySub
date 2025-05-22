@@ -1,5 +1,8 @@
 # Contents
 
+<details>
+<summary>Table of Contents</summary>
+
 [Site Concept](#site-concept)
 
   - [Site Owner Goals](#site-owner-goals)
@@ -40,7 +43,13 @@
   - [Heroku Setup and Configuration](#heroku-set-up-and-configuration)
 
 [Acknowledgements](#acknowledgements)
+</details>
 
+# **HobbySub**
+
+HobbySub is a Django-powered subscription box service for miniature painters and hobbyists, delivering curated tools, paints, and inspiration each month.
+
+[The deployed website can be found here](https://hobbyhub-d1fc032e6c82.herokuapp.com/)
 
 # Site Concept
 HobbySub is an online eCommerce site for tabletop wargame and model making hobbyists. It provides a mystery-box subscription service, which ships a new box of hobby supplies every month based on a specific theme. Subscriptions are available on a monthly, quarterly (3-month), biannual (6-month), or annual basis, with discounted pricing for longer commitments. Users can also purchase single boxes, if they're not yet ready to subscribe. The site has logic built into it to allow for purchases to be bought as items for the user, or as a gift to someone else, with personalised gift emails sent out when the item is ordered. 
