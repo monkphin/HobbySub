@@ -379,6 +379,33 @@ Why it matters:
 
 A standardised global error handler is used for flashing form and system errors where appropriate (e.g. incorrect password, invalid form input). This keeps user feedback consistent and avoids cluttering templates with one-off error logic.
 
+
+### Email Notifications
+
+Hobby Hub sends plaintext email notifications to users for key events. These emails are delivered from a @colourforge.co.uk address, which was reused from a prior project as it was already verified and configured for reliable delivery.
+Users receive emails in the following situations:
+- Account and Login
+  - Registration confirmation (with email verification link)
+  - Password reset request
+  - Password successfully changed
+  - Profile details updated
+  - Email address changed (notifies both old and new addresses)
+- Orders and Gifts
+  - Order confirmation (after a one-off box purchase)
+  - Order status updates (pending, processing, shipped, or cancelled)
+  - Gift confirmation to sender
+  - Gift notification to recipient
+  - Shipping confirmation (with optional tracking number)
+- Subscriptions
+  - Subscription signup confirmation (plan-specific)
+  - Upcoming renewal reminder
+  - Payment failure warning
+  - Subscription cancellation confirmation (with end-date info)
+- Addresses
+  - Shipping address added or updated
+- Internal Notifications
+  - Admin notified if a box is auto-archived (e.g. due to expiry)
+
 ### Home Page
 
 <details> 
