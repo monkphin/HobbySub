@@ -377,7 +377,7 @@ Why it matters:
 
 A standardised global error handler is used for flashing form and system errors where appropriate (e.g. incorrect password, invalid form input). This keeps user feedback consistent and avoids cluttering templates with one-off error logic.
 
-###Home Page
+### Home Page
 
 <details> 
 <summary>Confirmation Modal</summary> 
