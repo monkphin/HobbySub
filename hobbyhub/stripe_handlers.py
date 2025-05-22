@@ -485,7 +485,7 @@ def handle_invoice_payment_succeeded(invoice):
                 sub_meta.save()
                 shipping_address = address  # Assign it to continue with logic
                 logger.info(
-                    f"[RECOVERED] Assigned address {address.id}
+                    f"[RECOVERED] Assigned address {address.id}"
                     f"to subscription {subscription_id}"
                 )
             else:
