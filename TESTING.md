@@ -24,6 +24,22 @@
 </details>
 
 # Testing and Validation
+
+## 📊 Test Summary
+
+| Test Type                | Status         | Notes                                                  |
+|--------------------------|----------------|--------------------------------------------------------|
+| Manual Function Testing  | Complete     | All key flows tested manually                          |
+| HTML Validation          | Complete     | No critical errors; some cosmetic issues deferred      |
+| CSS Validation           | Complete     | Custom CSS valid; 3rd-party minor issues noted         |
+| Accessibility (WAVE)     | Partial      | Minor contrast issues remain                          |
+| Lighthouse Audits        | Complete     | Logged-in/out tested; scores within acceptable range   |
+| JavaScript (JSHint)      | Reviewed     | No blocking issues; optional chaining warning noted    |
+| Python (PEP8)            | Reviewed     | Style compliant with minor deferrals noted             |
+| Django Automated Tests   | 65 Passed    | All tests passed; 2 warnings (time zone + DB teardown) |
+| User Story Validation    | Complete     | All stories reviewed and tested                        |
+
+
  
 ## Usage based functionality testing
 
@@ -733,8 +749,10 @@ JavaScript code was tested using [JSHint](https://jshint.com/). No critical issu
 
 The JSHint report showed one compatibility warning related to optional chaining, which requires ES11 support. Since modern browsers fully support this, no changes were made. Two undefined variables (M and GLOBALS) were also flagged, but these are contextually valid within the local script scope and not runtime errors. Cyclomatic complexity and function size metrics were noted but did not indicate maintainability concerns.
 
+No unit tests were written for JavaScript as all logic was inline and minimal, primarily used for button disabling and UI/UX enhancements.
+
 <details> 
-<summary>JSHint Test Results</summary> 
+<summary>JSHint Test Results</summary> ß
     <img src="docs/testing/jshint.png"> 
 </details> 
 <br>
@@ -765,6 +783,15 @@ The only known exception involves the Box Create/Edit and Box Product Create/Edi
  
 ### Automated testing
 Automated testing was implemented to identify and isolate issues as they arose during development. This allowed for more efficient debugging and provided confidence that new features did not introduce regressions.
+
+Full coverage details are available in the interactive HTML report below. This includes per-file breakdowns of which lines were tested, skipped, or missed — and provides a clear overview of test completeness across the project.
+
+[View Coverage Report.](https://monkphin.github.io/HobbySub/htmlcov/)
+
+This report was generated using pytest and the coverage package, and reflects the state of the project as of final testing. It confirms that:
+- Core flows and views are covered
+- Edge cases and error handling were included where possible
+- Further improvements can be made in future iterations to expand logic-level tests and isolate concerns for deeper validation
 
 #### Running the Tests:
 To execute the test suite, the following command is used:

@@ -31,14 +31,22 @@ def create_or_update_user_profile(sender, instance, created, **kwargs):
             profile.stripe_customer_id = customer.id
             profile.save()
 
-            logger.info(f"Stripe customer created for {instance.username}: {customer.id}")
+            logger.info(
+                "Stripe customer created for "
+                f"{instance.username}: {customer.id}"
+            )
 
         except Exception as e:
             # Roll back profile creation if Stripe fails
             profile.delete()
-            logger.error(f"Failed to create Stripe Customer for {instance.email}: {str(e)}")
+            logger.error(
+                "Failed to create Stripe Customer for "
+                f"{instance.email}: {str(e)}"
+            )
     else:
         try:
             instance.profile.save()
         except Exception as e:
-            logger.error(f"Failed to save profile for {instance.email}: {str(e)}")
+            logger.error(
+                f"Failed to save profile for {instance.email}: {str(e)}"
+            )

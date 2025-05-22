@@ -866,6 +866,8 @@ This multi-layered approach to security is designed to protect user data, preven
 
 Testing is covered in the following document: [Testing And Validation](TESTING.md)
 
+For automated test coverage, see the [Coverage Report](https://monkphin.github.io/HobbySub/htmlcov/).
+
 # Version control and Deployment
 
 The live site is deployed on Heroku, configured to automatically update from GitHub with every commit. It currently utilises a PostgreSQL relational database provided by Code Institute. Upon project completion and marking, I plan to migrate the database to a Heroku-hosted PostgreSQL instance to allow me to continue developing and running the site as an ongoing project.
