@@ -133,6 +133,12 @@ Below are the outstanding issues I am aware of. Some of these may be resolved, b
 - Next Steps / Logging:
   - Issue remains unresolved. No workaround has been applied yet. Will revisit this after higher-priority tasks or consider commenting out the form submit button disable temporarily for confirmation testing.
 
+### Code Formatting Rollback Notice
+
+During final cleanup, HTML and Python files were auto-formatted using Prettier and Flake8 to improve consistency and readability. However, the HTML formatting step introduced layout-breaking issues due to aggressive reflowing of template logic and whitespace-sensitive tags. Due to time constraints and the risk of introducing bugs just before submission, this change was rolled back via Git revert to ensure site stability.
+
+The current templates remain functional and readable, though not fully Prettier-compliant. Formatting improvements will be considered as part of a future release cycle, once automated formatting can be safely aligned with Django template requirements.
+
 ## Refactoring and DRY 
 Throughout development, I attempted to adhere to DRY (Don't Repeat Yourself) principles wherever possible, aiming to minimise code duplication and improve maintainability. Sadly, in a bit of a rush to clean up the front end towards the end of the project things got a bit out of hand with the CSS file. This is something that I plan to revisit and clean up in the future. 
 
