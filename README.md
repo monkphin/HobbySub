@@ -97,29 +97,23 @@ To manage and prioritise tasks, I used a Kanban board to track project progress 
 |                            | As a logged-in user, I want to view and update my profile details (like shipping address or email). |
 |                            | As a logged-in user, I want to access only my own data, not see admin pages or other users' info. |
 |                            | As an admin, I want to restrict access to admin features like box creation and order management. |
-|----------------------------|------------------------------------------------------------------------------------------------------|
 | Boxes & Subscription Browsing | As a user, I want to browse available subscription boxes so I can choose one that suits me or someone else. |
 |                            | As a user, I want to have options for frequency of payment plans, including its price and shipping schedule. |
 |                            | As an admin, I want to create, edit, and remove box offerings to control what's available. |
-|----------------------------|------------------------------------------------------------------------------------------------------|
 | Subscription Management    | As a user, I want to subscribe to a box for myself or gift it to someone else. |
 |                            | As a user, I want to pause or cancel my subscription at any time. |
 |                            | As a user, I want to choose or update the shipping address for each subscription. |
 |                            | As a user, I want to see upcoming shipping dates for my subscription boxes. |
-|----------------------------|------------------------------------------------------------------------------------------------------|
 | Checkout & Payment         | As a user, I want to securely check out and save my payment details for recurring billing. |
 |                            | As a user, I want to see confirmation of successful or failed payments. |
 |                            | As a user, I want to update my payment method if my card changes. |
-|----------------------------|------------------------------------------------------------------------------------------------------|
 | Orders & Post-Purchase Flow | As a user, I want to see my order history so I can track previous deliveries. |
 |                            | As a user, I want to view payment details associated with past orders (e.g., card type, last 4 digits). |
 |                            | As a user, I want to receive confirmation emails for successful orders and renewals. |
 |                            | As an admin, I want to view all orders, linked subscriptions, and user details for support or fulfillment. |
-|----------------------------|------------------------------------------------------------------------------------------------------|
 | UX and Accessibility       | As a user, I want the site to be easy to navigate, even on mobile, so I can find what I need quickly. |
 |                            | As a user, I want clear feedback when I complete actions (e.g., subscribing, pausing, paying). |
 |                            | As a user, I want the site to support screen readers and keyboard navigation for accessibility. |
-|----------------------------|------------------------------------------------------------------------------------------------------|
 | Admin & Configuration      | As an admin, I want to manage boxes, subscriptions, and orders via a secure dashboard. |
 
 
