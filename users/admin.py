@@ -23,5 +23,7 @@ class ShippingAddressAdmin(admin.ModelAdmin):
 
     def get_stripe_customer_id(self, obj):
         # This will directly display the stripe_customer_id if available
-        return obj.user.profile.stripe_customer_id if hasattr(obj.user, 'profile') else 'N/A'
+        return obj.user.profile.stripe_customer_id if hasattr(
+            obj.user, 'profile'
+        ) else 'N/A'
     get_stripe_customer_id.short_description = 'Stripe Customer ID'

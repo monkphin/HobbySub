@@ -21,7 +21,7 @@ ALLOWED_HOSTS = ['localhost', '127.0.0.1']
 if not DEBUG:
     ALLOWED_HOSTS.append('hobbyhub-d1fc032e6c82.herokuapp.com')
 
-SITE_URL = "http://127.0.0.1:8000" if DEBUG else "https://hobbyhub-d1fc032e6c82.herokuapp.com"
+SITE_URL = "http://127.0.0.1:8000" if DEBUG else "https://hobbyhub-d1fc032e6c82.herokuapp.com"  # noqa: E501
 
 # === Installed Apps ===
 INSTALLED_APPS = [
@@ -90,10 +90,10 @@ DATABASES = {
 
 # === Password Validation ===
 AUTH_PASSWORD_VALIDATORS = [
-    {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'},
+    {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'},  # noqa: E501
     {'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator'},
-    {'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator'},
-    {'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator'},
+    {'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator'},  # noqa: E501
+    {'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator'},  # noqa: E501
 ]
 
 # === Internationalization ===

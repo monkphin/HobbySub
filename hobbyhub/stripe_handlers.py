@@ -485,10 +485,13 @@ def handle_invoice_payment_succeeded(invoice):
                 sub_meta.save()
                 shipping_address = address  # Assign it to continue with logic
                 logger.info(
-                    f"[RECOVERED] Assigned address {address.id} to subscription {subscription_id}"
+                    f"[RECOVERED] Assigned address {address.id}
+                    f"to subscription {subscription_id}"
                 )
             else:
-                logger.error(f"[FAILED RECOVERY] No address found for user {user.id}")
+                logger.error(
+                    f"[FAILED RECOVERY] No address found for user {user.id}"
+                )
                 return
 
         if not created:
@@ -542,14 +545,22 @@ def handle_invoice_payment_succeeded(invoice):
                     f"for subscription {subscription_id}"
                 )
                 if sub_meta.is_gift and not order.is_gift:
-                    logger.warning(f"[FORCE UPDATE] Order {order.id} -> is_gift=True")
+                    logger.warning(
+                        f"[FORCE UPDATE] Order {order.id} -> is_gift=True"
+                    )
                     order.is_gift = True
                     order.save(update_fields=['is_gift'])
                     order.refresh_from_db()
                     if not order.is_gift:
-                        logger.error(f"[DB MISMATCH] Order {order.id} still reports is_gift=False after save.")
+                        logger.error(
+                            f"[DB MISMATCH] Order {order.id} "
+                            "still reports is_gift=False after save."
+                        )
                     else:
-                        logger.info(f"[DB SUCCESS] Order {order.id} is_gift=True now reflected in DB")
+                        logger.info(
+                            f"[DB SUCCESS] Order {order.id} "
+                            "is_gift=True now reflected in DB"
+                        )
         except Exception as e:
             logger.error(
                 "Failed to create Order for subscription %s: %s",

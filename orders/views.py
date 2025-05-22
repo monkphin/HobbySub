@@ -166,7 +166,10 @@ def gift_message(request, plan):
                 is_gift = request.session.get('is_gift', False)
                 gift_metadata['gift'] = 'true' if is_gift else 'false'
 
-                logger.info(f"[STRIPE CHECKOUT] Metadata before submission: {gift_metadata}")
+                logger.info(
+                    "[STRIPE CHECKOUT] Metadata before submission: "
+                    f"{gift_metadata}"
+                )
 
                 shipping_address = ShippingAddress.objects.get(id=shipping_id)
                 checkout_data = {
@@ -175,8 +178,12 @@ def gift_message(request, plan):
                     'line_items': [{'price': price_id, 'quantity': 1}],
                     'metadata': gift_metadata,
                     'customer': request.user.profile.stripe_customer_id,
-                    'success_url': request.build_absolute_uri('/orders/success/'),
-                    'cancel_url': request.build_absolute_uri('/orders/cancel/'),
+                    'success_url': request.build_absolute_uri(
+                        '/orders/success/'
+                    ),
+                    'cancel_url': request.build_absolute_uri(
+                        '/orders/cancel/'
+                    ),
                 }
 
                 if not is_subscription:
@@ -356,8 +363,14 @@ def create_subscription_checkout(request, price_id):
 
         # Step 2: Now proceed with the ID check
         if not request.user.profile.stripe_customer_id:
-            logger.warning("Stripe Customer ID not found in profile. Fetching from Stripe...")
-            existing_customers = stripe.Customer.list(email=request.user.email, limit=1)
+            logger.warning(
+                """Stripe Customer ID not found in profile.
+            Fetching from Stripe..."""
+            )
+            existing_customers = stripe.Customer.list(
+                email=request.user.email,
+                limit=1
+            )
             if existing_customers.data:
                 customer = existing_customers.data[0]
                 request.user.profile.stripe_customer_id = customer.id
@@ -377,7 +390,9 @@ def create_subscription_checkout(request, price_id):
                 request.user.profile.save()
         else:
             # If the ID already exists, fetch it
-            customer = stripe.Customer.retrieve(request.user.profile.stripe_customer_id)
+            customer = stripe.Customer.retrieve(
+                request.user.profile.stripe_customer_id
+            )
             logger.info(f"Using existing Stripe Customer ID: {customer.id}")
 
         # Proceed with checkout
@@ -456,18 +471,27 @@ def order_history(request):
                 expand=["latest_invoice"]
             )
 
-            logger.info(f"[SUBSCRIPTION DEBUG] Full Stripe subscription object: {stripe_subscription}")
+            logger.info(
+                "[SUBSCRIPTION DEBUG] Full Stripe subscription object: "
+                f"{stripe_subscription}")
 
             # Attempt to retrieve `current_period_end`
             current_period_end = None
 
             # First, try to get it from the subscription items
-            if "items" in stripe_subscription and len(stripe_subscription["items"]["data"]) > 0:
-                current_period_end = stripe_subscription["items"]["data"][0].get("current_period_end")
+            if "items" in stripe_subscription and len(
+                stripe_subscription["items"]["data"]
+            ) > 0:
+                current_period_end = (
+                    stripe_subscription["items"]["data"][0]
+                    .get("current_period_end")
+                )
 
             # If it wasn't found, fallback to `billing_cycle_anchor`
             if not current_period_end:
-                current_period_end = stripe_subscription.get("billing_cycle_anchor")
+                current_period_end = stripe_subscription.get(
+                    "billing_cycle_anchor"
+                )
 
             if current_period_end:
                 current_period_end = datetime.fromtimestamp(current_period_end)
@@ -477,7 +501,10 @@ def order_history(request):
                 )
             else:
                 current_period_end = "Not Available"
-                logger.warning(f"[SUBSCRIPTION DEBUG] No current_period_end found for {sub.stripe_subscription_id}")
+                logger.warning(
+                    "[SUBSCRIPTION DEBUG] No current_period_end found for "
+                    f"{sub.stripe_subscription_id}"
+                )
 
             # Populate the sub_map with additional data
             sub_map[sub.stripe_subscription_id] = {
@@ -489,7 +516,10 @@ def order_history(request):
             }
 
         except Exception as e:
-            logger.error(f"Failed to retrieve subscription {sub.stripe_subscription_id}: {e}")
+            logger.error(
+                "Failed to retrieve subscription "
+                f"{sub.stripe_subscription_id}: {e}"
+            )
             sub_map[sub.stripe_subscription_id] = {
                 'sub': sub,
                 'label': get_subscription_duration_display(sub),

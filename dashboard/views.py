@@ -553,15 +553,24 @@ def manage_orphaned_products(request):
         password = request.POST.get('password')
 
         if not password or not request.user.check_password(password):
-            error_msg = "Password incorrect." if password else "Password is required."
+            error_msg = (
+                "Password incorrect."
+                if password
+                else "Password is required."
+            )
             if request.headers.get('x-requested-with') == 'XMLHttpRequest':
                 return JsonResponse({'success': False, 'error': error_msg})
             alert(request, "error", error_msg)
             return redirect('box_admin')
 
         # Proceed with deletion
-        logger.info(f"=== DEBUGGING: Single delete triggered for product ID: {delete_single_id} ===")
-        BoxProduct.objects.filter(id=delete_single_id, box__isnull=True).delete()
+        logger.info(
+            "== DEBUGGING: Single delete triggered for product ID: "
+            f"{delete_single_id} ==")
+        BoxProduct.objects.filter(
+            id=delete_single_id,
+            box__isnull=True
+        ).delete()
 
         if request.headers.get('x-requested-with') == 'XMLHttpRequest':
             return JsonResponse({'success': True})
@@ -578,7 +587,10 @@ def manage_orphaned_products(request):
 
     if action not in ['reassign', 'delete']:
         alert(request, "error", "Invalid action.")
-        logger.info("=== DEBUGGING: Invalid action encountered, redirecting to box_admin ===")
+        logger.info(
+            "== DEBUGGING: Invalid action encountered, "
+            "redirecting to box_admin =="
+        )
         return redirect('box_admin')
 
     if not product_ids or not all(pid.isdigit() for pid in product_ids):
@@ -593,16 +605,29 @@ def manage_orphaned_products(request):
 
     # Inside manage_orphaned_products
     if action == 'reassign':
-        logger.info(f"=== DEBUGGING: Redirecting to reassign_orphaned_products with IDs: {product_ids} ===")
+        logger.info(
+            "== DEBUGGING: Redirecting to reassign_orphaned_products with IDs:"
+            f"{product_ids} =="
+        )
         if request.headers.get('x-requested-with') == 'XMLHttpRequest':
-            return JsonResponse({'redirect': reverse('reassign_orphaned_products', args=[",".join(product_ids)])})
-        return redirect('reassign_orphaned_products', product_ids=",".join(product_ids))
+            return JsonResponse({
+                'redirect': reverse(
+                    'reassign_orphaned_products',
+                    args=[",".join(product_ids)]
+                )}
+            )
+        return redirect(
+            'reassign_orphaned_products',
+            product_ids=",".join(product_ids)
+        )
 
     if action == 'delete':
         password = request.POST.get('password')
 
         if not password or not request.user.check_password(password):
-            error_msg = "Password incorrect." if password else "Password is required."
+            error_msg = (
+                "Password incorrect." if password else "Password is required."
+            )
 
             if request.headers.get('x-requested-with') == 'XMLHttpRequest':
                 return JsonResponse({'success': False, 'error': error_msg})
@@ -611,13 +636,19 @@ def manage_orphaned_products(request):
             return redirect('box_admin')
 
         # Password was valid — proceed to delete
-        deleted_count, _ = BoxProduct.objects.filter(id__in=product_ids, box__isnull=True).delete()
-        logger.info(f"=== DEBUGGING: Deleted {deleted_count} orphaned products ===")
+        deleted_count, _ = BoxProduct.objects.filter(
+            id__in=product_ids, box__isnull=True
+        ).delete()
+        logger.info(
+            f"=== DEBUGGING: Deleted {deleted_count} orphaned products ==="
+        )
 
         if request.headers.get('x-requested-with') == 'XMLHttpRequest':
-            return JsonResponse({'success': True, 'deleted': deleted_count})  # <-- THIS WAS MISSING
+            return JsonResponse({'success': True, 'deleted': deleted_count})
 
-        alert(request, "success", f"Deleted {deleted_count} orphaned products.")
+        alert(
+            request, "success", f"Deleted {deleted_count} orphaned products."
+        )
         return redirect('box_admin')
 
 

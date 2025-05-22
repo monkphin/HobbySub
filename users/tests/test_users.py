@@ -138,7 +138,9 @@ class TestUsersViews(TestCase):
 
 class ShippingAddressTest(TestCase):
 
-    def test_address_cannot_be_deleted_if_linked_to_order_or_subscription(self):
+    def test_address_cannot_be_deleted_if_linked_to_order_or_subscription(
+        self
+    ):
         user = User.objects.create(username="testuser")
         address = ShippingAddress.objects.create(
             user=user,
