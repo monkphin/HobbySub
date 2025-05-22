@@ -159,7 +159,7 @@ Wireframes were created with Balsamiq and provided rough initial mockups for how
 
 <details>
 <summary>Account Page</summary>
-  <img src="docs/wireframes/account.png">
+  <img src="docs/wireframes/accounts.png">
 </details>
 <br>
 
@@ -334,17 +334,18 @@ The navbar is designed to be user-friendly and responsive across both desktop an
 
 - Site Name: Functions as a link back to the homepage.
 - Responsive Navigation:
- - Desktop View:
-  - A fixed top navbar shows key links.
-  - Menu items vary based on login/admin status.
-  - Options by State:
-   - Not Logged In: Home, About, Past Boxes, Buy for Myself, Give as Gift, Register, Login.
-   - Logged In: Home, About, Past Boxes, Buy for Myself, Give as Gift, My Account, Logout.
-   - Admin: All logged-in links plus access to the admin dropdown menu.
- - Mobile View:
-  - Compact header with a hamburger menu icon.
-  - Tapping the icon opens a side-drawer navigation menu.
-  - Admin and purchase options are grouped under labeled sections with visual dividers for clarity.
+  - Desktop View:
+    - A fixed top navbar shows key links.
+    - Menu items vary based on login/admin status.
+    - Options by State:
+      - Not Logged In: Home, About, Past Boxes, Buy for Myself, Give as Gift, Register, Login.
+      - Logged In: Home, About, Past Boxes, Buy for Myself, Give as Gift, My Account, Logout.
+      - Admin: All logged-in links plus access to the admin dropdown menu.
+  - Mobile View:
+    - Compact header with a hamburger menu icon.
+    - Tapping the icon opens a side-drawer navigation menu.
+    - Admin and purchase options are grouped under labeled sections with visual dividers for clarity.
+
 
 The 'Buy for Myself' and 'Give as a Gift' buttons are context-aware:
 - If the user is not logged in, clicking either redirects them to the registration page and then into the purchase flow.
@@ -810,9 +811,9 @@ To maintain transparency and security, users receive email notifications wheneve
 Modal-Based Deletion Protection
 All potentially destructive or sensitive actions are protected by a password-protected modal.
  - This includes:
-  - Email Changes
-  - Account Deletions
-  - Admin Actions on User Accounts
+ -- Email Changes
+ -- Account Deletions
+ -- Admin Actions on User Accounts
  - The modal prompts for the user's password before finalising the action, adding a secure second layer of verification.
  - This two-stage process ensures that only authenticated users can complete these operations, significantly reducing the risk of accidental or malicious changes.
 
