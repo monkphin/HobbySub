@@ -45,9 +45,9 @@
 
 Throughout development, I tested features and functions organically to ensure that services and systems were working and rendering correctly. This testing process was continuous and evolved naturally alongside development.
 - This hands-on approach revealed a range of issues such as:
--- Stripe not linking orders correctly to users.
--- UI anomalies and display issues.
--- Non-functional buttons during certain flows.
+  - Stripe not linking orders correctly to users.
+  - UI anomalies and display issues.
+  - Non-functional buttons during certain flows.
 - These issues were identified and addressed in real-time as they surfaced.
 Although this method was not fully documented step-by-step, it enabled rapid identification and correction of bugs during the development process.
 
@@ -56,16 +56,16 @@ While I have resolved many of the issues encountered during development, a few o
 
 ## Unresolved Bugs 
 Below are the outstanding issues I am aware of. Some of these may be resolved, but I lack the time to fully test to my satisfaction to be 100% certain. 
-=
+
 ### Duplicate Stripe Sub IDs
 - Description: 
--- Occasionally, Stripe subscription IDs are duplicated in the database.
+  - Occasionally, Stripe subscription IDs are duplicated in the database.
 - Mitigation:
--- Implemented atomic handling to prevent race conditions.
--- Database is configured to enforce unique constraints.
--- Extensive logging is in place to track occurrences.
+  - Implemented atomic handling to prevent race conditions.
+  - Database is configured to enforce unique constraints.
+  - Extensive logging is in place to track occurrences.
 - Status: 
--- Mitigated but not resolved. Current measures are seen as temporary workarounds.
+  - Mitigated but not resolved. Current measures are seen as temporary workarounds.
 
 ### Boxes missing from Orders 
 - Description:
@@ -80,58 +80,58 @@ Below are the outstanding issues I am aware of. Some of these may be resolved, b
 
 ### Gifts not always being marked as Gifts. 
 - Description: 
--- Subscription gifts are sometimes not flagged as gifts in the front end.
+  - Subscription gifts are sometimes not flagged as gifts in the front end.
 - Likely Cause:
--- Suspected to be a race condition during database writes.
--- May be linked to the issues with subscription ID duplication.
+  - Suspected to be a race condition during database writes.
+  - May be linked to the issues with subscription ID duplication.
 - Mitigation:
--- Adjusted how data is written to the DB for gift orders.
--- Implemented additional checks post-write.
+  - Adjusted how data is written to the DB for gift orders.
+  - Implemented additional checks post-write.
 - Status: 
--- Believed to be resolved but marked as outstanding due to lack of final testing.
+  - Believed to be resolved but marked as outstanding due to lack of final testing.
 
 ### Email duplication. 
 - Description: Emails occasionally send twice for a single event trigger.
 - Likely Cause:
--- Potentially linked to the race conditions affecting subscription ID handling.
+  - Potentially linked to the race conditions affecting subscription ID handling.
 - Mitigation:
--- Adjusted event handling logic.
--- Added checks to prevent duplicate sends.
+  - Adjusted event handling logic.
+  - Added checks to prevent duplicate sends.
 - Status: Believed to be resolved but left marked as outstanding pending further testing.
 
 ### Page rendering issues
 - Description:
--- On some pages containing <textarea> fields, resizing the browser window can cause the content to visually compress or wrap incorrectly. I have specifically seen this on the Add/Edit Box and Add/Edit Products pages, since they're fundamentally the same underlying form.  
+  - On some pages containing <textarea> fields, resizing the browser window can cause the content to visually compress or wrap incorrectly. I have specifically seen this on the Add/Edit Box and Add/Edit Products pages, since they're fundamentally the same underlying form.  
 - Likely Cause:
--- Interaction between MaterializeCSS’s layout model and how certain browsers recalculate textarea dimensions during dynamic resizing. May also relate to how unbroken content is handled during flex/grid reflow.
+  - Interaction between MaterializeCSS’s layout model and how certain browsers recalculate textarea dimensions during dynamic resizing. May also relate to how unbroken content is handled during flex/grid reflow.
 - Mitigation:
--- Isolated the issue to a specific block of HTML.
--- Applied multiple responsive CSS overrides (width, box-sizing, overflow-wrap) — these were later removed as they did not resolve the underlying issue and caused side effects, particularly with the admin dropdown menu.        Removed Materialize’s textareaAutoResize() to avoid conflicting JS behaviour.
+  - Isolated the issue to a specific block of HTML.
+  - Applied multiple responsive CSS overrides (width, box-sizing, overflow-wrap) — these were later removed as they did not resolve the underlying issue and caused side effects, particularly with the admin dropdown menu.        Removed Materialize’s textareaAutoResize() to avoid conflicting JS behaviour.
 - Status:
--- Unresolved. Non-blocking and cosmetic only. A full fix was deprioritised due to time constraints. Reloading the page resolves the issue consistently. No impact on usability or form submission.
+  - Unresolved. Non-blocking and cosmetic only. A full fix was deprioritised due to time constraints. Reloading the page resolves the issue consistently. No impact on usability or form submission.
 
 ### Toasts for updating box contents showing 0
 - Description:
--- When assigning orphaned products to a box via the box_products.html page, the form posts successfully, but no checkbox data (product_ids) is received in request.POST.
---- Observed Behavior:
----- The checkboxes render correctly and allow selection.
----- Submitting the form (via the “Assign to Box” button) redirects as expected.
----- However, the server logs consistently show:
+  - When assigning orphaned products to a box via the box_products.html page, the form posts successfully, but no checkbox data (product_ids) is received in request.POST.
+    - Observed Behavior:
+      - The checkboxes render correctly and allow selection.
+      - Submitting the form (via the “Assign to Box” button) redirects as expected.
+      - However, the server logs consistently show:
         ```
         request.POST.getlist('product_ids') == []
         ```
---- Resulting message:
----- "0 products successfully added to 'BoxName'."
+    - Resulting message:
+      - "0 products successfully added to 'BoxName'."
     
 - Expected Behavior:
--- Checkboxes for selected orphaned products should be submitted as product_ids in the POST data, and the selected products should be reassigned to the specified box.
---- Confirmed Factors:
----- HTML inputs are correctly named: <input type="checkbox" name="product_ids" value="{{ product.id }}">.
----- CSRF token is present and accepted.
----- No errors or warnings in the browser console.
----- JS disables the submit button on form submission for UX, but this should not block form data unless it fires too early.
+  - Checkboxes for selected orphaned products should be submitted as product_ids in the POST data, and the selected products should be reassigned to the specified box.
+    - Confirmed Factors:
+      - HTML inputs are correctly named: <input type="checkbox" name="product_ids" value="{{ product.id }}">.
+      - CSRF token is present and accepted.
+      - No errors or warnings in the browser console.
+      - JS disables the submit button on form submission for UX, but this should not block form data unless it fires too early.
 - Next Steps / Logging:
--- Issue remains unresolved. No workaround has been applied yet. Will revisit this after higher-priority tasks or consider commenting out the form submit button disable temporarily for confirmation testing.
+  - Issue remains unresolved. No workaround has been applied yet. Will revisit this after higher-priority tasks or consider commenting out the form submit button disable temporarily for confirmation testing.
 
 ## Refactoring and DRY 
 Throughout development, I attempted to adhere to DRY (Don't Repeat Yourself) principles wherever possible, aiming to minimise code duplication and improve maintainability. Sadly, in a bit of a rush to clean up the front end towards the end of the project things got a bit out of hand with the CSS file. This is something that I plan to revisit and clean up in the future. 
@@ -147,8 +147,8 @@ The front-end leverages a modular design, with reusable templates for common ele
 During development, I created stripe_handlers.py as a way to break up growing logic blocks into more manageable pieces.
 - This file currently handles the bulk of Stripe integration logic, particularly the handle_checkout_session_completed function.
 - Known Issue:
--- This function now makes up around two-thirds of the entire file, and is a primary candidate for refactoring.
--- Its complexity grew during the investigation and debugging of issues like race conditions and duplicate IDs.
+  - This function now makes up around two-thirds of the entire file, and is a primary candidate for refactoring.
+  - Its complexity grew during the investigation and debugging of issues like race conditions and duplicate IDs.
 
 I acknowledge that further refactoring is required, particularly for:
 - Breaking out smaller logic components to streamline handle_checkout_session_completed.
@@ -162,14 +162,14 @@ Despite this, many other parts of the application were developed with DRY princi
 To attempt to address the issue of duplicate Stripe Subscription IDs, I implemented a site-wide debounce mechanism on all forms.
 
 - Purpose of Debounce
--- Prevent Double Submissions: If a button is clicked multiple times in quick succession, debounce logic prevents the form from submitting multiple times.
--- Reduce Duplicate Database Writes: This is particularly important for Stripe subscriptions, where race conditions can lead to multiple subscription IDs being generated.
+  - Prevent Double Submissions: If a button is clicked multiple times in quick succession, debounce logic prevents the form from submitting multiple times.
+  - Reduce Duplicate Database Writes: This is particularly important for Stripe subscriptions, where race conditions can lead to multiple subscription IDs being generated.
 
 - Outcome
--- While the debounce did reduce the chances of form duplication, it did not completely resolve the Stripe subscription ID issue.
--- Despite this, I chose to retain the debounce functionality because:
---- It did improve stability across form submissions.
---- It prevented other forms from experiencing double entries, which was a sporadic issue before debounce was applied.
+  - While the debounce did reduce the chances of form duplication, it did not completely resolve the Stripe subscription ID issue.
+  - Despite this, I chose to retain the debounce functionality because:
+   - It did improve stability across form submissions.
+   - It prevented other forms from experiencing double entries, which was a sporadic issue before debounce was applied.
 
 This was part of a wider effort to control input behaviour across the platform, and while not a full solution, it represented a step toward greater stability and control.
 
@@ -764,15 +764,15 @@ Python code was validated using the Code Institute-provided [PEP8 Compliance Che
 The site was tested across multiple platforms and screen sizes:
 - Tools used: Chrome DevTools (responsive mode), and physical devices
 - Devices tested on:
--- Personal Laptop (Mac OS 15.5)
--- Desktop PC with ultrawide monitor
--- Apple iPhone 15 Pro Max
--- Apple iPad Pro 13
+  - Personal Laptop (Mac OS 15.5)
+  - Desktop PC with ultrawide monitor
+  - Apple iPhone 15 Pro Max
+  - Apple iPad Pro 13
 - Browsers tested:
--- Google Chrome (primary)
--- Firefox (brief compatibility check)
--- Edge (brief compatibility check)
--- Safari (brief compatibility check)
+  - Google Chrome (primary)
+  - Firefox (brief compatibility check)
+  - Edge (brief compatibility check)
+  - Safari (brief compatibility check)
 
 No critical compatibility issues were found during testing.
 
@@ -890,13 +890,13 @@ $ pytest --ds=hobbyhub.settings -v --color=yes
 #### Test Coverage
 The test suite is divided across different apps and core functionality:
 - Boxes:
--- Verifies views, box detail pages, and edge cases for archived boxes.
+  - Verifies views, box detail pages, and edge cases for archived boxes.
 - Dashboard:
--- Validates form handling, box creation, date updates, user admin interactions, and order status changes.
+  - Validates form handling, box creation, date updates, user admin interactions, and order status changes.
 - HobbyHub:
--- Tests the email notification system, alerting logic, and utility functions for metadata management.
+  - Tests the email notification system, alerting logic, and utility functions for metadata management.
 - Home:
--- Confirms registration form validation, password mismatch, and user creation processes.
+  - Confirms registration form validation, password mismatch, and user creation processes.
     Orders:
         Tests Stripe subscription creation, order handling, payment management, and edge cases for race conditions during concurrent submissions.
     Users:

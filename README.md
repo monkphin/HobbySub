@@ -49,7 +49,7 @@ HobbySub is a Django-powered subscription box service for miniature painters and
 
 [The deployed website can be found here](https://hobbyhub-d1fc032e6c82.herokuapp.com/)
 
-# Site Concept(#site-concept)
+# Site Concept
 HobbySub is an online eCommerce site for tabletop wargame and model making hobbyists. It provides a mystery-box subscription service, which ships a new box of hobby supplies every month based on a specific theme. Subscriptions are available on a monthly, quarterly (3-month), biannual (6-month), or annual basis, with discounted pricing for longer commitments. Users can also purchase single boxes, if they're not yet ready to subscribe. The site has logic built into it to allow for purchases to be bought as items for the user, or as a gift to someone else, with personalised gift emails sent out when the item is ordered. 
 
 To manage and prioritise tasks, I used a Kanban board to track project progress from inception to completion, alongside a MoSCoW board for structured planning and prioritisation. 
@@ -58,7 +58,7 @@ To manage and prioritise tasks, I used a Kanban board to track project progress 
 
 [My Kanban board can be found here](https://github.com/users/monkphin/projects/6/views/1)
 
-## Site Owner Goals(#site-owner-goals)
+## Site Owner Goals
 
  - Provide a secure and scalable platform to sell and manage subscription-based box offerings.
  - Allow users to easily subscribe to recurring boxes or gift one-off boxes to others.
@@ -72,7 +72,7 @@ To manage and prioritise tasks, I used a Kanban board to track project progress 
  - Deploy the platform on scalable, cloud-based infrastructure with minimal downtime.
  - Reduce support load through clear UI, meaningful feedback, and user-accessible history.
 
-## Visitor Goals(#visitor-goals)
+## Visitor Goals
 
  - Browse available subscription box options and view what types of products they typically include.
  - View detailed info about each months box: theme, contents summary, and shipping frequency options.
@@ -87,7 +87,7 @@ To manage and prioritise tasks, I used a Kanban board to track project progress 
  - Get help or support quickly if they run into issues with orders, addresses, or billing.
 
 
-# User Stories(#user-stories)
+# User Stories
 
 | **Category**                | **User Story**                                                                                      |
 |----------------------------|------------------------------------------------------------------------------------------------------|
@@ -116,13 +116,13 @@ To manage and prioritise tasks, I used a Kanban board to track project progress 
 
 
 
-# Design Choices(#design-choices)
+# Design Choices
 
 The initial site design is intentionally minimal, leveraging Materialize for a clean, responsive layout. This choice was made to prioritise backend functionality and Stripe integration over heavy front-end customisation. By using Materialize's grid and component system, development time was optimised, allowing more focus on core application logic and data flow.
 
 The backend implementation was designed with DRY (Don't Repeat Yourself) principles in mind. For example, single HTML templates are used for similar user flows, such as self-purchases and gift purchases, reducing redundancy and simplifying maintenance. This approach also extends to subscription management, order handling, and admin views, ensuring consistency across the site.
 
-## [Wireframes](#wireframes)
+## [Wireframes]
 Wireframes were created with Balsamiq and provided rough initial mockups for how the site should look. Some variation from these occurred as the project developed. 
 
 <details>
@@ -162,7 +162,7 @@ Wireframes were created with Balsamiq and provided rough initial mockups for how
 <br>
 
 
-##  [Schema](#schema)
+## Schema
 To enhance security and streamline data management, I chose to use Django’s built-in `User` model for authentication and user management. This approach eliminates the need for custom table design while benefiting from Django’s robust, battle-tested security features, including secure password hashing and session handling.
 
 For payment processing, all sensitive billing information is handled exclusively by Stripe. No credit card data is stored on the site, which significantly reduces risk in the event of a data breach. While some personally identifiable information (PII) — such as names, email addresses, and shipping addresses — is stored for order fulfillment, all payment data remains securely isolated within Stripe’s infrastructure. This separation ensures that any potential breach would have minimal financial impact.
@@ -193,7 +193,7 @@ A screenshot is also included below for convenience. While the `User` table is n
 
 When reading up on Django models, I encountered this, which seemed helpful since I had a few issues with getting tooltips to play nice on my last project. So this seems like it may help with this. https://docs.djangoproject.com/en/3.2/ref/models/fields/#help-text
 
-##  [UX](#ux)
+## UX
 ### UX Design and User Flow
 
 When a user first visits the site, they land on the Home Page, which looks the same for both logged-in and logged-out users. However, navigation menus and buttons dynamically adjust based on the user's authentication status and role. For example, purchase and gift purchase buttons have two distinct versions:
@@ -269,7 +269,7 @@ Additionally, email notifications are triggered for key events:
 Emails are currently plaintext, but provide necessary feedback for user assurance.
 
 
-##  [Colour Palette](#colour-palette)
+## Colour Palette
 The color scheme was chosen late in development to create a welcoming and easy-on-the-eye experience. The primary colors are neutral and calming, with a focus on readability and accessibility.
  - Primary Color: Various shades of green are used throughout the site, particularly for navigation menus and headers, creating a consistent visual identity.
  - Button Colors:
@@ -283,7 +283,7 @@ This color-coding ensures that users can quickly understand the purpose of each 
 
 By keeping the color scheme simple and purposeful, the site remains both functional and aesthetically pleasing.
 
-##  [Typography](#typography)
+## Typography
 Similar to the color palette, font choices were made later in development, with initial focus placed on core functionality. Two Google Fonts were selected to provide clear visual distinction between headings, body text, and navigation elements.
 - Both fonts are clean, sans-serif, and optimised for readability across devices.
 - They were also chosen with accessibility in mind, ensuring clarity for all users, including those in the neurodiverse community.
@@ -291,7 +291,7 @@ Similar to the color palette, font choices were made later in development, with 
 This careful selection supports readability and user comfort throughout the site experience.
 
 
-##  [Images](#images)
+## Images
 Local images are kept to a minimum, with all primary visual assets hosted on Cloudinary. This approach reduces server load, improves site performance, and simplifies image management.
 - Cloudinary handles image storage, optimisation, and delivery, ensuring fast load times.
 - This also enables easy updates and versioning without the need for redeployment.
@@ -299,17 +299,17 @@ Local images are kept to a minimum, with all primary visual assets hosted on Clo
 
 By leveraging Cloudinary, the site remains lightweight and efficient, even as image content scales.
 
-##  [Icons](#icons)
+## Icons
 Icons throughout the site are provided by Font Awesome, enhancing navigation and user interactions with clean, universally recognisable symbols.
 - Icons are used for key features such as:
- -- Buttons (e.g., edit, delete, submit)
- -- Bullet Points for lists
- -- Navigation Links
+  - Buttons (e.g., edit, delete, submit)
+  - Bullet Points for lists
+  - Navigation Links
 - Font Awesome ensures consistency and scalability across all devices, maintaining a professional look while simplifying UI elements.
 
 This choice keeps the interface intuitive and visually consistent, improving the user experience.
 
-## [Features](#features#)
+## Features
 All pages have been designed with a mobile-first approach and are fully responsive across a wide range of devices and screen sizes. Most pages adapt fluidly when the browser is resized, maintaining layout integrity and usability.
 
 Two exceptions — the Box Create/Edit and Product Create/Edit pages — exhibit a known issue where the layout compresses or visually distorts when the browser window is resized. This does not affect functionality and resolves on page refresh. The issue is documented in more detail in the testing section.
@@ -770,7 +770,7 @@ The site includes custom error pages for HTTP status codes 403 (Forbidden), 404 
 
 These pages help maintain a user-friendly experience even when something goes wrong, guiding users back to the main areas of the site rather than leaving them at a dead end.
 
-## [Future Features](#future-features)
+## Future Features
 
 Admin Enhancements
  - Stock Handling and Management:
