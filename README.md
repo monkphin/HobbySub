@@ -122,7 +122,7 @@ The initial site design is intentionally minimal, leveraging Materialize for a c
 
 The backend implementation was designed with DRY (Don't Repeat Yourself) principles in mind. For example, single HTML templates are used for similar user flows, such as self-purchases and gift purchases, reducing redundancy and simplifying maintenance. This approach also extends to subscription management, order handling, and admin views, ensuring consistency across the site.
 
-## [Wireframes]
+## Wireframes
 Wireframes were created with Balsamiq and provided rough initial mockups for how the site should look. Some variation from these occurred as the project developed. 
 
 <details>
@@ -240,7 +240,7 @@ The My Account page grants users access to:
  -- If only one personal address exists, it cannot be deleted while active orders or subscriptions are ongoing to prevent delivery issues.
  -- Friendly names (e.g., Home, Work) can be assigned for clarity.
 
-# Order History Page
+### Order History Page
 Orders are split into two categories: Subscriptions and Single Boxes.
  - Each item displays order number, status (Pending, Processing, Shipped, Cancelled), order date, recipient info (if a gift), estimated shipping date, and renewal date for subscriptions.
  - Users can view more detailed information or cancel subscriptions directly from this page.
